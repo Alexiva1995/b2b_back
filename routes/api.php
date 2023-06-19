@@ -86,6 +86,12 @@ Route::middleware('jwt')->group(function () {
             Route::get('get-users', 'getUsers');
             Route::get('find-user/{user_id}', 'findUser');
             Route::get('get-users-download', 'getUsersDownload');
+            //Ruta DashboardUser B2B obtener Balance del usuario
+            Route::get('get-user-balance', 'getUserBalance');
+            //Fin
+            //Ruta Dashboard User B2B obtener bonos matrix del user
+            Route::get('get-user-bonus-user','getUserBonus');
+            //Fin
             Route::post('update-user-affiliate', 'updateUserAffiliate');
             Route::post('toggle-user-can-buy-fast', 'toggleUserCanBuyFast');
             Route::get('get-users-wallet-list', 'getUsersWalletsList');
@@ -190,7 +196,7 @@ Route::middleware('jwt')->group(function () {
 
     Route::controller(UserController::class)->group(function ($router) {
         Route::get('/user-profile', 'getUser');
-        //Route::get('/user', 'getUser');
+        Route::get('/user', 'getUser');
         Route::get('/countries', 'GetCountry');
         Route::post('/change/data', 'ChangeData');
         Route::post('/email/check', 'CheckCodeToChangeEmail');

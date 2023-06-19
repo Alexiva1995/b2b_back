@@ -29,6 +29,48 @@ use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
+
+    public function getUserBalance()
+    {
+        $user = Auth::user();
+        $userBalance = 0;
+    
+        $walletCommissions = WalletComission::where('user_id', $user->id)
+            ->where(function ($query) {
+                $query->where('avaliable_withdraw', 1)
+                    ->orWhere('status', 0);
+            })
+            ->get();
+    
+        foreach ($walletCommissions as $walletCommission) {
+            $userBalance += $walletCommission->amount_available;
+        }
+    
+        return $userBalance;
+    }
+    
+
+    public function getUserBonus()
+    {
+        $user = Auth::user();
+        $userBalance = 0;
+    
+        $walletCommissions = WalletComission::where('user_id', $user->id)
+            ->where(function ($query) {
+                $query->where('avaliable_withdraw', 1)
+                    ->orWhere('status', 0);
+            })
+            ->where('type', 0)
+            ->get();
+    
+        foreach ($walletCommissions as $walletCommission) {
+            $userBalance += $walletCommission->amount_available;
+        }
+    
+        return $userBalance;
+    }
+    
+
     public function getUsersWalletsList()
     {
         $users = User::with('wallets')->where('admin', '!=', '1')->orderBy('id', 'desc')->get();
