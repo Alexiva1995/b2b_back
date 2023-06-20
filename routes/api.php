@@ -89,9 +89,16 @@ Route::middleware('jwt')->group(function () {
             //Ruta DashboardUser B2B obtener Balance del usuario
             Route::get('get-user-balance', 'getUserBalance');
             //Fin
+
             //Ruta Dashboard User B2B obtener bonos matrix del user
-            Route::get('get-user-bonus-user','getUserBonus');
+            Route::get('get-user-bonus','getUserBonus');
             //Fin
+
+            //Ruta Dashboard User B2B para obtener plan del user
+            Route::get('get-user-matrix-data','myBestMatrixData');
+            //Fin
+
+
             Route::post('update-user-affiliate', 'updateUserAffiliate');
             Route::post('toggle-user-can-buy-fast', 'toggleUserCanBuyFast');
             Route::get('get-users-wallet-list', 'getUsersWalletsList');

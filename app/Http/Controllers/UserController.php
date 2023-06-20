@@ -30,10 +30,52 @@ use Illuminate\Support\Facades\Log;
 class UserController extends Controller
 {
 
+    public function myBestMatrixData()
+    {
+        $user = Auth::user();
+
+        $profilePicture = $user->profile_picture;
+
+        $userPlan = $user->userPlan;
+
+        $userLevel = WalletComission::where('user_id', $user->id)->value('level');
+
+        $matrixType = WalletComission::where('user_id', $user->id)->value('type_matrix');
+
+        $earning = 0;
+
+        $walletCommissions = WalletComission::where('user_id', $user->id)
+            ->where(function ($query) {
+                $query->where('avaliable_withdraw', 1)
+                    ->orWhere('status', 0);
+            })
+            ->get();
+    
+        foreach ($walletCommissions as $walletCommission) {
+            $earning += $walletCommission->amount_available;
+        }
+
+        
+
+        $data = [
+            'id' => $user->id,
+            'profilePhoto' =>  $profilePicture,
+            'userPlan' => $userPlan,
+            'userLevel' => $userLevel,
+            'matrixType' => $matrixType,
+            'earning' => $earning,
+        ];
+
+        return response()->json($data, 200);
+    }
+
+
+    
+
     public function getUserBalance()
     {
         $user = Auth::user();
-        $userBalance = 0;
+        $data = 0;
     
         $walletCommissions = WalletComission::where('user_id', $user->id)
             ->where(function ($query) {
@@ -43,17 +85,17 @@ class UserController extends Controller
             ->get();
     
         foreach ($walletCommissions as $walletCommission) {
-            $userBalance += $walletCommission->amount_available;
+            $data += $walletCommission->amount_available;
         }
     
-        return $userBalance;
+        return response()->json($data, 200);
     }
     
 
     public function getUserBonus()
     {
         $user = Auth::user();
-        $userBalance = 0;
+        $data = 0;
     
         $walletCommissions = WalletComission::where('user_id', $user->id)
             ->where(function ($query) {
@@ -64,10 +106,10 @@ class UserController extends Controller
             ->get();
     
         foreach ($walletCommissions as $walletCommission) {
-            $userBalance += $walletCommission->amount_available;
+            $data += $walletCommission->amount_available;
         }
     
-        return $userBalance;
+        return response()->json($data, 200);
     }
     
 
