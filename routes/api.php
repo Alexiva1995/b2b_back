@@ -88,31 +88,31 @@ Route::middleware('jwt')->group(function () {
             Route::get('get-users-download', 'getUsersDownload');
             
             //Ruta DashboardUser B2B obtener Balance del usuario
-            Route::get('get-user-balance', 'getUserBalance');
+            Route::get('get/user/balance', 'getUserBalance');
             //Fin
 
             //Ruta Dashboard User B2B obtener bonos matrix del user
-            Route::get('get-user-bonus','getUserBonus');
+            Route::get('get/user/bonus','getUserBonus');
             //Fin
 
             //Ruta Dashboard User B2B para obtener plan del user
-            Route::get('get-user-matrix-data','myBestMatrixData');
+            Route::get('get/user/matrix/data','myBestMatrixData');
             //Fin
 
             //Ruta Dashboard User B2B comisiones mensuales
-            Route::get('get-monthly-commissions','getMonthlyCommissions');
+            Route::get('get/monthly/commissions','getMonthlyCommissions');
             //Fin
 
             //Ruta Dashboard User B2B ganancias mensuales
-            Route::get('get-monthly-earnings','getMonthlyEarnigs');
+            Route::get('get/monthly/earnings','getMonthlyEarnigs');
             //Fin
 
             //Ruta Dashboard User B2B ordenes mensuales
-            Route::get('get-monthly-orders','getMonthlyOrders');
+            Route::get('get/monthly/orders','getMonthlyOrders');
             //Fin
 
             //Ruta Dashboard User B2B ultimos 10 retiros
-            Route::get('get-monthly-last-orders','getLast10Withdrawals');
+            Route::get('get/monthly/last/orders','getLast10Withdrawals');
             //Fin
 
             Route::post('update-user-affiliate', 'updateUserAffiliate');
