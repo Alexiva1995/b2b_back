@@ -29,6 +29,134 @@ use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
+
+    public function getLast10Withdrawals()
+    {
+        $user = Auth::user();
+
+        $data = WalletComission::select('amount', 'created_at')
+        ->where('user_id', $user->id)
+        ->where('available_withdraw', '=', 0)
+        ->take(10)
+        ->get();
+
+        return response()->json($data, 200);
+
+    }
+
+    public function getMonthlyOrders()
+    {
+
+        $user = Auth::user();
+
+        $data = Order::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, COUNT(*) AS total_orders')
+        ->where('user_id', $user->id)
+        ->groupBy('year', 'month')
+        ->get();
+
+        return response()->json($data, 200);
+
+    }
+
+    public function getMonthlyEarnigs()
+    {
+        $user = Auth::user();
+
+        $data = WalletComission::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount) AS total_amount')
+        ->where('user_id', $user->id)
+        ->groupBy('year', 'month')
+        ->get();
+
+        return response()->json($data, 200);
+
+    }
+
+    public function getMonthlyCommissions()
+    {
+        $user = Auth::user();
+
+        $data = WalletComission::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount_available) AS total_amount')
+        ->where('user_id', $user->id)
+        ->groupBy('year', 'month')
+        ->get();
+
+        return response()->json($data, 200);
+
+    }
+
+    public function myBestMatrixData()
+    {
+        $user = Auth::user();
+
+        $profilePicture = $user->profile_picture;
+
+        $userPlan = $user->userPlan;
+
+        $userLevel = WalletComission::where('user_id', $user->id)->value('level');
+
+        $matrixType = WalletComission::where('user_id', $user->id)->value('type_matrix');
+
+        $earning = 0;
+
+        $earning = WalletComission::where('user_id', $user->id)
+        ->sum('amount');
+
+        $data = [
+            'id' => $user->id,
+            'profilePhoto' =>  $profilePicture,
+            'userPlan' => $userPlan,
+            'userLevel' => $userLevel,
+            'matrixType' => $matrixType,
+            'earning' => $earning,
+        ];
+
+        return response()->json($data, 200);
+    }
+
+
+    
+
+    public function getUserBalance()
+    {
+        $user = Auth::user();
+        $data = 0;
+    
+        $walletCommissions = WalletComission::where('user_id', $user->id)
+            ->where(function ($query) {
+                $query->where('avaliable_withdraw', 1)
+                    ->orWhere('status', 0);
+            })
+            ->get();
+    
+        foreach ($walletCommissions as $walletCommission) {
+            $data += $walletCommission->amount_available;
+        }
+    
+        return response()->json($data, 200);
+    }
+    
+
+    public function getUserBonus()
+    {
+        $user = Auth::user();
+        $data = 0;
+    
+        $walletCommissions = WalletComission::where('user_id', $user->id)
+            ->where(function ($query) {
+                $query->where('avaliable_withdraw', 1)
+                    ->orWhere('status', 0);
+            })
+            ->where('type', 0)
+            ->get();
+    
+        foreach ($walletCommissions as $walletCommission) {
+            $data += $walletCommission->amount_available;
+        }
+    
+        return response()->json($data, 200);
+    }
+    
+
     public function getUsersWalletsList()
     {
         $users = User::with('wallets')->where('admin', '!=', '1')->orderBy('id', 'desc')->get();
