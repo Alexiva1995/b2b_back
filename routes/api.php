@@ -69,6 +69,7 @@ Route::middleware('jwt')->group(function () {
 
         Route::controller(AdminDashboardController::class)->group(function ($router) {
             Route::get('get-last-ten-tickets', 'getLast10SupportTickets');
+            Route::get('/order/paid', 'sumOrderPaid');
             Route::get('get-last-ten-orders', 'getLast10Orders');
             Route::get('get-orders', 'getOrders');
             Route::get('get-tickets-admin', 'getTicketsAdmin');
@@ -92,7 +93,7 @@ Route::middleware('jwt')->group(function () {
             Route::post('get-filter-users-wallet-list', 'getFilterUsersWalletsList');
             Route::post('filter-users-wallet-list', 'filterUsersWalletsList');
             Route::post('filter-users-list', 'filterUsersList');
-            
+
         });
         Route::controller(UserController::class)->group(function ($router) {
             Route::get('audit-user-wallets', 'auditUserWallets');
