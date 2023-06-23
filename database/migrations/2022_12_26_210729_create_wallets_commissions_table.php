@@ -30,7 +30,7 @@ class CreateWalletsCommissionsTable extends Migration
             $table->double('amount_retired')->nullable()->comment('amount retired for calculations');
             $table->double('amount_available')->nullable()->comment('amount for calculations');
             $table->double('amount_last_liquidation')->nullable()->comment('amount last settlement');
-            $table->tinyInteger('type')->default(0)->comment('0 - Direct, 1 - Assigned, 2 - Unilevel, 3 - Refund');
+            $table->tinyInteger('type')->default(0)->comment('0 - matrix 20 , 1 - matrix 200, 2 - matrix 2000');
             $table->bigInteger('liquidation_id')->unsigned()->nullable();
             $table->tinyInteger('liquidado')->comment('0 - no , 1 - si')->default(0);
             $table->tinyInteger('status')->default(0)->comment('0 - Available, 1 - Requested, 2 - Paid, 3 - Voided' );

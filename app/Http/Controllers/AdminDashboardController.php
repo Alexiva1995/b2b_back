@@ -6,9 +6,13 @@ use App\Http\Resources\OrderCollection;
 use App\Models\Order;
 use App\Models\Project;
 use App\Models\Ticket;
+use App\Models\PackageMembership;
+use App\Models\User;
+use App\Models\WalletComission;
 use App\Repositories\OrderRepository;
 use App\Repositories\TicketRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AdminDashboardController extends Controller
 {
@@ -148,4 +152,100 @@ class AdminDashboardController extends Controller
 		}
 		return response()->json($data, 200);
 	}
+
+    public function sumOrderPaid()
+    {
+        $order = Order::where('status', 1)->get();
+
+        $data = $order->sum('amount');
+
+        return response()->json($data, 200);
+    }
+
+    public function sumComissionPaid()
+    {
+        $order = WalletComission::where('status', 2)->get();
+
+        $data = $order->sum('amount_retired');
+
+        return response()->json($data, 200);
+    }
+
+    public function gainWeekly()
+    {
+        // Obtener los datos de la tabla 'ordenes' ordenados por fecha de creación
+        $ordenes = Order::where('status', '1')->orderBy('created_at')->get();
+
+        // Crear un arreglo para almacenar los datos de la gráfica
+        $data = [];
+
+        // Iterar sobre los registros de la tabla 'ordenes'
+        foreach ($ordenes as $orden) {
+            $diaSemana = $orden->created_at->format('D');
+            $ganancias = $orden->amount;
+
+            // Agregar los datos al arreglo de la gráfica
+            $data[$diaSemana] = $ganancias;
+        }
+
+        // Devolver los datos de la gráfica como respuesta JSON
+        return response()->json($data, 200);
+    }
+
+    public function topFiveUsers()
+    {
+        $data = DB::table('users')
+            ->select('users.*', DB::raw('(SELECT COUNT(*) FROM users u WHERE u.buyer_id = users.id) as total_referidos'))
+            ->orderByDesc('total_referidos')
+            ->limit(5)
+            ->get();
+
+        return response()->json($data, 200);
+    }
+
+    public function mountMatrix()
+    {
+
+        $matrix = WalletComission::get();
+        $matrixTotalAmount = $matrix->sum('amount');
+        $totalAmountMatrix20 = $matrix->where('type', 0)->sum('amount');
+        $totalAmountMatrix200 = $matrix->where('type', 1)->sum('amount');
+        $totalAmountMatrix2000 = $matrix->where('type', 2)->sum('amount');
+
+        $data = array(
+            'matrixTotalAmount'     => $matrixTotalAmount,
+            'totalAmountMatrix20'   => $totalAmountMatrix20,
+            'totalAmountMatrix200'  => $totalAmountMatrix200,
+            'totalAmountMatrix2000' => $totalAmountMatrix2000
+        );
+
+        return response()->json($data, 200);
+    }
+
+    public function totalEarnigs()
+    {
+        $inversion = PackageMembership::all();
+        $data = $inversion->sum('amount');
+
+        return response()->json($data, 200);
+    }
+
+	public function countUserForMatrix()
+	{
+		$inversions = Inversion::get();
+        $userCount = $inversions->sum('amount');
+        $userMatrix20 = $inversions->where('type', 0)->sum('amount');
+        $userMatrix200 = $inversions->where('type', 1)->sum('amount');
+        $userMatrix2000 = $inversions->where('type', 2)->sum('amount');
+
+        $data = array(
+            'userCount'     => $userCount,
+            'userMatrix20'   => $userMatrix20,
+            'userMatrix200'  => $userMatrix200,
+            'userMatrix2000' => $userMatrix2000
+        );
+
+        return response()->json($data, 200);
+	}
+
 }
