@@ -44,6 +44,30 @@ class UserController extends Controller
 
     }
 
+    public function getUserOrders()
+    {
+        $user = Auth::user();
+
+        $data = [];
+
+        $orders = $user->orders;
+
+        foreach ($orders as $order) {
+			$data[] = [
+				'id' => $order->id,
+				'user_id' => $order->user->id,
+				'user_name' => strtolower(explode(" ", $order->user->name)[0] . " " . explode(" ", $order->user->last_name)[0]),
+				'status' => $order->status,
+				'description' => $order->packagesB2B->package,
+				'hash_id' => $order->hash,
+				'amount' => round($order->amount, 2),
+				'date' => $order->created_at->format('Y-m-d'),
+				'update_date' => $order->updated_at	->format('Y-m-d')
+			];
+		}
+		return response()->json($data, 200);
+    }
+
     public function getMonthlyOrders()
     {
 
@@ -90,7 +114,7 @@ class UserController extends Controller
 
         $profilePicture = $user->profile_picture ?? '';
 
-        $userPlan = $user->userPlan;
+        $userPlan = $user->getPackage;
 
         $userLevel = WalletComission::where('user_id', $user->id)->value('level');
 

@@ -136,6 +136,9 @@ Route::middleware('jwt')->group(function () {
             //Ruta Dashboard User B2B ultimos 10 retiros
             Route::get('get/monthly/last/orders','getLast10Withdrawals');
             //Fin
+            //Ruta Dashboard User B2B ultimos 10 retiros
+            Route::get('get/user/orders','getUserOrders');
+            //Fin
 
             Route::post('update-user-affiliate', 'updateUserAffiliate');
             Route::post('toggle-user-can-buy-fast', 'toggleUserCanBuyFast');
