@@ -198,9 +198,9 @@ class AdminDashboardController extends Controller
 
         $matrix = WalletComission::get();
         $matrixTotalAmount = $matrix->sum('amount');
-        $totalAmountMatrix20 = $matrix->where('type', '0')->sum('amount');
-        $totalAmountMatrix200 = $matrix->where('type', '1')->sum('amount');
-        $totalAmountMatrix2000 = $matrix->where('type', '2')->sum('amount');
+        $totalAmountMatrix20 = $matrix->where('type', '1')->sum('amount');
+        $totalAmountMatrix200 = $matrix->where('type', '2')->sum('amount');
+        $totalAmountMatrix2000 = $matrix->where('type', '3')->sum('amount');
 
         $data = array(
             'matrixTotalAmount'     => $matrixTotalAmount,
@@ -237,5 +237,28 @@ class AdminDashboardController extends Controller
 
         return response()->json($data, 200);
 	}
+
+    public function countOrderAndCommision()
+    {
+        // Obtener el conteo de órdenes por mes
+        $orders = DB::table('orders')
+        ->select(DB::raw('YEAR(created_at) as year'), DB::raw('MONTH(created_at) as month'), DB::raw('COUNT(*) as count'))
+        ->groupBy(DB::raw('YEAR(created_at)'), DB::raw('MONTH(created_at)'))
+        ->get();
+
+        // Obtener el conteo de comisiones por mes
+        $commissions = DB::table('wallets_commissions')
+        ->select(DB::raw('YEAR(created_at) as year'), DB::raw('MONTH(created_at) as month'), DB::raw('COUNT(*) as count'))
+        ->groupBy(DB::raw('YEAR(created_at)'), DB::raw('MONTH(created_at)'))
+        ->get();
+
+        // Combinar los resultados en un objeto JSON
+        $data = [
+            'orders' => $orders,
+            'commissions' => $commissions
+        ];
+
+        return response()->json($data);
+    }
 
 }

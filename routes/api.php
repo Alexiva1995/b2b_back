@@ -83,6 +83,7 @@ Route::middleware('jwt')->group(function () {
             Route::get('/amount/matrix','mountMatrix');
             Route::get('/amount/earnings','totalEarnings');
             Route::get('/count/user/matrix','countUserForMatrix');
+            Route::get('/count/order/and/commision','countOrderAndCommision');
             //fin
 
             //rutas dashboard admin b2b
