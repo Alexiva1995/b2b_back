@@ -74,6 +74,16 @@ Route::middleware('jwt')->group(function () {
             Route::get('get-orders', 'getOrders');
             Route::get('get-tickets-admin', 'getTicketsAdmin');
             Route::get('most-requested-packages', 'mostRequestedPackages');
+
+            //rutas dashboard admin b2b
+            Route::get('/order/paid','sumOrderPaid');
+            Route::get('/comission/paid','sumComissionPaid');
+            Route::get('/gain/pweekly','gainWeekly');
+            Route::get('/top/users','topFiveUsers');
+            Route::get('/amount/matrix','mountMatrix');
+            Route::get('/amount/earnings','totalEarnings');
+            Route::get('/count/user/matrix','countUserForMatrix');
+            //fin
         });
 
         Route::controller(TicketsController::class)->group(function ($router) {
