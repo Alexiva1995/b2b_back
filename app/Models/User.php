@@ -205,6 +205,12 @@ class User extends Authenticatable implements JWTSubject
 
         return null;
     }
+
+    public function getPackage()
+    {
+        return $this->hasMany(Package::class, 'user_id');
+    }
+    
     
     public function getStatus()
     {
