@@ -49,7 +49,7 @@ class Order extends Model
     //Relacion de B2B
     public function packagesB2B()
     {
-        return $this->hasOne(packages::class, 'id', 'membership_packages_id');
+       return  $this->hasOne(Package::class, 'id', 'membership_packages_id');
     }
     //Fin
     

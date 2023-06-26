@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use App\Models\packages;
+use App\Models\Package;
 use Illuminate\Database\Seeder;
 
 class packageSeeder extends Seeder
@@ -15,7 +15,7 @@ class packageSeeder extends Seeder
      */
     public function run()
     {
-        packages::create([
+        Package::create([
             'id' => 1,
             'package' => 'Matrix inicial',
             'description' => 'No genera bono',
@@ -25,7 +25,7 @@ class packageSeeder extends Seeder
             'gain' => 0, 
         ]);
 
-        packages::create([
+        Package::create([
             'id' => 2,
             'package' => 'Matrix inicial',
             'description' => '4 pagos de 20 USD',
@@ -35,7 +35,7 @@ class packageSeeder extends Seeder
             'gain' => 30, 
         ]);
 
-        packages::create([
+        Package::create([
             'id' => 3,
             'package' => 'Matrix inicial',
             'description' => '8 pagos de 50 USD',
@@ -45,7 +45,7 @@ class packageSeeder extends Seeder
             'gain' => 300, 
         ]);
 
-        packages::create([
+        Package::create([
             'id' => 4,
             'package' => 'Matrix inicial',
             'description' => '16 pagos de 100 USD',
@@ -55,7 +55,7 @@ class packageSeeder extends Seeder
             'gain' => 1400, 
         ]);
 
-        packages::create([
+        Package::create([
             'id' => 5,
             'package' => 'Matrix 200 USD',
             'description' => 'No genera bono',
@@ -65,7 +65,7 @@ class packageSeeder extends Seeder
             'gain' => 0, 
         ]);
 
-        packages::create([
+        Package::create([
             'id' => 6,
             'package' => 'Matrix 200 USD',
             'description' => '4 pagos de 200 USD',
@@ -75,7 +75,7 @@ class packageSeeder extends Seeder
             'gain' => 300, 
         ]);
 
-        packages::create([
+        Package::create([
             'id' => 7,
             'package' => 'Matrix 200 USD',
             'description' => '8 pagos de 500 USD',
@@ -85,7 +85,7 @@ class packageSeeder extends Seeder
             'gain' => 3000, 
         ]);
 
-        packages::create([
+        Package::create([
             'id' => 8,
             'package' => 'Matrix 200 USD',
             'description' => '16 pagos de 1000 USD',
@@ -95,7 +95,7 @@ class packageSeeder extends Seeder
             'gain' => 14000, 
         ]);
 
-        packages::create([
+        Package::create([
             'id' => 9,
             'package' => 'Matrix 2000 USD',
             'description' => 'No genera bono',
@@ -105,7 +105,7 @@ class packageSeeder extends Seeder
             'gain' => 0, 
         ]);
 
-        packages::create([
+        Package::create([
             'id' => 10,
             'package' => 'Matrix 2000 USD',
             'description' => '4 pagos 2000 USD',
@@ -115,7 +115,7 @@ class packageSeeder extends Seeder
             'gain' => 3000, 
         ]);
 
-        packages::create([
+        Package::create([
             'id' => 11,
             'package' => 'Matrix 2000 USD',
             'description' => '8 pagos de 5000 USD',
@@ -125,7 +125,7 @@ class packageSeeder extends Seeder
             'gain' => 30000, 
         ]);
 
-        packages::create([
+        Package::create([
             'id' => 12,
             'package' => 'Matrix inicial',
             'description' => '16 pagos de 10000 USD',
@@ -134,8 +134,8 @@ class packageSeeder extends Seeder
             'amount' => 2000, 
             'gain' => 140000, 
         ]);
-        packages::create([
-            'id' => 12,
+        Package::create([
+            'id' => 13,
             'package' => 'Mineria',
             'description' => '',
             'level' => 4,

@@ -71,18 +71,29 @@ Route::middleware('jwt')->group(function () {
             Route::get('get-last-ten-tickets', 'getLast10SupportTickets');
             Route::get('/order/paid', 'sumOrderPaid');
             Route::get('get-last-ten-orders', 'getLast10Orders');
-            Route::get('get-orders', 'getOrders');
             Route::get('get-tickets-admin', 'getTicketsAdmin');
             Route::get('most-requested-packages', 'mostRequestedPackages');
 
             //rutas dashboard admin b2b
             Route::get('/order/paid','sumOrderPaid');
+            Route::get('get/orders', 'getOrders');
             Route::get('/comission/paid','sumComissionPaid');
             Route::get('/gain/pweekly','gainWeekly');
             Route::get('/top/users','topFiveUsers');
             Route::get('/amount/matrix','mountMatrix');
             Route::get('/amount/earnings','totalEarnings');
             Route::get('/count/user/matrix','countUserForMatrix');
+            //fin
+
+            //rutas dashboard admin b2b
+            Route::get('/order/paid', 'sumOrderPaid');
+            Route::get('/comission/paid', 'sumComissionPaid');
+            Route::get('/gain/weekly', 'gainWeekly');
+            Route::get('/top/users', 'topFiveUsers');
+            Route::get('/amount/matrix', 'mountMatrix');
+            Route::get('/amount/earnings', 'totalEarnigs');
+            Route::get('/count/user/matrix', 'countUserForMatrix');
+
             //fin
         });
 
@@ -97,7 +108,7 @@ Route::middleware('jwt')->group(function () {
             Route::get('get-users', 'getUsers');
             Route::get('find-user/{user_id}', 'findUser');
             Route::get('get-users-download', 'getUsersDownload');
-            
+
             //Ruta DashboardUser B2B obtener Balance del usuario
             Route::get('get/user/balance', 'getUserBalance');
             //Fin
