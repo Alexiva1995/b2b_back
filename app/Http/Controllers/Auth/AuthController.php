@@ -144,6 +144,7 @@ class AuthController extends Controller
                 'email' => $user->email,
                 'affiliate' => $user->affiliate,
                 'admin' => $user->admin,
+                'profile_picture' => $user->profile_picture ?? '',
                 'email_verified_at' => $user->email_verified_at,
                 'api_token' => $responseObject->token,
                 'created_at' => $user->created_at,
