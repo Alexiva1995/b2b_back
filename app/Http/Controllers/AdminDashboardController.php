@@ -128,26 +128,16 @@ class AdminDashboardController extends Controller
 		$orders = $this->orderRepository->getOrders();
 
 		foreach ($orders as $order) {
-			if (isset($order->project)) {
-				$phase = ($order->project->phase2 == null && $order->project->phase1 == null)
-					? ''
-					: (($order->project->phase2 == null)
-						? 'Phase 1'
-						: 'Phase 2');
-			}
-
 			$data[] = [
 				'id' => $order->id,
 				'user_id' => $order->user->id,
 				'user_name' => strtolower(explode(" ", $order->user->name)[0] . " " . explode(" ", $order->user->last_name)[0]),
-				'user_email' => strtolower($order->user->email),
-				'program' => $order->packageMembership->getTypeName(),
-				'phase' => $phase ?? "",
-				'account' => $order->packageMembership->account,
 				'status' => $order->status,
+				'description' => $order->packagesB2B->package,
 				'hash_id' => $order->hash,
 				'amount' => round($order->amount, 2),
-				'date' => $order->created_at->format('Y-m-d')
+				'date' => $order->created_at->format('Y-m-d'),
+				'update_date' => $order->updated_at	->format('Y-m-d')
 			];
 		}
 		return response()->json($data, 200);
