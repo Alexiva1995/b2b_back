@@ -88,7 +88,7 @@ class UserController extends Controller
     {
         $user = Auth::user();
 
-        $profilePicture = $user->profile_picture;
+        $profilePicture = $user->profile_picture ?? '';
 
         $userPlan = $user->userPlan;
 
