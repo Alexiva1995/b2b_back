@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\OrderCollection;
 use App\Models\Order;
-use App\Models\Project;
+use App\Models\Inversion;
 use App\Models\Ticket;
 use App\Models\PackageMembership;
 use App\Models\User;
@@ -164,7 +164,7 @@ class AdminDashboardController extends Controller
 
     public function sumComissionPaid()
     {
-        $order = WalletComission::where('status', 2)->get();
+        $order = WalletComission::where('status', '2')->get();
 
         $data = $order->sum('amount_retired');
 
@@ -208,9 +208,9 @@ class AdminDashboardController extends Controller
 
         $matrix = WalletComission::get();
         $matrixTotalAmount = $matrix->sum('amount');
-        $totalAmountMatrix20 = $matrix->where('type', 0)->sum('amount');
-        $totalAmountMatrix200 = $matrix->where('type', 1)->sum('amount');
-        $totalAmountMatrix2000 = $matrix->where('type', 2)->sum('amount');
+        $totalAmountMatrix20 = $matrix->where('type', '0')->sum('amount');
+        $totalAmountMatrix200 = $matrix->where('type', '1')->sum('amount');
+        $totalAmountMatrix2000 = $matrix->where('type', '2')->sum('amount');
 
         $data = array(
             'matrixTotalAmount'     => $matrixTotalAmount,
@@ -234,9 +234,9 @@ class AdminDashboardController extends Controller
 	{
 		$inversions = Inversion::get();
         $userCount = $inversions->sum('amount');
-        $userMatrix20 = $inversions->where('type', 0)->sum('amount');
-        $userMatrix200 = $inversions->where('type', 1)->sum('amount');
-        $userMatrix2000 = $inversions->where('type', 2)->sum('amount');
+        $userMatrix20 = $inversions->where('type', '0')->sum('amount');
+        $userMatrix200 = $inversions->where('type', '1')->sum('amount');
+        $userMatrix2000 = $inversions->where('type', '2')->sum('amount');
 
         $data = array(
             'userCount'     => $userCount,
