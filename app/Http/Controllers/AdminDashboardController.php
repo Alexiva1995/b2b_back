@@ -155,7 +155,7 @@ class AdminDashboardController extends Controller
 
     public function sumOrderPaid()
     {
-        $order = Order::where('status', 1)->get();
+        $order = Order::where('status', '1')->get();
 
         $data = $order->sum('amount');
 
