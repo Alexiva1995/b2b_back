@@ -137,11 +137,7 @@ class packageSeeder extends Seeder
         Package::create([
             'id' => 13,
             'package' => 'Mineria',
-            'description' => '',
-            'level' => 4,
-            'type' => 0,
-            'amount' => 2000, 
-            'gain' => 140000, 
+            'description' => 'Ganancias compuestas de mineria',
         ]);
     }
 }
