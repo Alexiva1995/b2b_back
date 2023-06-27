@@ -18,6 +18,7 @@ use App\Http\Controllers\PackageMembershipController;
 use App\Http\Controllers\KycController;
 use App\Http\Controllers\TreController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\ProductController;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\BonusService;
@@ -98,6 +99,10 @@ Route::middleware('jwt')->group(function () {
             //fin
         });
 
+        Route::controller(ProductController::class)->group(function ($router){
+            Route::post('products/shipping','storeShippingData');
+            Route::get('products/list','listUserData');
+        });
         Route::controller(TicketsController::class)->group(function ($router) {
             Route::get('ticket-edit-admin/{id}', 'editAdmin');
             Route::post('ticket-update-admin/{id}', 'updateAdmin');
