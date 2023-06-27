@@ -206,11 +206,15 @@ class User extends Authenticatable implements JWTSubject
         return null;
     }
 
-    public function getPackage()
+    public function inversion()
     {
-        return $this->hasMany(Package::class, 'user_id');
+        return $this->hasOne(Inversion::class);
     }
-    
+
+    public function package()
+    {
+        return $this->hasOneThrough(Package::class, Inversion::class);
+    }
     
     public function getStatus()
     {

@@ -127,7 +127,7 @@ class packageSeeder extends Seeder
 
         Package::create([
             'id' => 12,
-            'package' => 'Matrix inicial',
+            'package' => 'Matrix 2000 USD',
             'description' => '16 pagos de 10000 USD',
             'level' => 4,
             'type' => 0,

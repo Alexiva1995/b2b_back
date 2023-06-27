@@ -112,15 +112,19 @@ class UserController extends Controller
     {
         $user = Auth::user();
 
+        $inversion = $user->inversion;
+
+        $package = $inversion->package;
+
         $profilePicture = $user->profile_picture ?? '';
 
-        $userPlan = $user->getPackage;
+        $userPlan = $package->package;
 
-        $userLevel = WalletComission::where('user_id', $user->id)->value('level');
+        $userLevel = $package->level;
 
-        $matrixType = WalletComission::where('user_id', $user->id)->value('type_matrix');
+        $matrixType = $package->type;
 
-        $earning = 0;
+        $earning = $package->earning;
 
         $earning = WalletComission::where('user_id', $user->id)
         ->sum('amount');
