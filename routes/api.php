@@ -99,10 +99,15 @@ Route::middleware('jwt')->group(function () {
             //fin
         });
 
+        //Rutas producto B2B
         Route::controller(ProductController::class)->group(function ($router){
             Route::post('products/shipping','storeShippingData');
-            Route::get('products/list','listUsersData');
+            Route::get('products/list','listUsersProductData');
+            Route::get('products/user','listUserData');
+            Route::post('products/update','updateProductStatus');
         });
+        //Fin
+        
         Route::controller(TicketsController::class)->group(function ($router) {
             Route::get('ticket-edit-admin/{id}', 'editAdmin');
             Route::post('ticket-update-admin/{id}', 'updateAdmin');
