@@ -101,7 +101,7 @@ Route::middleware('jwt')->group(function () {
 
         Route::controller(ProductController::class)->group(function ($router){
             Route::post('products/shipping','storeShippingData');
-            Route::get('products/list','listUserData');
+            Route::get('products/list','listUsersData');
         });
         Route::controller(TicketsController::class)->group(function ($router) {
             Route::get('ticket-edit-admin/{id}', 'editAdmin');

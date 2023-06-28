@@ -47,4 +47,12 @@ class ProductController extends Controller
             return response()->json(["message" => "Please try again later"], 500);
         }
     }
+
+    public function listUsersData()
+    {
+        $data = '';
+
+        return $data;
+    }
+
 }
