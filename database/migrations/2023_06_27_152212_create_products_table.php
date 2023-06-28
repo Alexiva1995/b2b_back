@@ -20,7 +20,6 @@ return new class extends Migration
             $table->integer('document_id');
             $table->integer('postal_code');
             $table->integer('phone_number');
-            $table->integer('phone_number');
             $table->unsignedTinyInteger('status')->default(0)->comment('0: Solicitado, 1: Enviado, 2: Entregado');
             $table->string('state');
             $table->string('street');
