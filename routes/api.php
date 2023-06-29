@@ -206,8 +206,7 @@ Route::middleware('jwt')->group(function () {
     Route::controller(ProductController::class)->group(function ($router){
         Route::post('products/shipping','storeShippingData');
         Route::get('products/list','listUsersProductData');
-        Route::get('products/user','listUserData');
-        Route::post('products/update','updateProductStatus');
+        Route::put('/products/{id}','updateProductStatus');
     });
     //Fin
 
@@ -236,36 +235,37 @@ Route::middleware('jwt')->group(function () {
         Route::post('/create-mt-user', 'createMT5User');
 
         
-            //Ruta DashboardUser B2B obtener Balance del usuario
-            Route::get('get/user/balance', 'getUserBalance');
-            //Fin
+        //Ruta DashboardUser B2B obtener Balance del usuario
+        Route::get('get/user/balance', 'getUserBalance');
+        //Fin
 
-            //Ruta Dashboard User B2B obtener bonos matrix del user
-            Route::get('get/user/bonus','getUserBonus');
-            //Fin
+        //Ruta Dashboard User B2B obtener bonos matrix del user
+        Route::get('get/user/bonus','getUserBonus');
+        //Fin
 
-            //Ruta Dashboard User B2B para obtener plan del user
-            Route::get('get/user/matrix/data','myBestMatrixData');
-            //Fin
+        //Ruta Dashboard User B2B para obtener plan del user
+        Route::get('get/user/matrix/data','myBestMatrixData');
+        //Fin
 
-            //Ruta Dashboard User B2B comisiones mensuales
-            Route::get('get/monthly/commissions','getMonthlyCommissions');
-            //Fin
+        //Ruta Dashboard User B2B comisiones mensuales
+        Route::get('get/monthly/commissions','getMonthlyCommissions');
+        //Fin
 
-            //Ruta Dashboard User B2B ganancias mensuales
-            Route::get('get/monthly/earnings','getMonthlyEarnigs');
-            //Fin
+        //Ruta Dashboard User B2B ganancias mensuales
+        Route::get('get/monthly/earnings','getMonthlyEarnigs');
+        //Fin
 
-            //Ruta Dashboard User B2B ordenes mensuales
-            Route::get('get/monthly/orders','getMonthlyOrders');
-            //Fin
+        //Ruta Dashboard User B2B ordenes mensuales
+        Route::get('get/monthly/orders','getMonthlyOrders');
+        //Fin
 
-            //Ruta Dashboard User B2B ultimos 10 retiros
-            Route::get('get/monthly/last/orders','getLast10Withdrawals');
-            //Fin
-            //Ruta Dashboard User B2B ultimos 10 retiros
-            Route::get('get/user/orders','getUserOrders');
-            //Fin
+        //Ruta Dashboard User B2B ultimos 10 retiros
+        Route::get('get/monthly/last/orders','getLast10Withdrawals');
+        //Fin
+        
+        //Ruta Dashboard User B2B ultimos 10 retiros
+        Route::get('get/user/orders','getUserOrders');
+        //Fin
 
     });
     Route::apiResource('users', UserController::class);

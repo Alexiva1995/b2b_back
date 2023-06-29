@@ -17,9 +17,9 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('country');
-            $table->integer('document_id');
-            $table->integer('postal_code');
-            $table->integer('phone_number');
+            $table->unsignedBigInteger('document_id');
+            $table->string('postal_code');
+            $table->string('phone_number');
             $table->unsignedTinyInteger('status')->default(0)->comment('0: Solicitado, 1: Enviado, 2: Entregado');
             $table->string('state');
             $table->string('street');
