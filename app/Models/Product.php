@@ -22,5 +22,7 @@ class Product extends Model
         'state',
         'street',
         'department',
+        'created_at',
+        'updated_at',
     ];
 }
