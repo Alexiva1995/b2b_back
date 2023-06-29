@@ -177,6 +177,16 @@ Route::middleware('jwt')->group(function () {
     });
 
     // USER
+
+    //Rutas producto B2B
+    Route::controller(ProductController::class)->group(function ($router){
+        Route::post('products/shipping','storeShippingData');
+        Route::get('products/list','listUsersProductData');
+        Route::get('products/user','listUserData');
+        Route::put('/products/{id}','updateProductStatus');
+    });
+    //Fin
+
     Route::controller(TreController::class)->group(function () {
         Route::get('/red-unilevel/{user_id}', 'index');
     });
@@ -201,14 +211,6 @@ Route::middleware('jwt')->group(function () {
         Route::post('ticket-update-user/{id}', 'updateUser');
         Route::get('ticket-show-user/{id}', 'showUser');
     });
-
-    //Rutas producto B2B
-    Route::controller(ProductController::class)->group(function ($router){
-        Route::post('products/shipping','storeShippingData');
-        Route::get('products/list','listUsersProductData');
-        Route::put('/products/{id}','updateProductStatus');
-    });
-    //Fin
 
     Route::controller(ReportsController::class)->group(function ($router) {
         Route::get('reports/comisions', 'commision');

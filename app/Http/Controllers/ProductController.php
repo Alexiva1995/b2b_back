@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers;
 use App\Models\Product;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+
 
 class ProductController extends Controller
 {
     public function storeShippingData(Request $request)
     {
-      $user = Auth::user()->id;
 
         $validator = Validator::make($request->all(), [
             'name' => 'required',
             'country' => 'required',
+            'user_id' => 'required',
             'document_id' => 'required',
             'postal_code' => 'required',
             'phone_number' => 'required',
@@ -34,7 +35,7 @@ class ProductController extends Controller
             DB::beginTransaction();
     
             $product = Product::create([
-                'user_id' => $user->id,
+                'user_id' => $request->user_id,
                 'name' => $request->name,
                 'country' => $request->country,
                 'document_id' => $request->document_id,
@@ -73,6 +74,8 @@ class ProductController extends Controller
                 'state' => $product->state,
                 'street' => $product->street,
                 'department' => $product->department,
+                'created_at' => $product->created_at,
+                'updated_at' => $product->updated_at,
             ];
         }
         
