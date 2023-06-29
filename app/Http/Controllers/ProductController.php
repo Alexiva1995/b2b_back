@@ -16,7 +16,7 @@ class ProductController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required',
             'country' => 'required',
-            'user_id' => 'required',
+            'auth_user_id' => 'required',
             'document_id' => 'required',
             'postal_code' => 'required',
             'phone_number' => 'required',
@@ -35,7 +35,7 @@ class ProductController extends Controller
             DB::beginTransaction();
     
             $product = Product::create([
-                'user_id' => $request->user_id,
+                'user_id' => $request->auth_user_id,
                 'name' => $request->name,
                 'country' => $request->country,
                 'document_id' => $request->document_id,
