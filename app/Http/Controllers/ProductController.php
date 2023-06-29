@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
@@ -26,9 +27,13 @@ class ProductController extends Controller
         }
     
         try {
+
+            $user = Auth::user();
+
             DB::beginTransaction();
     
             $product = Product::create([
+                'user_id' => $user->id,
                 'name' => $request->name,
                 'country' => $request->country,
                 'document_id' => $request->document_id,
@@ -91,30 +96,6 @@ class ProductController extends Controller
         } catch (\Throwable $th) {
             return response()->json(["message" => "Product not found"], 404);
         }
-    }
-
-    public function listUserData()
-    {
-        $data = [];
-
-        $products = Product::all();
-    
-        foreach ($products as $product) {
-            $data[] = [
-                'id' => $product->id,
-                'name' => $product->name,
-                'country' => $product->country,
-                'document_id' => $product->document_id,
-                'postal_code' => $product->postal_code,
-                'phone_number' => $product->phone_number,
-                'status' => $product->status,
-                'state' => $product->state,
-                'street' => $product->street,
-                'department' => $product->department,
-            ];
-        }
-        
-        return response()->json($data, 200);
     }
 
 }
