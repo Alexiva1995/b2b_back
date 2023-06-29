@@ -48,11 +48,54 @@ class ProductController extends Controller
         }
     }
 
-    public function listUsersData()
+    public function listUsersProductData()
     {
-        $data = '';
+        $data = [];
 
-        return $data;
+        $products = Product::all();
+    
+        foreach ($products as $product) {
+            $data[] = [
+                'id' => $product->id,
+                'name' => $product->name,
+                'country' => $product->country,
+                'document_id' => $product->document_id,
+                'postal_code' => $product->postal_code,
+                'phone_number' => $product->phone_number,
+                'status' => $product->status,
+                'state' => $product->state,
+                'street' => $product->street,
+                'department' => $product->department,
+            ];
+        }
+        
+        return response()->json($data, 200);
+    }
+
+    public function updateProductStatus(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'status' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => $validator->errors()->toArray()[0]], 400);
+        }
+
+        try {
+            $product = Product::findOrFail($id);
+            $product->status = $request->status;
+            $product->save();
+            
+            return response()->json(['status' => 'success', 'message' => 'Product status updated successfully'], 200);
+        } catch (\Throwable $th) {
+            return response()->json(["message" => "Product not found"], 404);
+        }
+    }
+
+    public function listUserData()
+    {
+        
     }
 
 }

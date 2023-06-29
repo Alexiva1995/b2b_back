@@ -99,10 +99,6 @@ Route::middleware('jwt')->group(function () {
             //fin
         });
 
-        Route::controller(ProductController::class)->group(function ($router){
-            Route::post('products/shipping','storeShippingData');
-            Route::get('products/list','listUsersData');
-        });
         Route::controller(TicketsController::class)->group(function ($router) {
             Route::get('ticket-edit-admin/{id}', 'editAdmin');
             Route::post('ticket-update-admin/{id}', 'updateAdmin');
@@ -154,6 +150,16 @@ Route::middleware('jwt')->group(function () {
             Route::post('filter-users-list', 'filterUsersList');
 
         });
+
+        //Rutas producto B2B
+        Route::controller(ProductController::class)->group(function ($router){
+            Route::post('products/shipping','storeShippingData');
+            Route::get('products/list','listUsersProductData');
+            Route::get('products/user','listUserData');
+            Route::post('products/update','updateProductStatus');
+        });
+        //Fin
+
         Route::controller(UserController::class)->group(function ($router) {
             Route::get('audit-user-wallets', 'auditUserWallets');
             Route::get('audit-user-profile', 'auditUserProfile');
