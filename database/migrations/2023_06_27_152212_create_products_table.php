@@ -15,11 +15,11 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id')->nullable();
+            $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users');
             $table->string('name');
             $table->string('country');
-            $table->unsignedBigInteger('document_id');
+            $table->string('document_id'); // Cambiado a tipo string
             $table->string('postal_code');
             $table->string('phone_number');
             $table->unsignedTinyInteger('status')->default(0)->comment('0: Solicitado, 1: Enviado, 2: Entregado');
@@ -29,6 +29,7 @@ return new class extends Migration
             $table->timestamps();
         });
     }
+    
 
     /**
      * Reverse the migrations.
