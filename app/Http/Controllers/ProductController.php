@@ -11,6 +11,8 @@ class ProductController extends Controller
 {
     public function storeShippingData(Request $request)
     {
+      $user = Auth::user()->id;
+
         $validator = Validator::make($request->all(), [
             'name' => 'required',
             'country' => 'required',
@@ -28,7 +30,6 @@ class ProductController extends Controller
     
         try {
 
-            $user = Auth::user();
 
             DB::beginTransaction();
     
@@ -62,6 +63,7 @@ class ProductController extends Controller
         foreach ($products as $product) {
             $data[] = [
                 'id' => $product->id,
+                'user_id' => $product->user_id,
                 'name' => $product->name,
                 'country' => $product->country,
                 'document_id' => $product->document_id,
