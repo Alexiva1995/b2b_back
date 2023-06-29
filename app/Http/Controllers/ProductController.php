@@ -44,7 +44,7 @@ class ProductController extends Controller
             return response()->json(['status' => 'success', 'message' => 'Product Created!', 'data' => $product], 200);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response()->json(["message" => "Please try again later"], 500);
+            return response()->json(["message" => $th->getMessage()], 500);
         }
     }
 
@@ -95,7 +95,26 @@ class ProductController extends Controller
 
     public function listUserData()
     {
+        $data = [];
+
+        $products = Product::all();
+    
+        foreach ($products as $product) {
+            $data[] = [
+                'id' => $product->id,
+                'name' => $product->name,
+                'country' => $product->country,
+                'document_id' => $product->document_id,
+                'postal_code' => $product->postal_code,
+                'phone_number' => $product->phone_number,
+                'status' => $product->status,
+                'state' => $product->state,
+                'street' => $product->street,
+                'department' => $product->department,
+            ];
+        }
         
+        return response()->json($data, 200);
     }
 
 }
