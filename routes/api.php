@@ -18,6 +18,7 @@ use App\Http\Controllers\PackageMembershipController;
 use App\Http\Controllers\KycController;
 use App\Http\Controllers\TreController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\FiltersController;
 use App\Http\Controllers\ProductController;
 use App\Models\Order;
 use App\Models\User;
@@ -97,6 +98,11 @@ Route::middleware('jwt')->group(function () {
             Route::get('/count/user/matrix', 'countUserForMatrix');
 
             //fin
+        });
+
+        Route::controller(FiltersController::class)->group(function ($router) {
+            Route::get('filter/order/admin', 'filtersOrderAdmin');
+            Route::get('filter/product/admin', 'filtersProductAdmin');
         });
 
         Route::controller(TicketsController::class)->group(function ($router) {
@@ -236,7 +242,7 @@ Route::middleware('jwt')->group(function () {
         Route::get('/get-mt-summary', 'getMTSummary');
         Route::post('/create-mt-user', 'createMT5User');
 
-        
+
         //Ruta DashboardUser B2B obtener Balance del usuario
         Route::get('get/user/balance', 'getUserBalance');
         //Fin
@@ -264,7 +270,7 @@ Route::middleware('jwt')->group(function () {
         //Ruta Dashboard User B2B ultimos 10 retiros
         Route::get('get/monthly/last/orders','getLast10Withdrawals');
         //Fin
-        
+
         //Ruta Dashboard User B2B ultimos 10 retiros
         Route::get('get/user/orders','getUserOrders');
         //Fin
