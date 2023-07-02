@@ -18,6 +18,7 @@ use App\Http\Controllers\PackageMembershipController;
 use App\Http\Controllers\KycController;
 use App\Http\Controllers\TreController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\FiltersController;
 use App\Http\Controllers\ProductController;
 use App\Models\Order;
 use App\Models\User;
@@ -99,6 +100,11 @@ Route::middleware('jwt')->group(function () {
             //fin
         });
 
+        Route::controller(FiltersController::class)->group(function ($router) {
+            Route::get('filter/order/admin', 'filtersOrderAdmin');
+            Route::get('filter/product/admin', 'filtersProductAdmin');
+        });
+
         Route::controller(TicketsController::class)->group(function ($router) {
             Route::get('ticket-edit-admin/{id}', 'editAdmin');
             Route::post('ticket-update-admin/{id}', 'updateAdmin');
@@ -177,6 +183,16 @@ Route::middleware('jwt')->group(function () {
     });
 
     // USER
+
+    //Rutas producto B2B
+    Route::controller(ProductController::class)->group(function ($router){
+        Route::post('products/shipping','storeShippingData');
+        Route::get('products/list','listUsersProductData');
+        Route::get('products/user','listUserData');
+        Route::put('/products/{id}','updateProductStatus');
+    });
+    //Fin
+
     Route::controller(TreController::class)->group(function () {
         Route::get('/red-unilevel/{user_id}', 'index');
     });
@@ -202,14 +218,6 @@ Route::middleware('jwt')->group(function () {
         Route::get('ticket-show-user/{id}', 'showUser');
     });
 
-    //Rutas producto B2B
-    Route::controller(ProductController::class)->group(function ($router){
-        Route::post('products/shipping','storeShippingData');
-        Route::get('products/list','listUsersProductData');
-        Route::put('/products/{id}','updateProductStatus');
-    });
-    //Fin
-
     Route::controller(ReportsController::class)->group(function ($router) {
         Route::get('reports/comisions', 'commision');
         Route::get('reports/liquidactions', 'liquidaction');
@@ -234,7 +242,7 @@ Route::middleware('jwt')->group(function () {
         Route::get('/get-mt-summary', 'getMTSummary');
         Route::post('/create-mt-user', 'createMT5User');
 
-        
+
         //Ruta DashboardUser B2B obtener Balance del usuario
         Route::get('get/user/balance', 'getUserBalance');
         //Fin
@@ -262,7 +270,7 @@ Route::middleware('jwt')->group(function () {
         //Ruta Dashboard User B2B ultimos 10 retiros
         Route::get('get/monthly/last/orders','getLast10Withdrawals');
         //Fin
-        
+
         //Ruta Dashboard User B2B ultimos 10 retiros
         Route::get('get/user/orders','getUserOrders');
         //Fin

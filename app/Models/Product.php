@@ -13,6 +13,7 @@ class Product extends Model
 
     protected $fillable = [
         'name',
+        'user_id',
         'country',
         'document_id',
         'postal_code',
@@ -21,5 +22,7 @@ class Product extends Model
         'state',
         'street',
         'department',
+        'created_at',
+        'updated_at',
     ];
 }
