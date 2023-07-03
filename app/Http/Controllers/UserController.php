@@ -389,25 +389,19 @@ class UserController extends Controller
             'last_name' => $request->last_name,
             'email' => $request->email
         ];
-
         $url = config('services.backend_auth.base_uri');
-
+        
         $response = Http::withHeaders([
             'apikey' => config('services.backend_auth.key'),
-        ])->post("{$url}change-data", $data);
-
+            ])->post("{$url}change-data", $data);
+            
         $responseObject = $response->object();
-
         if ($responseObject->status) {
-            if ($user->status_change == 1) {
-                $request->email == null || $request->email == ''
-                    ? $user->email = $user->email
-                    : $user->email = $request->email;
-
-                $user->status_change = null;
-                $user->code_security = null;
-            }
-
+            $request->email == null || $request->email == ''
+                ? $user->email = $user->email
+                : $user->email = $request->email;
+            $user->status_change = null;
+            $user->code_security = null;
             if ($request->hasFile('profile_picture')) {
 
                 $picture = $request->file('profile_picture');
