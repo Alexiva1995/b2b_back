@@ -57,61 +57,19 @@ class ProductController extends Controller
 
     public function listUsersProductData(Request $request)
     {
-        // $data = [];
-
-        // $products = Product::all();
-
-        // foreach ($products as $product) {
-        //     $data[] = [
-        //         'id' => $product->id,
-        //         'user_id' => $product->user_id,
-        //         'name' => $product->name,
-        //         'country' => $product->country,
-        //         'document_id' => $product->document_id,
-        //         'postal_code' => $product->postal_code,
-        //         'phone_number' => $product->phone_number,
-        //         'status' => $product->status,
-        //         'state' => $product->state,
-        //         'street' => $product->street,
-        //         'department' => $product->department,
-        //         'created_at' => $product->created_at,
-        //         'updated_at' => $product->updated_at,
-        //     ];
-        // }
-
-        // return response()->json($data, 200);
 
         $filter = $request->dataToProduct;
+        $query = Product::with('user');
 
-        $query = Product::query();
+        $query->when(isset($filter['user_id']), function ($q) use ($filter) {
+            $q->where('user_id', $filter['user_id']);
+        });
 
-        foreach ([
-            'name',
-            'user_id',
-            'country',
-            'document_id',
-            'postal_code',
-            'phone_number',
-            'status',
-            'state',
-            'street',
-            'department',
-            'created_at',
-            'updated_at',
-
-        ] as $field) {
-            $value = $filter[$field] ?? null;
-
-            if ($value !== null) {
-                if (in_array($field, ['name', 'street', 'department'])) {
-                    $query->where($field, 'like', '%' . $value . '%');
-                } elseif (in_array($field, ['created_at', 'updated_at'])) {
-                    $query->whereDate($field, $value);
-                } else {
-                    $query->where($field, $value);
-                }
-            }
-        }
+        $query->when(isset($filter['name']), function ($q) use ($filter) {
+            $q->whereHas('user', function ($q) use ($filter) {
+                $q->where('name', 'like', '%' . $filter['name'] . '%');
+            });
+        });
 
         $data = $query->get();
 
