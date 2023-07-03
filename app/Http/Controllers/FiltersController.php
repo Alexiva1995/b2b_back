@@ -45,9 +45,7 @@ class FiltersController extends Controller
             'status',
             'state',
             'street',
-            'department',
-            'created_at',
-            'updated_at',
+
         ] as $field) {
             $value = $filter[$field] ?? null;
 
