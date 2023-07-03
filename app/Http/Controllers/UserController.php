@@ -380,7 +380,11 @@ class UserController extends Controller
             ],
             'phone'       => 'nullable',
             'prefix_id'   => 'nullable',
-            'profile_picture' => 'required'
+            'profile_picture' =>  [
+                'required',
+                'image'
+            ]
+                
         ]);
 
         $data = [
