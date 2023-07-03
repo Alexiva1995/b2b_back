@@ -197,16 +197,16 @@ Route::middleware('jwt')->group(function () {
             Route::post('/coupon/validate', 'validateCoupon');
         }
     );
-    Route::controller(TicketsController::class)->group(function ($router) {
-        Route::get('get-tickets', 'getTickets');
-        Route::post('create-ticket', 'createTicket');
-        Route::put('close-ticket', 'closeTicket');
-        Route::post('create-message', 'createMessage');
+    // Route::controller(TicketsController::class)->group(function ($router) {
+    //     Route::get('get-tickets', 'getTickets');
+    //     Route::post('create-ticket', 'createTicket');
+    //     Route::put('close-ticket', 'closeTicket');
+    //     Route::post('create-message', 'createMessage');
 
-        Route::get('edit-ticket/{id}', 'editTicket');
-        Route::post('ticket-update-user/{id}', 'updateUser');
-        Route::get('ticket-show-user/{id}', 'showUser');
-    });
+    //     Route::get('edit-ticket/{id}', 'editTicket');
+    //     Route::post('ticket-update-user/{id}', 'updateUser');
+    //     Route::get('ticket-show-user/{id}', 'showUser');
+    // });
 
     Route::controller(ReportsController::class)->group(function ($router) {
         Route::get('reports/comisions', 'commision');
@@ -272,7 +272,10 @@ Route::middleware('jwt')->group(function () {
         Route::post('add-balance-to-user', 'addBalanceToUser');
         Route::get('get-refunds', 'getRefunds');
         Route::get('/refunds-list/{id}', 'refundsList');
-        Route::get('/get-wallet-comissions-list', 'getWallets');
+        //ruta comision user b2b
+        Route::get('/wallet/comissions/list/user', 'getWallets');
+        Route::get('/wallet/comissions/list/admin', 'getWalletsAdmin');
+        //fin
         Route::get('/get-total-available', 'getTotalAvailable');
         Route::get('/get-total-directs', 'getTotalDirects');
         Route::get('/check-wallet-user', 'checkWalletUser');
