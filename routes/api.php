@@ -177,7 +177,7 @@ Route::middleware('jwt')->group(function () {
     //Rutas producto B2B
     Route::controller(ProductController::class)->group(function ($router){
         Route::post('products/shipping','storeShippingData');
-        Route::post('products/list','listUsersProductData');
+        Route::get('products/list','listUsersProductData');
         Route::get('products/user','listUserData');
         Route::put('/products/{id}','updateProductStatus');
     });
