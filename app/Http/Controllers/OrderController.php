@@ -16,11 +16,17 @@ class OrderController extends Controller
 	{
 		$this->orderRepository = $orderRepository;
 	}
-    public function getOrdersAdmin() {
-        $orders = Order::with('user')->with('project')->with('packageMembership')->get();
+    public function getOrdersAdmin(Request $request)
+    {
+
+        $filter = $request->get('dataFilter');
+
+        $orders = Order::with(['user','project','packageMembership'])
+        ->filter($filter)
+        ->get();
 
         $data = array();
-        foreach ($orders as $order) {            
+        foreach ($orders as $order) {
             if (isset($order->project)) {
                 $phase = ($order->project->phase2 == null && $order->project->phase1 == null)
                 ? ""
@@ -52,7 +58,7 @@ class OrderController extends Controller
     }
     public function getOrdersDownload() {
         $orders = $this->orderRepository->getOrders();
-		
+
 		foreach($orders as $order)
 		{
 			if (isset($order->project)) {
@@ -125,7 +131,7 @@ class OrderController extends Controller
                 'sponsor_email' => $order->user->sponsor->email,
                 'date' => $order->created_at->format('Y-m-d')
             ];
-            
+
             array_push($data, $object);
         }
         return response()->json($data, 200);

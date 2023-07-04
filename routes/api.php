@@ -154,7 +154,9 @@ Route::middleware('jwt')->group(function () {
         });
 
         Route::controller(OrderController::class)->group(function ($router) {
-            // Route::get('get-orders', 'getOrdersAdmin');
+            //b2b ordenes admin
+                Route::get('get/orders', 'getOrdersAdmin');
+            //
             Route::post('filter-orders', 'filterOrders');
             Route::get('get-orders-download', 'getOrdersDownload');
         });
