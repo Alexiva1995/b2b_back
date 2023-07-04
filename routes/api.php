@@ -320,7 +320,8 @@ Route::middleware('jwt')->group(function () {
         Route::get('get-most-download-doc', 'getMostDownloadDoc');
     });
     Route::controller(LearningController::class)->group(function ($router) {
-        Route::get('learnings', 'index');
+        Route::get('learnings-videos', 'videos');
+        Route::get('learnings-links', 'links');
         Route::post('download-learning', 'download');
     });
 });

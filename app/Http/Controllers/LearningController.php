@@ -9,8 +9,12 @@ use App\Models\Document;
 
 class LearningController extends Controller
 {
-    public function index () {
-        $learning = Learning::all();
+    public function videos () {
+        $learning = Learning::where('type', '1')->get();
+        return response()->json($learning, 200);
+    }
+    public function links () {
+        $learning = Learning::where('type', '2')->get();
         return response()->json($learning, 200);
     }
     public function documentStore(Request $request) {
