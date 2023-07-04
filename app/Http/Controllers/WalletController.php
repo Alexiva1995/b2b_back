@@ -211,7 +211,7 @@ class WalletController extends Controller
             $user = User::findOrFail($request->user_id);
         }
 
-        $wallets = WalletComission::with(['user'])->where('user_id', $user->id)->get();
+        $data = WalletComission::with(['user'])->where('user_id', $user->id)->get();
 
         // $data = new Collection();
         // foreach ($wallets as $wallet) {

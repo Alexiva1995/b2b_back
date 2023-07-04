@@ -10,6 +10,7 @@ use App\Models\ProfileLog;
 use App\Models\WalletComission;
 use App\Models\Order;
 use App\Models\Formulary;
+use App\Models\Inversion;
 use App\Rules\ChangePassword;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -35,13 +36,12 @@ class UserController extends Controller
         $user = Auth::user();
 
         $data = WalletComission::select('amount', 'created_at')
-        ->where('user_id', $user->id)
-        ->where('available_withdraw', '=', 0)
-        ->take(10)
-        ->get();
+            ->where('user_id', $user->id)
+            ->where('available_withdraw', '=', 0)
+            ->take(10)
+            ->get();
 
         return response()->json($data, 200);
-
     }
 
     public function getUserOrders()
@@ -53,19 +53,19 @@ class UserController extends Controller
         $orders = $user->orders;
 
         foreach ($orders as $order) {
-			$data[] = [
-				'id' => $order->id,
-				'user_id' => $order->user->id,
-				'user_name' => strtolower(explode(" ", $order->user->name)[0] . " " . explode(" ", $order->user->last_name)[0]),
-				'status' => $order->status,
-				'description' => $order->packagesB2B->package,
-				'hash_id' => $order->hash,
-				'amount' => round($order->amount, 2),
-				'date' => $order->created_at->format('Y-m-d'),
-				'update_date' => $order->updated_at	->format('Y-m-d')
-			];
-		}
-		return response()->json($data, 200);
+            $data[] = [
+                'id' => $order->id,
+                'user_id' => $order->user->id,
+                'user_name' => strtolower(explode(" ", $order->user->name)[0] . " " . explode(" ", $order->user->last_name)[0]),
+                'status' => $order->status,
+                'description' => $order->packagesB2B->package,
+                'hash_id' => $order->hash,
+                'amount' => round($order->amount, 2),
+                'date' => $order->created_at->format('Y-m-d'),
+                'update_date' => $order->updated_at->format('Y-m-d')
+            ];
+        }
+        return response()->json($data, 200);
     }
 
     public function getMonthlyOrders()
@@ -74,12 +74,11 @@ class UserController extends Controller
         $user = Auth::user();
 
         $data = Order::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, COUNT(*) AS total_orders')
-        ->where('user_id', $user->id)
-        ->groupBy('year', 'month')
-        ->get();
+            ->where('user_id', $user->id)
+            ->groupBy('year', 'month')
+            ->get();
 
         return response()->json($data, 200);
-
     }
 
     public function getMonthlyEarnigs()
@@ -87,12 +86,11 @@ class UserController extends Controller
         $user = Auth::user();
 
         $data = WalletComission::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount) AS total_amount')
-        ->where('user_id', $user->id)
-        ->groupBy('year', 'month')
-        ->get();
+            ->where('user_id', $user->id)
+            ->groupBy('year', 'month')
+            ->get();
 
         return response()->json($data, 200);
-
     }
 
     public function getMonthlyCommissions()
@@ -100,12 +98,11 @@ class UserController extends Controller
         $user = Auth::user();
 
         $data = WalletComission::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount_available) AS total_amount')
-        ->where('user_id', $user->id)
-        ->groupBy('year', 'month')
-        ->get();
+            ->where('user_id', $user->id)
+            ->groupBy('year', 'month')
+            ->get();
 
         return response()->json($data, 200);
-
     }
 
     public function myBestMatrixData()
@@ -123,7 +120,7 @@ class UserController extends Controller
         $earning = 0;
 
         $earning = WalletComission::where('user_id', $user->id)
-        ->sum('amount');
+            ->sum('amount');
 
         $data = [
             'id' => $user->id,
@@ -138,33 +135,33 @@ class UserController extends Controller
     }
 
 
-    
+
 
     public function getUserBalance()
     {
         $user = Auth::user();
         $data = 0;
-    
+
         $walletCommissions = WalletComission::where('user_id', $user->id)
             ->where(function ($query) {
                 $query->where('avaliable_withdraw', 1)
                     ->orWhere('status', 0);
             })
             ->get();
-    
+
         foreach ($walletCommissions as $walletCommission) {
             $data += $walletCommission->amount_available;
         }
-    
+
         return response()->json($data, 200);
     }
-    
+
 
     public function getUserBonus()
     {
         $user = Auth::user();
         $data = 0;
-    
+
         $walletCommissions = WalletComission::where('user_id', $user->id)
             ->where(function ($query) {
                 $query->where('avaliable_withdraw', 1)
@@ -172,14 +169,14 @@ class UserController extends Controller
             })
             ->where('type', 0)
             ->get();
-    
+
         foreach ($walletCommissions as $walletCommission) {
             $data += $walletCommission->amount_available;
         }
-    
+
         return response()->json($data, 200);
     }
-    
+
 
     public function getUsersWalletsList()
     {
@@ -380,7 +377,11 @@ class UserController extends Controller
             ],
             'phone'       => 'nullable',
             'prefix_id'   => 'nullable',
-            'profile_picture' => 'required'
+            'profile_picture' =>  [
+                'required',
+                'image'
+            ]
+
         ]);
 
         $data = [
@@ -389,7 +390,6 @@ class UserController extends Controller
             'last_name' => $request->last_name,
             'email' => $request->email
         ];
-
         $url = config('services.backend_auth.base_uri');
 
         $response = Http::withHeaders([
@@ -397,17 +397,12 @@ class UserController extends Controller
         ])->post("{$url}change-data", $data);
 
         $responseObject = $response->object();
-
         if ($responseObject->status) {
-            if ($user->status_change == 1) {
-                $request->email == null || $request->email == ''
-                    ? $user->email = $user->email
-                    : $user->email = $request->email;
-
-                $user->status_change = null;
-                $user->code_security = null;
-            }
-
+            $request->email == null || $request->email == ''
+                ? $user->email = $user->email
+                : $user->email = $request->email;
+            $user->status_change = null;
+            $user->code_security = null;
             if ($request->hasFile('profile_picture')) {
 
                 $picture = $request->file('profile_picture');
@@ -552,13 +547,21 @@ class UserController extends Controller
 
         return response()->json('Code send succesfully', 200);
     }
-
+    /**
+     * Obtiene la lista de los usuarios para el admin b2b
+     */
     public function getUsers()
     {
-        $users = User::where('admin', '0')->get()->values('id', 'user_name', 'email', 'affiliate', 'created_at');
+        $users = User::where('admin', '0')->withSum(['wallets as total_gain' => function ($query) {
+            $query->where('status', WalletComission::STATUS_AVAILABLE);
+        }], 'amount_available')
+            ->with('inversions', function ($query) {
+                $query->where('status', Inversion::STATUS_APPROVED)->orderBy('id', 'desc')->first();
+            })->get();
 
         return response()->json($users, 200);
     }
+
     public function getUsersDownload()
     {
         $users = User::where('admin', '0')->get()->values('id', 'user_name', 'email', 'affiliate', 'created_at');
@@ -673,7 +676,7 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        if(is_null($user)){
+        if (is_null($user)) {
             return response()->json(['message' => 'User not found'], 400);
         }
 
@@ -683,13 +686,14 @@ class UserController extends Controller
 
         return response()->json($user, 200);
     }
-    
-    public function getMT5UserList(Request $request) {
+
+    public function getMT5UserList(Request $request)
+    {
         $brokeree = new BrokereeService();
-        
+
         $response = $brokeree->getUsers($request->isAccountReal);
 
-        if(isset($response['error']) &&  $response['error'] == TRUE) {
+        if (isset($response['error']) &&  $response['error'] == TRUE) {
             return response()->json($response, 400);
         }
         $user = JWTAuth::parseToken()->authenticate();
@@ -697,14 +701,15 @@ class UserController extends Controller
         return response()->json(['data' => $response['data'], 'user' => $user], 200);
     }
 
-    public function getMT5User(Request $request) {
+    public function getMT5User(Request $request)
+    {
         $brokeree = new BrokereeService();
-        
+
         // $login = isset($request->login) ? $request->login : env('BROKEREE_TEST_LOGIN', '2100228613');
 
         $user = JWTAuth::parseToken()->authenticate();
 
-        if(is_null($user)) {
+        if (is_null($user)) {
             return response()->json(['status' => 'error', 'message' => 'User not found'], 401);
         }
 
@@ -717,7 +722,7 @@ class UserController extends Controller
             ->where('users.id', '=', $user->id)
             // ->where('formularies.login', '=', $login)
             ->get();
-        
+
 
         if (is_null($accountPlanResponse)) {
             return response()->json(['message' => 'not found MT credentials for selected user', 'response' => $accountPlanResponse], 400);
@@ -725,7 +730,7 @@ class UserController extends Controller
 
         $planInfo = $accountPlanResponse->get(0);
 
-        if(is_null($planInfo)) {
+        if (is_null($planInfo)) {
             return response()->json(['message' => 'not found MT credentials for selected user', 'response' => $accountPlanResponse], 400);
         }
 
@@ -747,7 +752,7 @@ class UserController extends Controller
 
         if ($planInfo->phase2 == '1') {
             $planInfo->package_name = $planInfo->package_name . ' Phase 2';
-        } else if($planInfo->phase1 == '1') {
+        } else if ($planInfo->phase1 == '1') {
             $planInfo->package_name = $planInfo->package_name . ' Phase 1';
         }
 
@@ -755,58 +760,59 @@ class UserController extends Controller
 
         $login = $planInfo->login;
         $isAccountReal = in_array(intval($planInfo->type), [3]);
-        
+
         $userResponse = $brokeree->getUser($login, $isAccountReal);
 
-        if(is_null($userResponse)) {
+        if (is_null($userResponse)) {
             return response()->json(['message' => 'error buscando cuenta'], 400);
         }
 
-        if(isset($userResponse['error']) && $userResponse['error'] == TRUE) {
+        if (isset($userResponse['error']) && $userResponse['error'] == TRUE) {
             return response()->json($userResponse, 400);
         }
 
         $accountResponse = $brokeree->getAccount($login, $isAccountReal);
 
-        if(is_null($accountResponse)) {
+        if (is_null($accountResponse)) {
             return response()->json(['message' => 'error buscando cuenta'], 400);
         }
 
-        if(isset($accountResponse['error']) && $accountResponse['error'] == TRUE) {
+        if (isset($accountResponse['error']) && $accountResponse['error'] == TRUE) {
             return response()->json($accountResponse, 400);
         }
 
         $startDate = date("Y-m-d", strtotime($planInfo->created_at));
         $ordersResponse = $brokeree->getFirstTrade($login, $startDate, $isAccountReal);
 
-        if(is_null($ordersResponse)) {
+        if (is_null($ordersResponse)) {
             return response()->json(['message' => 'error buscando ordenes', 'error' => TRUE], 400);
         }
 
-        if(isset($ordersResponse['error']) && $ordersResponse['error'] == TRUE) {
+        if (isset($ordersResponse['error']) && $ordersResponse['error'] == TRUE) {
             return response()->json($ordersResponse, 400);
         }
 
         $startDate = !is_null($ordersResponse['data']) ? $ordersResponse['data'] : '-';
-        $endDate = !is_null($ordersResponse['data']) ? date('Y-m-d', strtotime($ordersResponse['data']. ' + 30 days')) : '-';
+        $endDate = !is_null($ordersResponse['data']) ? date('Y-m-d', strtotime($ordersResponse['data'] . ' + 30 days')) : '-';
 
         return response()->json([
-            'mt_account' => $accountResponse['data'], 
-            'mt_user' => $userResponse['data'], 
-            'info' => $planInfo, 
+            'mt_account' => $accountResponse['data'],
+            'mt_user' => $userResponse['data'],
+            'info' => $planInfo,
             'start' => $startDate,
-            'end' => $endDate, 
+            'end' => $endDate,
             'login' => $login
         ], 200);
         // return response()->json(['mt_user' => $userResponse['data'], 'info' => $planInfo, 'login' => $login], 200);
     }
 
-    public function getUserMTAccounts(Request $request) {
+    public function getUserMTAccounts(Request $request)
+    {
         $brokeree = new BrokereeService();
 
         $user = JWTAuth::parseToken()->authenticate();
 
-        if(is_null($user)) {
+        if (is_null($user)) {
             return response()->json(['status' => 'error', 'message' => 'User not found'], 401);
         }
 
@@ -824,45 +830,47 @@ class UserController extends Controller
         return response()->json(['data' => $list, 'user' => $user, 'formulary' => $formulary], 200);
     }
 
-    public function createMT5User(Request $request) {
+    public function createMT5User(Request $request)
+    {
         $brokeree = new BrokereeService();
 
         $user = JWTAuth::parseToken()->authenticate();
 
-        if(is_null($user)) {
+        if (is_null($user)) {
             return response()->json(['status' => 'error', 'message' => 'User not found'], 401);
         }
 
         $tradingUserInfo = $request->user;
-        
+
         $masterPassword = $request->masterPassword;
         $investorPassword = $request->investorPassword;
-        
+
         $createTradingUserResponse = $brokeree->createUser($tradingUserInfo, $masterPassword, $investorPassword, $request->isAccountReal);
 
-        if(is_null($createTradingUserResponse)) {
+        if (is_null($createTradingUserResponse)) {
             return response()->json(['message' => 'error creando usuario'], 400);
         }
 
-        if(isset($createTradingUserResponse['error']) && $createTradingUserResponse['error'] == TRUE) {
+        if (isset($createTradingUserResponse['error']) && $createTradingUserResponse['error'] == TRUE) {
             return response()->json($createTradingUserResponse, 400);
         }
 
         return response()->json(['mt_user' => $createTradingUserResponse['data']], 200);
     }
 
-    public function getMTSummary(Request $request) {
+    public function getMTSummary(Request $request)
+    {
         $brokeree = new BrokereeService();
         $user = JWTAuth::parseToken()->authenticate();
 
-        if(is_null($user)) {
+        if (is_null($user)) {
             return response()->json(['status' => 'error', 'message' => 'User not found'], 401);
         }
 
         $login = isset($request->login) ? $request->login : env('BROKEREE_TEST_LOGIN', '2100243098');
 
         try {
-            $order = Order::where('user_id', $user->id)->with('user', 'packageMembership', 'project')->orderBy('created_at','desc')->first();
+            $order = Order::where('user_id', $user->id)->with('user', 'packageMembership', 'project')->orderBy('created_at', 'desc')->first();
             $loginObject = Formulary::where('project_id', $order->project->id)->firstOrFail();
             $login = $loginObject->login;
         } catch (\Throwable $th) {
@@ -875,15 +883,14 @@ class UserController extends Controller
 
         $summaryResponse = $brokeree->getDeals($login, date("Y-m-d", strtotime($loginObject->created_at)), date("Y-m-d"), $isLiveUser);
 
-        if(is_null($summaryResponse)) {
+        if (is_null($summaryResponse)) {
             return response()->json(['message' => 'error buscando cuenta'], 400);
         }
 
-        if(isset($summaryResponse['error']) && $summaryResponse['error'] == TRUE) {
+        if (isset($summaryResponse['error']) && $summaryResponse['error'] == TRUE) {
             return response()->json($summaryResponse, 400);
         }
 
-        return response()->json(['data' => array_reverse($summaryResponse['data']), 'data2' => $loginObject->project->order, 'data3' => $loginObject->project->order->packageMembership ], 200);
+        return response()->json(['data' => array_reverse($summaryResponse['data']), 'data2' => $loginObject->project->order, 'data3' => $loginObject->project->order->packageMembership], 200);
     }
-    
 }
