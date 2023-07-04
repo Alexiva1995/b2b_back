@@ -26,6 +26,16 @@ class Order extends Model
         return $this->BelongsTo(User::class, 'user_id', 'id');
     }
 
+    public function scopeFilter($query, $filter)
+    {
+        if($filter)
+            $query->whereHas('user', function($query) use ($filter)
+            {
+                return $query->where('name', 'LIKE', "%$filter%");
+            })
+            ->orWhere('user_id', $filter);
+    }
+
     public function user_referral()
     {
         return $this->user()->referrals()->first();
@@ -52,7 +62,7 @@ class Order extends Model
        return  $this->hasOne(Package::class, 'id', 'membership_packages_id');
     }
     //Fin
-    
+
     public function packageMembership()
     {
         return $this->hasOne(PackageMembership::class, 'id', 'membership_packages_id');
