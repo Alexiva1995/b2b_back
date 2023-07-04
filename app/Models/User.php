@@ -241,4 +241,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->belongsToMany('App\Models\Coupon');
     }
+
+    public function inversions()
+    {
+        return $this->hasMany(Inversion::class);
+    }
 }

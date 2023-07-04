@@ -18,6 +18,7 @@ class Inversion extends Model
         'amount'
     ];
 
+    const STATUS_APPROVED = 1;
 
     public function order()
     {
