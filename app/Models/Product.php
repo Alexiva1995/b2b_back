@@ -31,4 +31,13 @@ class Product extends Model
         return $this->BelongsTo(User::class, 'user_id', 'id');
     }
 
+    public function scopeUsername($query, $filtre)
+    {
+        if($filtre)
+            $query->whereHas('user', function($query) use ($filtre)
+            {
+                return $query->whereIn('name', $filtre);
+            });
+    }
+
 }

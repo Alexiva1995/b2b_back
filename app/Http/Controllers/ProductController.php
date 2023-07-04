@@ -57,21 +57,12 @@ class ProductController extends Controller
 
     public function listUsersProductData(Request $request)
     {
+        $filter = $request->get('dataToProduct');
+        $query = Product::with('user')
+        ->username($filter)
+        ->get();
 
-        $filter = $request->dataToProduct;
-        $query = Product::with('user');
-
-        $query->when(isset($filter['user_id']), function ($q) use ($filter) {
-            $q->where('user_id', $filter['user_id']);
-        });
-
-        $query->when(isset($filter['name']), function ($q) use ($filter) {
-            $q->whereHas('user', function ($q) use ($filter) {
-                $q->where('name', 'like', '%' . $filter['name'] . '%');
-            });
-        });
-
-        $data = $query->get();
+        $data = $query;
 
         return response()->json($data, 200);
     }
