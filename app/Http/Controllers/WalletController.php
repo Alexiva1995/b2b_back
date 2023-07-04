@@ -39,7 +39,7 @@ class WalletController extends Controller
             $type = '3'; // refund
         }
         $description = '';
-        
+
         if($selectedType == 3) {
             $description = "Refund";
         }
@@ -211,44 +211,50 @@ class WalletController extends Controller
             $user = User::findOrFail($request->user_id);
         }
 
-        $wallets = WalletComission::with(['order.packageMembership'])->where('user_id', $user->id)->get();
+        $data = WalletComission::with(['user'])->where('user_id', $user->id)->get();
 
-        $data = new Collection();
-        foreach ($wallets as $wallet) {
-            $buyer = User::find($wallet->buyer_id);
+        // $data = new Collection();
+        // foreach ($wallets as $wallet) {
+        //     $buyer = User::find($wallet->buyer_id);
 
-            switch ($wallet->type) {
-                case '0':
-                    $type = 'Referral I';
-                    break;
+        //     switch ($wallet->type) {
+        //         case '0':
+        //             $type = 'Referral I';
+        //             break;
 
-                case '1':
-                    $type = 'Assigned';
-                    break;
+        //         case '1':
+        //             $type = 'Assigned';
+        //             break;
 
-                case '2':
-                    $type = 'Referral II';
-                    break;
+        //         case '2':
+        //             $type = 'Referral II';
+        //             break;
 
-                default:
-                    $type = 'Refund';
-                    break;
-            }
+        //         default:
+        //             $type = 'Refund';
+        //             break;
+        //     }
 
-            $object = new \stdClass();
-            $object->id = $wallet->id;
-            if($wallet->order_id) {
-                $object->buyer = 'FYT ' . $wallet->order->packageMembership->getTypeName();
-            } else {
-                $object->buyer = ucwords(strtolower($buyer->name . " " . $buyer->last_name));
-            }
-            $object->type = $type;
-            $object->amount = $wallet->amount;
-            $object->status = $wallet->status;
-            $object->date = $wallet->created_at;
-            $object->program = $wallet->order != null ? "{$wallet->order->packageMembership->getTypeName()} {$wallet->order->packageMembership->account}" : "";
-            $data->push($object);
-        }
+        //     $object = new \stdClass();
+        //     $object->id = $wallet->id;
+        //     if($wallet->order_id) {
+        //         $object->buyer = 'FYT ' . $wallet->order->packageMembership->getTypeName();
+        //     } else {
+        //         $object->buyer = ucwords(strtolower($buyer->name . " " . $buyer->last_name));
+        //     }
+        //     $object->type = $type;
+        //     $object->amount = $wallet->amount;
+        //     $object->status = $wallet->status;
+        //     $object->date = $wallet->created_at;
+        //     $object->program = $wallet->order != null ? "{$wallet->order->packageMembership->getTypeName()} {$wallet->order->packageMembership->account}" : "";
+        //     $data->push($object);
+        // }
+        return response()->json($data, 200);
+    }
+
+    public function getWalletsAdmin()
+    {
+        $data = WalletComission::with(['user'])->get();
         return response()->json($data, 200);
     }
 

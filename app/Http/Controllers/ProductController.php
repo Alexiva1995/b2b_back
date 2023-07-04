@@ -24,16 +24,16 @@ class ProductController extends Controller
             'street' => 'required',
             'department' => 'required',
         ]);
-    
+
         if ($validator->fails()) {
             return response()->json(['message' => $validator->errors()->toArray()[0]], 400);
         }
-    
+
         try {
 
 
             DB::beginTransaction();
-    
+
             $product = Product::create([
                 'user_id' => $request->auth_user_id,
                 'name' => $request->name,
@@ -46,7 +46,7 @@ class ProductController extends Controller
                 'street' => $request->street,
                 'department' => $request->department,
             ]);
-    
+
             DB::commit();
             return response()->json(['status' => 'success', 'message' => 'Product Created!', 'data' => $product], 200);
         } catch (\Throwable $th) {
@@ -55,30 +55,16 @@ class ProductController extends Controller
         }
     }
 
-    public function listUsersProductData()
+    public function listUsersProductData(Request $request)
     {
-        $data = [];
+        $filter = $request->get('dataToProduct');
 
-        $products = Product::all();
-    
-        foreach ($products as $product) {
-            $data[] = [
-                'id' => $product->id,
-                'user_id' => $product->user_id,
-                'name' => $product->name,
-                'country' => $product->country,
-                'document_id' => $product->document_id,
-                'postal_code' => $product->postal_code,
-                'phone_number' => $product->phone_number,
-                'status' => $product->status,
-                'state' => $product->state,
-                'street' => $product->street,
-                'department' => $product->department,
-                'created_at' => $product->created_at,
-                'updated_at' => $product->updated_at,
-            ];
-        }
-        
+        $query = Product::with('user')
+        ->name($filter)
+        ->get();
+
+        $data = $query;
+
         return response()->json($data, 200);
     }
 
@@ -96,7 +82,7 @@ class ProductController extends Controller
             $product = Product::findOrFail($id);
             $product->status = $request->status;
             $product->save();
-            
+
             return response()->json(['status' => 'success', 'message' => 'Product status updated successfully'], 200);
         } catch (\Throwable $th) {
             return response()->json(["message" => "Product not found"], 404);
