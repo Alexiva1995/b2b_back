@@ -17,6 +17,10 @@ class LearningController extends Controller
         $learning = Learning::where('type', '2')->get();
         return response()->json($learning, 200);
     }
+    public function documents () {
+        $learning = Learning::where('type', '0')->get();
+        return response()->json($learning, 200);
+    }
     public function documentStore(Request $request) {
         $rules = [
             'document' => 'required|mimes:pdf|max:2048',

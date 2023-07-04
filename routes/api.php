@@ -324,6 +324,7 @@ Route::middleware('jwt')->group(function () {
     Route::controller(LearningController::class)->group(function ($router) {
         Route::get('learnings-videos', 'videos');
         Route::get('learnings-links', 'links');
+        Route::get('learnings-documents', 'documents');
         Route::post('download-learning', 'download');
     });
 });

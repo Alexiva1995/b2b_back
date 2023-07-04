@@ -19,6 +19,7 @@ return new class extends Migration
             $table->longText('description');
             $table->string('file_name');
             $table->string('path')->nullable();
+            $table->string('preview')->nullable();
             $table->tinyInteger('type')->comment('0 - Document, 1 - Video, 2 - Link');
             $table->timestamps();
         });
