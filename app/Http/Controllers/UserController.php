@@ -46,7 +46,10 @@ class UserController extends Controller
 
     public function getUserOrders()
     {
-        $user = Auth::user();
+        $user = JWTAuth::parseToken()->authenticate();
+        if (isset($request->id)) {
+            $user = User::find($request->id);
+        }
 
         $data = [];
 

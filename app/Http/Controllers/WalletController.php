@@ -249,7 +249,7 @@ class WalletController extends Controller
         //     $object->program = $wallet->order != null ? "{$wallet->order->packageMembership->getTypeName()} {$wallet->order->packageMembership->account}" : "";
         //     $data->push($object);
         // }
-        return response()->json($data, 200);
+        return response()->json($wallets, 200);
     }
 
     public function getWalletsAdmin()
