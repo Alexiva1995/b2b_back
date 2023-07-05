@@ -28,6 +28,7 @@ class WalletComission extends Model
         'order_id',
         'liquidado'
     ];
+    const STATUS_AVAILABLE = 0;
 
     // protected function status(): Attribute {
     //     return new Attribute(
