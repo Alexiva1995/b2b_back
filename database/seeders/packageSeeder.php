@@ -31,7 +31,7 @@ class packageSeeder extends Seeder
             'description' => '4 pagos de 20 USD',
             'level' => 2,
             'type' => 0,
-            'amount' => 20, 
+            'amount' => 80, 
             'gain' => 30, 
         ]);
 
@@ -41,7 +41,7 @@ class packageSeeder extends Seeder
             'description' => '8 pagos de 50 USD',
             'level' => 3,
             'type' => 0,
-            'amount' => 20, 
+            'amount' => 400, 
             'gain' => 300, 
         ]);
 
@@ -51,7 +51,7 @@ class packageSeeder extends Seeder
             'description' => '16 pagos de 100 USD',
             'level' => 4,
             'type' => 0,
-            'amount' => 20, 
+            'amount' => 1600, 
             'gain' => 1400, 
         ]);
 
@@ -71,7 +71,7 @@ class packageSeeder extends Seeder
             'description' => '4 pagos de 200 USD',
             'level' => 2,
             'type' => 0,
-            'amount' => 200, 
+            'amount' => 800, 
             'gain' => 300, 
         ]);
 
@@ -81,7 +81,7 @@ class packageSeeder extends Seeder
             'description' => '8 pagos de 500 USD',
             'level' => 3,
             'type' => 0,
-            'amount' => 200, 
+            'amount' => 4000, 
             'gain' => 3000, 
         ]);
 
@@ -91,7 +91,7 @@ class packageSeeder extends Seeder
             'description' => '16 pagos de 1000 USD',
             'level' => 4,
             'type' => 0,
-            'amount' => 200, 
+            'amount' => 16000, 
             'gain' => 14000, 
         ]);
 
@@ -111,7 +111,7 @@ class packageSeeder extends Seeder
             'description' => '4 pagos 2000 USD',
             'level' => 2,
             'type' => 0,
-            'amount' => 2000, 
+            'amount' => 8000, 
             'gain' => 3000, 
         ]);
 
@@ -121,7 +121,7 @@ class packageSeeder extends Seeder
             'description' => '8 pagos de 5000 USD',
             'level' => 3,
             'type' => 0,
-            'amount' => 2000, 
+            'amount' => 40000, 
             'gain' => 30000, 
         ]);
 
@@ -131,16 +131,7 @@ class packageSeeder extends Seeder
             'description' => '16 pagos de 10000 USD',
             'level' => 4,
             'type' => 0,
-            'amount' => 2000, 
-            'gain' => 140000, 
-        ]);
-        Package::create([
-            'id' => 13,
-            'package' => 'Mineria',
-            'description' => '',
-            'level' => 4,
-            'type' => 0,
-            'amount' => 2000, 
+            'amount' => 160000, 
             'gain' => 140000, 
         ]);
     }
