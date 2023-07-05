@@ -9,7 +9,7 @@ class Membership extends Model
 {
     use HasFactory;
 
-    protected $table = 'market';
+    
 
     protected $fillable = [
         'membership_id',
