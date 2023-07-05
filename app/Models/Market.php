@@ -5,19 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Membership extends Model
+class Market extends Model
 {
     use HasFactory;
 
     protected $table = 'market';
 
     protected $fillable = [
-        'membership_id',
-        'order_id',
-        'status'
+        'product_name',
+        'amount',
     ];
-    public function liquidactions()
-    {
-        return $this->hasMany(Liquidaction::class);
-    }
+
 }
