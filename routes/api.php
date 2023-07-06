@@ -19,6 +19,7 @@ use App\Http\Controllers\KycController;
 use App\Http\Controllers\TreController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\FiltersController;
+use App\Http\Controllers\MarketController;
 use App\Http\Controllers\ProductController;
 use App\Models\Order;
 use App\Models\User;
@@ -270,6 +271,12 @@ Route::middleware('jwt')->group(function () {
     });
     Route::apiResource('users', UserController::class);
 
+    //Ruta B2B para obtener datos para Cyborg y compra de Cyborg
+    Route::controller(MarketController::class)->group(function($router){
+        Route::get('/cyborg', 'getAllCyborgs');
+        Route::post('/cyborg/purchase', 'purchaseCyborg');
+    });
+    //Fin
     Route::controller(WalletController::class)->group(function ($router) {
         Route::post('add-balance-to-user', 'addBalanceToUser');
         Route::get('get-refunds', 'getRefunds');
