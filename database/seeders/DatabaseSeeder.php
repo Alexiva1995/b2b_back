@@ -33,5 +33,6 @@ class DatabaseSeeder extends Seeder
         // $this->call(MembershipSeeder::class);
         // $this->call(LiquidactionSeeder::class);
         // $this->call(DocumentSeeder::class);
+        $this->call(marketSeeder::class);
     }
 }
