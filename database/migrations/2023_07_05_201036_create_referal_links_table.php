@@ -11,7 +11,6 @@ class CreateReferalLinksTable extends Migration
         Schema::create('referal_links', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('father_id');
             $table->string('link_code');
             $table->unsignedBigInteger('cyborg_id');
             $table->boolean('right')->default(false);
@@ -19,7 +18,6 @@ class CreateReferalLinksTable extends Migration
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('father_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('cyborg_id')->references('id')->on('market')->onDelete('cascade');
         });
     }
