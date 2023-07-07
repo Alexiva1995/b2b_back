@@ -195,7 +195,8 @@ Route::middleware('jwt')->group(function () {
         Route::get('/get/withdrawals', 'getWithdrawals');
         Route::get('/get/user/code','generateCode');
         Route::post('/save/user/wallet','saveWallet');
-        Route::post('/withdrawal','processWithdrawal');
+        Route::post('/withdrawal/process/user','processWithdrawal');
+        Route::post('/withdrawal','withdrawal');
         Route::get('get/withdrawals/download', 'getWithdrawalsDownload');
 
     });
