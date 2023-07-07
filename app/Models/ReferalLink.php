@@ -17,10 +17,17 @@ class ReferalLink extends Model
         'left',
     ];
 
+    const STATUS_ACTIVE = 1;
+    const STATUS_INACTIVE = 0;
+
     public function cyborg()
     {
         return $this->belongsTo(Market::class, 'cyborg_id');
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
     
 }
