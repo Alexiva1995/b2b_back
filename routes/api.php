@@ -189,10 +189,18 @@ Route::middleware('jwt')->group(function () {
     Route::controller(TreController::class)->group(function () {
         Route::get('/red-unilevel/{user_id}', 'index');
     });
+
+    //Ruta de retiros B2B
     Route::controller(WithdrawalController::class)->group(function () {
-        Route::get('get-withdrawals', 'getWithdrawals');
-        Route::get('get-withdrawals-download', 'getWithdrawalsDownload');
+        Route::get('/get/withdrawals', 'getWithdrawals');
+        Route::get('/get/user/code','generateCode');
+        Route::post('/save/user/wallet','saveWallet');
+        Route::post('/withdrawal','processWithdrawal');
+        Route::get('get/withdrawals/download', 'getWithdrawalsDownload');
+
     });
+    //Fin
+
     Route::controller(CouponController::class)->group(
         function ($router) {
             Route::get('/coupon/check', 'checkUserCouponActive');
@@ -240,6 +248,10 @@ Route::middleware('jwt')->group(function () {
         Route::get('get/user/balance', 'getUserBalance');
         //Fin
 
+        //Ruta DashboardUser B2B obtener Retiros del usuario
+        Route::get('get/user/withdrawals', 'getAllWithdrawals');
+        //Fin
+
         //Ruta Dashboard User B2B obtener bonos matrix del user
         Route::get('get/user/bonus','getUserBonus');
         //Fin
@@ -285,6 +297,14 @@ Route::middleware('jwt')->group(function () {
         Route::get('/wallet/comissions/list/user', 'getWallets');
         Route::get('/wallet/comissions/list/admin', 'getWalletsAdmin');
         //fin
+
+        //Ruta Wallet b2b
+        Route::get('/wallet/Data/list/user', 'walletUserDataList');
+        Route::get('/wallet/Data/list/admin', 'walletAdminDataList');
+        Route::get('/wallet/Data/user/gain', 'getMonthlyGain');
+        Route::get('/wallet/Data/user/charts', 'getChartData');
+        //
+
         Route::get('/get-total-available', 'getTotalAvailable');
         Route::get('/get-total-directs', 'getTotalDirects');
         Route::get('/check-wallet-user', 'checkWalletUser');
