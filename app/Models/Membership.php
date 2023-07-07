@@ -9,6 +9,8 @@ class Membership extends Model
 {
     use HasFactory;
 
+    
+
     protected $fillable = [
         'membership_id',
         'order_id',

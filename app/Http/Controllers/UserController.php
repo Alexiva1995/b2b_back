@@ -556,7 +556,7 @@ class UserController extends Controller
             $query->where('status', WalletComission::STATUS_AVAILABLE);
         }], 'amount_available')
             ->with('inversions', function ($query) {
-                $query->where('status', Inversion::STATUS_APPROVED)->orderBy('id', 'desc')->first();
+                $query->where('status', Inversion::STATUS_APPROVED)->orderBy('id', 'desc');
             })->get();
 
         return response()->json($users, 200);

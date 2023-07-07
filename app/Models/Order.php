@@ -89,4 +89,8 @@ class Order extends Model
                 return 'Rejected';
         }
     }
+    public function coinpaymentTransaction()
+    {
+        return $this->hasOne(CoinpaymentTransaction::class);
+    }
 }

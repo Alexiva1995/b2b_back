@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Project;
+use App\Models\ReferalLink;
 use App\Repositories\OrderRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class OrderController extends Controller
 {
@@ -135,5 +137,30 @@ class OrderController extends Controller
             array_push($data, $object);
         }
         return response()->json($data, 200);
+    }
+
+    public function processOrderApproved($order)
+    {
+        $code = $this->generateCode();
+
+        $referal = [
+            'user_id' => $order->user_id,
+            'link_code' => $code,
+            'cyborg_id' => $order->cyborg_id,
+            'right' => 0,
+            'left' => 0,
+        ];
+
+        ReferalLink::create($referal);
+    }
+
+    private function generateCode()
+    {
+        $code = Str::random(6);
+        if(ReferalLink::where('link_code', $code)->exists()){
+            $this->generateCode();
+        }
+
+        return $code;
     }
 }
