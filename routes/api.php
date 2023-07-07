@@ -169,9 +169,11 @@ Route::middleware('jwt')->group(function () {
             Route::post('documents-download', 'download');
         });
         Route::controller(LearningController::class)->group(function ($router) {
+            Route::get('learnings-all', 'learnings');
             Route::post('documents-store', 'documentStore');
             Route::post('video-store', 'videoStore');
             Route::post('link-store', 'linkStore');
+            Route::post('delete-learning', 'deleteLearning');
         });
         Route::controller(FutswapTransactionController::class)->group(
             function ($router) {

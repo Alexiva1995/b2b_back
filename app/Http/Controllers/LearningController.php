@@ -9,6 +9,41 @@ use App\Models\Document;
 
 class LearningController extends Controller
 {
+    public function learnings () {
+        $learning = Learning::all();
+        return response()->json($learning, 200);
+    }
+    public function deleteLearning (Request $request) {
+        try {
+            $learning = Learning::find($request->id);
+            $learning->delete();
+            return response()->json($learning, 200);
+        } catch (\Throwable $th) {
+            return response()->json($learning, 400);
+        }
+    }
+    // public function editLearning (Request $request) {
+    //     $rules = [
+    //         'id' => 'required',
+    //         'title' => 'required',
+    //         'description' => 'required'
+    //     ];
+
+    //     $message = [
+    //         'title.required' => 'The title is required and must be a pdf file',
+    //         'description.required' => 'The description is required and must be a pdf file',
+    //     ];
+    //     $validator = Validator::make($request->all(), $rules, $message);
+    //     try {
+    //         $learning = Learning::find($request->id);
+    //         $learning->title = $request->title;
+    //         $learning->description = $request->description;
+            
+    //         return response()->json($learning, 200);
+    //     } catch (\Throwable $th) {
+    //         return response()->json($learning, 400);
+    //     }
+    // }
     public function videos () {
         $learning = Learning::where('type', '1')->get();
         return response()->json($learning, 200);
