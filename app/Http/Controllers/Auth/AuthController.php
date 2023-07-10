@@ -34,6 +34,15 @@ class AuthController extends Controller
      */
     public function register(UserStoreRequest $request)
     {
+        // Aca valida si el link de referido es valido, es decir el link de la matrix.Si no lo es, termina la ejecución acá.
+        if($request->link_code) {
+            $sponsor_id = $this->checkMatrix($request->link_code);
+            if(!$sponsor_id) {
+                $response = ['Error' => 'Invalid referral link'];
+                return response()->json($response, 400);
+            }
+        } 
+        // En $sponsor_id esta el id del padre (el dueño del link) aplicar logica correspondiente y obtener el lado adecuado (tarea processes de auth back)
         $binary_side = 'R';
         $binary_id = 1;
 
@@ -409,12 +418,22 @@ class AuthController extends Controller
     {
         $link = ReferalLink::where('link_code', $code)->with('user')->first();
 
-        if(!$link) return response()->json(['message' => 'Invalid link code'], 400);
+        if(request()->wantsJson()) {
+            if(!$link) return response()->json(['message' => 'Invalid link code'], 400);
+    
+            if($link->status == ReferalLink::STATUS_INACTIVE ) {
+                return response()->json(['message' => 'This matrix is already complete'], 400);
+            }
+    
+            return response()->json(['sponsor' => $link->user], 200);
+        } else {
 
-        if($link->status == ReferalLink::STATUS_INACTIVE ) {
-            return response()->json(['message' => 'This matrix is already complete'], 400);
+            if(!$link) return false;
+    
+            if($link->status == ReferalLink::STATUS_INACTIVE ) return false;
+
+            return $link->user->id;
+            
         }
-
-        return response()->json(['sponsor' => $link->user], 200);
     }
 }
