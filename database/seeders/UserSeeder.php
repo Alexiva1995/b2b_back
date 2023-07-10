@@ -45,49 +45,49 @@ class UserSeeder extends Seeder
             'binary_id' => 2,
         ]);
 
-        // User::create([
-        //     'name'=> 'user3',
-        //     'last_name'=> 'user3',
-        //     'email'=> 'user3@fyt.com',
-        //     'user_name'=> 'user3',
-        //     'admin'=> '0',
-        //     'kyc' => '0',
-        //     // 'password' => Hash::make('123456789'),
-        //     'email_verified_at' => now(),
-        //     'status' => '1',
-        //     'buyer_id' => '2',
-        //     'affiliate' => '1',
-        //     'binary_id' => 2,
-        // ]);
+         User::create([
+             'name'=> 'user3',
+             'last_name'=> 'user3',
+             'email'=> 'user3@fyt.com',
+             'user_name'=> 'user3',
+             'admin'=> '0',
+             'kyc' => '0',
+             // 'password' => Hash::make('123456789'),
+             'email_verified_at' => now(),
+             'status' => '1',
+             'buyer_id' => '2',
+             'affiliate' => '1',
+             'binary_id' => 2,
+         ]);
 
-        // User::create([
-        //     'name'=> 'user4',
-        //     'last_name'=> 'user4',
-        //     'email'=> 'user4@fyt.com',
-        //     'user_name'=> 'user4',
-        //     'admin'=> '0',
-        //     'kyc' => '1',
-        //     // 'password' => Hash::make('123456789'),
-        //     'email_verified_at' => now(),
-        //     'status' => '1',
-        //     'buyer_id' => '3',
-        //     'affiliate' => '1',
-        //     'binary_id' => 3,
-        // ]);
+         User::create([
+             'name'=> 'user4',
+             'last_name'=> 'user4',
+             'email'=> 'user4@fyt.com',
+             'user_name'=> 'user4',
+             'admin'=> '0',
+             'kyc' => '1',
+             // 'password' => Hash::make('123456789'),
+             'email_verified_at' => now(),
+             'status' => '1',
+             'buyer_id' => '3',
+             'affiliate' => '1',
+             'binary_id' => 3,
+         ]);
 
-        // User::create([
-        //     'name'=> 'user5',
-        //     'last_name'=> 'user5',
-        //     'email'=> 'user5@fyt.com',
-        //     'user_name'=> 'user5',
-        //     'admin'=> '0',
-        //     'kyc' => '0',
-        //     // 'password' => Hash::make('123456789'),
-        //     'email_verified_at' => now(),
-        //     'status' => '1',
-        //     'buyer_id' => '4',
-        //     'affiliate' => '1',
-        //     'binary_id' => 4,
-        // ]);
+         User::create([
+             'name'=> 'user5',
+             'last_name'=> 'user5',
+             'email'=> 'user5@fyt.com',
+             'user_name'=> 'user5',
+             'admin'=> '0',
+             'kyc' => '0',
+             // 'password' => Hash::make('123456789'),
+             'email_verified_at' => now(),
+             'status' => '1',
+             'buyer_id' => '4',
+             'affiliate' => '1',
+             'binary_id' => 4,
+         ]);
     }
 }
