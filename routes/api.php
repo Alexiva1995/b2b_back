@@ -82,7 +82,7 @@ Route::middleware('jwt')->group(function () {
             Route::get('/order/paid','sumOrderPaid');
             Route::get('get/orders', 'getOrders');
             Route::get('/comission/paid','sumComissionPaid');
-            Route::get('/gain/pweekly','gainWeekly');
+            Route::get('/gain/weekly','gainWeekly');
             Route::get('/top/users','topFiveUsers');
             Route::get('/amount/matrix','mountMatrix');
             Route::get('/amount/earnings','totalEarnings');

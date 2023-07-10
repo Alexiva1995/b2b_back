@@ -16,18 +16,18 @@ class WalletController extends Controller
     public function getChartData()
     {
         $user = JWTAuth::parseToken()->authenticate();
-        
+
         $availableCommissions = WalletComission::where('user_id', $user->id)
         ->where('status', 0)
         ->get();
 
         $availableAmount = $availableCommissions->sum('amount');
         $availableIds = $availableCommissions->pluck('id');
-    
+
         $withdrawalAmount = WalletComission::where('user_id', $user->id)
             ->where('status', 2)
             ->sum('amount');
-    
+
 
         $totalEarning = $availableAmount + $withdrawalAmount;
 
@@ -37,23 +37,34 @@ class WalletController extends Controller
             'totalEarning' => $totalEarning,
             'availableIds' => $availableIds,
         ];
-    
+
         return response()->json($data, 200);
     }
 
     public function getMonthlyGain()
     {
         $user = JWTAuth::parseToken()->authenticate();
-        
-        $monthlyGains = WalletComission::where('user_id', $user->id)
-            ->select(DB::raw('MONTH(created_at) as month'), DB::raw('SUM(amount) as total_amount'))
-            ->groupBy('month')
-            ->get();
-    
-        return response()->json($monthlyGains, 200);
+
+        // Obtener los datos de la tabla 'Wallet comision' ordenados por fecha de creación y usuairo especificado
+        $monthlyGains = WalletComission::where('user_id', $user->id)->orderBy('created_at')->get();
+
+        // Crear un arreglo para almacenar los datos de la gráfica
+        $data = [];
+
+         // Iterar sobre los registros de la tabla 'ordenes'
+         foreach ($monthlyGains as $item) {
+             $diaSemana = $item->created_at->format('D');
+             $ganancias = $item->amount;
+
+             // Agregar los datos al arreglo de la gráfica
+             $data[$diaSemana] = $ganancias;
+         }
+
+         // Devolver los datos de la gráfica como respuesta JSON
+         return response()->json($data, 200);
     }
-    
-    
+
+
 
     public function walletUserDataList()
     {
@@ -62,7 +73,7 @@ class WalletController extends Controller
         $walletCommissions = WalletComission::where('user_id', $user->id)
             ->select('description', 'status', 'created_at', 'amount','id')
             ->get();
-        
+
         $data = $walletCommissions->map(function ($walletCommission) {
             return [
                 'id' => $walletCommission->id,
@@ -72,7 +83,7 @@ class WalletController extends Controller
                 'amount' => $walletCommission->amount,
             ];
         });
-        
+
         return response()->json($data, 200);
     }
 
