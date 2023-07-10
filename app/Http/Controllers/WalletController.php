@@ -60,7 +60,7 @@ class WalletController extends Controller
         $user = JWTAuth::parseToken()->authenticate();
 
         $walletCommissions = WalletComission::where('user_id', $user->id)
-            ->select('description', 'status', 'created_at', 'amount')
+            ->select('description', 'status', 'created_at', 'amount','id')
             ->get();
         
         $data = $walletCommissions->map(function ($walletCommission) {
