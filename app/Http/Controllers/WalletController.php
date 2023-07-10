@@ -5,12 +5,98 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\WalletComission;
 use Illuminate\Http\Request;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Crypt;
 
 class WalletController extends Controller
 {
+
+
+    public function getChartData()
+    {
+        $user = JWTAuth::parseToken()->authenticate();
+        
+        $availableCommissions = WalletComission::where('user_id', $user->id)
+        ->where('status', 0)
+        ->get();
+
+        $availableAmount = $availableCommissions->sum('amount');
+        $availableIds = $availableCommissions->pluck('id');
+    
+        $withdrawalAmount = WalletComission::where('user_id', $user->id)
+            ->where('status', 2)
+            ->sum('amount');
+    
+
+        $totalEarning = $availableAmount + $withdrawalAmount;
+
+        $data = [
+            'available' => $availableAmount,
+            'withdrawal' => $withdrawalAmount,
+            'totalEarning' => $totalEarning,
+            'availableIds' => $availableIds,
+        ];
+    
+        return response()->json($data, 200);
+    }
+
+    public function getMonthlyGain()
+    {
+        $user = JWTAuth::parseToken()->authenticate();
+        
+        $monthlyGains = WalletComission::where('user_id', $user->id)
+            ->select(DB::raw('MONTH(created_at) as month'), DB::raw('SUM(amount) as total_amount'))
+            ->groupBy('month')
+            ->get();
+    
+        return response()->json($monthlyGains, 200);
+    }
+    
+    
+
+    public function walletUserDataList()
+    {
+        $user = JWTAuth::parseToken()->authenticate();
+
+        $walletCommissions = WalletComission::where('user_id', $user->id)
+            ->select('description', 'status', 'created_at', 'amount','id')
+            ->get();
+        
+        $data = $walletCommissions->map(function ($walletCommission) {
+            return [
+                'id' => $walletCommission->id,
+                'description' => $walletCommission->description,
+                'status' => $walletCommission->status,
+                'created_at' => $walletCommission->created_at->format('Y-m-d H:i:s'),
+                'amount' => $walletCommission->amount,
+            ];
+        });
+        
+        return response()->json($data, 200);
+    }
+
+    public function walletAdminDataList()
+    {
+        $walletCommissions = WalletComission::with('user')
+        ->select('id', 'user_id', 'description', 'status', 'created_at', 'amount')
+        ->get();
+
+         $data = $walletCommissions->map(function ($walletCommission) {
+            return [
+            'id' => $walletCommission->id,
+            'user_id' => $walletCommission->user_id,
+            'user_name' => $walletCommission->user->name,
+            'description' => $walletCommission->description,
+            'status' => $walletCommission->status,
+            'created_at' => $walletCommission->created_at->format('Y-m-d H:i:s'),
+            'amount' => $walletCommission->amount,
+             ];
+         });
+
+     return response()->json($data, 200);
+    }
+
     public function addBalanceToUser(Request $request)
     {
         $request->validate([

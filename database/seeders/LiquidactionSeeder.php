@@ -30,7 +30,7 @@ class LiquidactionSeeder extends Seeder
         ]);
         Liquidaction::create([
             'id'=> 2,
-            'user_id'=> 3,
+            'user_id'=> 2,
             'reference'=> 'Test reference',
             'total'=> 500.00,
             'monto_bruto'=> 60.00,
@@ -42,7 +42,7 @@ class LiquidactionSeeder extends Seeder
         ]);
         Liquidaction::create([
             'id'=> 3,
-            'user_id'=> 4,
+            'user_id'=> 2,
             'reference'=> 'Test reference',
             'total'=> 1200.00,
             'monto_bruto'=> 120.00,

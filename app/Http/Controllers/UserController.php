@@ -134,8 +134,17 @@ class UserController extends Controller
         return response()->json($data, 200);
     }
 
+        public function getAllWithdrawals()
+    {
+        $user = Auth::user();
 
+        $data = WalletComission::select('amount', 'created_at')
+            ->where('user_id', $user->id)
+            ->where('available_withdraw', '=', 0)
+            ->get();
 
+        return response()->json($data, 200);
+    }
 
     public function getUserBalance()
     {
@@ -150,7 +159,7 @@ class UserController extends Controller
             ->get();
 
         foreach ($walletCommissions as $walletCommission) {
-            $data += $walletCommission->amount_available;
+            $data += $walletCommission->amount;
         }
 
         return response()->json($data, 200);
