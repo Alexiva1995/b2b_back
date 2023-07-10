@@ -244,7 +244,7 @@ class WithdrawalController extends Controller
                         ->where('liquidado', 1)
                         ->where('avaliable_withdraw', 0)
                         ->update([
-                            'status' => 2, // Actualizar el estado a 3 (procesado)
+                            'status' => 2, // Actualizar el estado a 2 (procesado)
                             'liquidado' => 1, // Cambiar liquidado a 0
                             'avaliable_withdraw' => 0, // Cambiar avaliable_withdraw a 0
                         ]);
@@ -255,7 +255,6 @@ class WithdrawalController extends Controller
                     $decryptedWallet = Crypt::decrypt($liquidation->wallet_used);
 
                     // Lógica para enviar a la pasarela de pago (coinpayment) utilizando el método withdrawal
-                    // Implementa aquí la lógica específica de tu pasarela de pago
 
                     // Ejemplo genérico para enviar a la pasarela de pago
                     $this->CoinpaymentsService->withdrawal($decryptedWallet, $amount);
@@ -270,7 +269,7 @@ class WithdrawalController extends Controller
                      ->where('liquidado', 1)
                      ->where('avaliable_withdraw', 0)
                      ->update([
-                         'status' => 3, // Actualizar el estado a 3 (procesado)
+                         'status' => 3, // Actualizar el estado a 3 (Rechazado)
                          'liquidado' => 0, // Cambiar liquidado a 0
                          'avaliable_withdraw' => 0, // Cambiar avaliable_withdraw a 0
                      ]);
