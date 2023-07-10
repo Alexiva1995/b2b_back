@@ -64,7 +64,7 @@ class WalletComission extends Model
     }
     public function package()
     {
-        return $this->belongsTo(Project::class, 'membership_id');
+        return $this->belongsTo(Package::class, 'membership_id', 'id');
     }
 
     /**

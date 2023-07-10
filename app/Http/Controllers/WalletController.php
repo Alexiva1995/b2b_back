@@ -297,7 +297,7 @@ class WalletController extends Controller
             $user = User::findOrFail($request->user_id);
         }
 
-        $data = WalletComission::with(['user'])->where('user_id', $user->id)->get();
+        $data = WalletComission::with(['user', 'package'])->where('user_id', $user->id)->get();
 
         // $data = new Collection();
         // foreach ($wallets as $wallet) {
@@ -340,7 +340,7 @@ class WalletController extends Controller
 
     public function getWalletsAdmin()
     {
-        $data = WalletComission::with(['user'])->get();
+        $data = WalletComission::with(['user','package'])->get();
         return response()->json($data, 200);
     }
 
