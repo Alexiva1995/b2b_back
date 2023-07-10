@@ -65,6 +65,7 @@ class WalletController extends Controller
         
         $data = $walletCommissions->map(function ($walletCommission) {
             return [
+                'id' => $walletCommission->id,
                 'description' => $walletCommission->description,
                 'status' => $walletCommission->status,
                 'created_at' => $walletCommission->created_at->format('Y-m-d H:i:s'),
