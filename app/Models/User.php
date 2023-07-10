@@ -39,11 +39,10 @@ class User extends Authenticatable implements JWTSubject
         'last_name',
         'admin',
         'status',
-        'affiliate',
         'token_auth',
         'token_jwt',
         'email_verified_at',
-        'affiliate',
+        'matrix_level',
         'wallet',
         'kyc',
         'can_buy_fast',
@@ -99,11 +98,6 @@ class User extends Authenticatable implements JWTSubject
         return [];
     }
 
-    // protected function affiliate(): Attribute {
-    //     return new Attribute(
-    //         get: fn($value) => ['unaffiliate', 'affiliate', 'super_affiliate'][$value],
-    //     );
-    // }
     public function coupon()
     {
         return $this->hasMany(Coupon::class, 'user_id');
@@ -171,23 +165,6 @@ class User extends Authenticatable implements JWTSubject
     public function wallets()
     {
         return $this->hasMany(WalletComission::class);
-    }
-
-    public function getAffiliateStatus()
-    {
-        $response = '';
-        switch ($this->affiliate) {
-            case '0':
-                $response = 'Unaffiliated';
-                break;
-            case '1':
-                $response = 'Affiliated';
-                break;
-            case '2':
-                $response = 'Super Affiliated';
-                break;
-        }
-        return $response;
     }
 
     public function decryptWallet()
