@@ -42,6 +42,7 @@ class UserStoreRequest extends FormRequest
             ],
             'prefix_id' => 'required',
             'buyer_id' => 'nullable|exists:users,id',
+            'link_code' => 'string|min:6|max:6'
         ];
     }
 

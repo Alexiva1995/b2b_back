@@ -5,12 +5,109 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\WalletComission;
 use Illuminate\Http\Request;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Crypt;
 
 class WalletController extends Controller
 {
+
+
+    public function getChartData()
+    {
+        $user = JWTAuth::parseToken()->authenticate();
+
+        $availableCommissions = WalletComission::where('user_id', $user->id)
+        ->where('status', 0)
+        ->get();
+
+        $availableAmount = $availableCommissions->sum('amount');
+        $availableIds = $availableCommissions->pluck('id');
+
+        $withdrawalAmount = WalletComission::where('user_id', $user->id)
+            ->where('status', 2)
+            ->sum('amount');
+
+
+        $totalEarning = $availableAmount + $withdrawalAmount;
+
+        $data = [
+            'available' => $availableAmount,
+            'withdrawal' => $withdrawalAmount,
+            'totalEarning' => $totalEarning,
+            'availableIds' => $availableIds,
+        ];
+
+        return response()->json($data, 200);
+    }
+
+    public function getMonthlyGain()
+    {
+        $user = JWTAuth::parseToken()->authenticate();
+
+        // Obtener los datos de la tabla 'Wallet comision' ordenados por fecha de creación y usuairo especificado
+        $monthlyGains = WalletComission::where('user_id', $user->id)->orderBy('created_at')->get();
+
+        // Crear un arreglo para almacenar los datos de la gráfica
+        $data = [];
+
+         // Iterar sobre los registros de la tabla 'ordenes'
+         foreach ($monthlyGains as $item) {
+             $diaSemana = $item->created_at->format('D');
+             $ganancias = $item->amount;
+
+             // Agregar los datos al arreglo de la gráfica
+             $data[$diaSemana] = $ganancias;
+         }
+
+         // Devolver los datos de la gráfica como respuesta JSON
+         return response()->json($data, 200);
+    }
+
+
+
+    public function walletUserDataList()
+    {
+        $user = JWTAuth::parseToken()->authenticate();
+
+        $walletCommissions = WalletComission::where('user_id', $user->id)
+            ->select('description', 'status', 'created_at', 'amount','id')
+            ->get();
+
+        $data = $walletCommissions->map(function ($walletCommission) {
+            return [
+                'id' => $walletCommission->id,
+                'description' => $walletCommission->description,
+                'status' => $walletCommission->status,
+                'created_at' => $walletCommission->created_at->format('Y-m-d H:i:s'),
+                'amount' => $walletCommission->amount,
+            ];
+        });
+
+        return response()->json($data, 200);
+    }
+
+    public function walletAdminDataList()
+    {
+        $walletCommissions = WalletComission::with('user')
+        ->select('id', 'user_id', 'description', 'status', 'created_at', 'amount')
+        ->get();
+
+         $data = $walletCommissions->map(function ($walletCommission) {
+            return [
+            'id' => $walletCommission->id,
+            'user_id' => $walletCommission->user_id,
+            'user_name' => $walletCommission->user->name,
+            'description' => $walletCommission->description,
+            'status' => $walletCommission->status,
+            'created_at' => $walletCommission->created_at->format('Y-m-d H:i:s'),
+            'amount' => $walletCommission->amount,
+             ];
+         });
+
+     return response()->json($data, 200);
+    }
+
     public function addBalanceToUser(Request $request)
     {
         $request->validate([
@@ -211,7 +308,7 @@ class WalletController extends Controller
             $user = User::findOrFail($request->user_id);
         }
 
-        $data = WalletComission::with(['user'])->where('user_id', $user->id)->get();
+        $data = WalletComission::with(['user', 'package'])->where('user_id', $user->id)->get();
 
         // $data = new Collection();
         // foreach ($wallets as $wallet) {
@@ -254,7 +351,7 @@ class WalletController extends Controller
 
     public function getWalletsAdmin()
     {
-        $data = WalletComission::with(['user'])->get();
+        $data = WalletComission::with(['user','package'])->get();
         return response()->json($data, 200);
     }
 
