@@ -55,6 +55,7 @@ Route::controller(AuthController::class)->group(function ($router) {
     Route::post('send-email-verification-code', 'sendVerificationCode');
     Route::get('get-sponsor-name/{identifier}', 'getSponsorName');
     Route::get('auth/user', 'getAuthUser');
+    Route::get('/check-matrix/{code}', 'checkMatrix');
 });
 Route::controller(LandingController::class)->group(function ($router) {
     Route::post('contact-us', 'contactUs');
