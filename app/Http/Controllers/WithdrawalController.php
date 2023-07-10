@@ -195,10 +195,8 @@ class WithdrawalController extends Controller
                     ->select('password')
                     ->first();
                 
-                $storedPassword = $userPassword->password;
-                
-                            // Validar la contraseña del usuario
-                if (!Hash::check($request->password, $storedPassword)) {
+            
+                if (!Hash::check($request->password, $userPassword->password)) {
                     return response()->json(['error' => 'Incorrect password'], 400);
                 }
 
