@@ -4,11 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Liquidaction;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use App\Models\ProfileLog;
 use Illuminate\Support\Facades\Validator;
 use App\Models\WalletComission;
 use Illuminate\Support\Facades\Mail;
-use app\Services\CoinpaymentsService;
+// use app\Services\CoinpaymentsService;
 use App\Mail\CodeSecurity;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
@@ -19,10 +20,10 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class WithdrawalController extends Controller
 {
-    public function __construct(CoinpaymentsService $CoinpaymentsService)
-    {
-        $this->CoinpaymentsService = $CoinpaymentsService;
-    }
+    // public function __construct(CoinpaymentsService $CoinpaymentsService)
+    // {
+    //     $this->CoinpaymentsService = $CoinpaymentsService;
+    // }
 
     public function getWithdrawals(Request $request)
     {
@@ -175,6 +176,7 @@ class WithdrawalController extends Controller
                     'code_security' => 'required',
                     'password' => 'required',
                 ];
+                
 
                 $validator = Validator::make($request->all(), $rules);
 
@@ -185,13 +187,21 @@ class WithdrawalController extends Controller
                 $user = JWTAuth::parseToken()->authenticate();
 
                 $codeEncryp = $user->code_security;
-
                 $code = Crypt::decrypt($codeEncryp);
-
-                    // Validar el password del usuario
-                if (!Hash::check($request->password, $user->password)) {
-                return response()->json(['error' => 'Incorrect password'], 400);
+                
+                $userPassword = DB::connection('b2b_auth')
+                    ->table('users')
+                    ->where('id', $user->id)
+                    ->select('password')
+                    ->first();
+                
+                $storedPassword = $userPassword->password;
+                
+                            // Validar la contraseña del usuario
+                if (!Hash::check($request->password, $storedPassword)) {
+                    return response()->json(['error' => 'Incorrect password'], 400);
                 }
+
 
                 if ($code === $request->code_security) {
                     $walletEncrypt = Crypt::encrypt($request->wallet);
@@ -257,7 +267,7 @@ class WithdrawalController extends Controller
                     // Lógica para enviar a la pasarela de pago (coinpayment) utilizando el método withdrawal
 
                     // Ejemplo genérico para enviar a la pasarela de pago
-                    $this->CoinpaymentsService->withdrawal($decryptedWallet, $amount);
+                    // $this->CoinpaymentsService->withdrawal($decryptedWallet, $amount);
                 } else {
                      // Actualizar el estado de liquidaciones a aprobado (status = 2)
                      Liquidaction::where('id', $liquidationId)
