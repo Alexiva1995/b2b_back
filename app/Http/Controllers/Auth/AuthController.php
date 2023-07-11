@@ -35,6 +35,7 @@ class AuthController extends Controller
     public function register(UserStoreRequest $request)
     {
         // Aca valida si el link de referido es valido, es decir el link de la matrix.Si no lo es, termina la ejecución acá.
+
         if($request->link_code) {
 
             $sponsor_id = $this->checkMatrix($request->link_code, $request->side);
@@ -419,6 +420,9 @@ class AuthController extends Controller
     {
         $link = ReferalLink::where('link_code', $code)->with('user')->first();
 
+        if($side == null){
+            return response()->json(['message' => 'Invalid Side'], 400);
+        }
         //side 1 es izquierda side 2 es derecha
         if($side == '1' && $link->right == '1' || $side == '2' && $link->left == '1')
         {
