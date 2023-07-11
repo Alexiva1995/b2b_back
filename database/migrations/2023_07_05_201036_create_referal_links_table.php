@@ -15,10 +15,10 @@ class CreateReferalLinksTable extends Migration
             $table->unsignedBigInteger('cyborg_id');
             $table->boolean('right')->default(false);
             $table->boolean('left')->default(false);
-            $table->timestamps();
-
+            $table->boolean('status')->default(true)->comment('0 - Inactive, 1 - Active');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('cyborg_id')->references('id')->on('market')->onDelete('cascade');
+            $table->timestamps();
         });
     }
 
