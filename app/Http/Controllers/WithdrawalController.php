@@ -171,11 +171,12 @@ class WithdrawalController extends Controller
 
         public function saveWallet(Request $request)
             {
-                $rules = [
-                    'wallet' => 'required',
-                    'code_security' => 'required',
-                    'password' => 'required',
-                ];
+                
+                 $rules = [
+                   'wallet' => 'required',
+                   'code_security' => 'required',
+                   'password' => 'required',
+                 ];
                 
 
                 $validator = Validator::make($request->all(), $rules);
@@ -190,21 +191,22 @@ class WithdrawalController extends Controller
                 $code = Crypt::decrypt($codeEncryp);
                 
 
-                $password = $request->password; // Obtén la contraseña del formulario
-                
-                $storedPassword = DB::connection(env('DB_AUTH', 'b2b_auth'))
+                // Obtén la contraseña del formulario
+                $password = $request->password;
+
+                $storedPassword = DB::connection('b2b_auth')
                     ->table('users')
                     ->where('id', $user->id)
                     ->select('password')
                     ->first();
               
-                
+            
             
                 if (!Hash::check($password, $storedPassword->password)) {
                 return response()->json(['error' => 'Incorrect password'], 400);
                 }
                 
-
+                
                 if ($code === $request->code_security) {
                 $walletEncrypt = Crypt::encrypt($request->wallet);
 
