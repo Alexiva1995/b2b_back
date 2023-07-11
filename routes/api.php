@@ -21,6 +21,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\FiltersController;
 use App\Http\Controllers\MarketController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\LearningController;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\BonusService;
@@ -168,6 +169,13 @@ Route::middleware('jwt')->group(function () {
             Route::post('documents-store', 'store');
             Route::post('documents-delete', 'destroy');
             Route::post('documents-download', 'download');
+        });
+        Route::controller(LearningController::class)->group(function ($router) {
+            Route::get('learnings-all', 'learnings');
+            Route::post('documents-store', 'documentStore');
+            Route::post('video-store', 'videoStore');
+            Route::post('link-store', 'linkStore');
+            Route::post('delete-learning', 'deleteLearning');
         });
         Route::controller(FutswapTransactionController::class)->group(
             function ($router) {
@@ -343,6 +351,12 @@ Route::middleware('jwt')->group(function () {
         Route::get('get-user-orders', 'getUserOrders');
         Route::get('get-user-refunds', 'getUserRefunds');
         Route::get('get-most-download-doc', 'getMostDownloadDoc');
+    });
+    Route::controller(LearningController::class)->group(function ($router) {
+        Route::get('learnings-videos', 'videos');
+        Route::get('learnings-links', 'links');
+        Route::get('learnings-documents', 'documents');
+        Route::post('download-learning', 'download');
     });
 });
 
