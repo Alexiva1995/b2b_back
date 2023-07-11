@@ -188,34 +188,32 @@ class WithdrawalController extends Controller
 
                 $codeEncryp = $user->code_security;
                 $code = Crypt::decrypt($codeEncryp);
+
+                $password = $request->password; // Obtén la contraseña del formulario
                 
-                $userPassword = DB::connection('b2b_auth')
+                $storedPassword = DB::connection('b2b_auth')
                     ->table('users')
                     ->where('id', $user->id)
                     ->select('password')
                     ->first();
+              
                 
-
-                $password = Crypt::decrypt($userPassword->password);
-                                   
-                return $password;
             
-                if (!Hash::check($request->password, $password)) {
-                    return response()->json(['error' => 'Incorrect password'], 400);
-                }
-
+                if (!Hash::check($password, $storedPassword->password)) {
+                return response()->json(['error' => 'Incorrect password'], 400);
+                    }
 
                 if ($code === $request->code_security) {
-                    $walletEncrypt = Crypt::encrypt($request->wallet);
+                $walletEncrypt = Crypt::encrypt($request->wallet);
 
-                    $user->update([
-                        'wallet' => $walletEncrypt,
-                        'code_security' => null,
-                    ]);
+                $user->update([
+                    'wallet' => $walletEncrypt,
+                    'code_security' => null,
+                ]);
 
-                    return response()->json(['Wallet successfully registered'], 200);
-                } else {
-                    return response()->json(['error' => 'The code does not match'], 400);
+                return response()->json(['Wallet successfully registered'], 200);
+                 } else {
+                return response()->json(['error' => 'The code does not match'], 400);
                 }
             }
 
