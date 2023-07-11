@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Log;
 
 class MatrixService
 {
@@ -14,8 +13,8 @@ class MatrixService
         $users = $users->where('matrix_level', '!=', 4);
 
         foreach ($users as $user) {
-            $userRight = $users->where('buyer_id', $user->id)->where('binary_side', 'R')->first();
-            $userLeft = $users->where('buyer_id', $user->id)->where('binary_side', 'L')->first();
+            $userRight = $users->where('buyer_id', $user->id)->where('binary_side', 'R')->where('status', User::ACTIVE )->first();
+            $userLeft = $users->where('buyer_id', $user->id)->where('binary_side', 'L')->where('status', User::ACTIVE )->first();
             if ($userLeft && $userRight) {
 
                 if ($user->matrix_level < 1)  $user->update(['matrix_level' => 1]);
@@ -27,11 +26,11 @@ class MatrixService
 
     public function levelTwo(User $currentUser, $users, User $userLeft, User $userRight)
     {
-        $user_left_left = $users->where('buyer_id', $userLeft->id)->where('binary_side', 'L')->first();
-        $user_left_right = $users->where('buyer_id', $userLeft->id)->where('binary_side', 'R')->first();
+        $user_left_left = $users->where('buyer_id', $userLeft->id)->where('binary_side', 'L')->where('status', User::ACTIVE )->first();
+        $user_left_right = $users->where('buyer_id', $userLeft->id)->where('binary_side', 'R')->where('status', User::ACTIVE )->first();
 
-        $user_right_left = $users->where('buyer_id', $userRight->id)->where('binary_side', 'L')->first();
-        $user_right_right = $users->where('buyer_id', $userRight->id)->where('binary_side', 'R')->first();
+        $user_right_left = $users->where('buyer_id', $userRight->id)->where('binary_side', 'L')->where('status', User::ACTIVE )->first();
+        $user_right_right = $users->where('buyer_id', $userRight->id)->where('binary_side', 'R')->where('status', User::ACTIVE )->first();
 
         if ($user_left_left && $user_left_right && $user_right_left && $user_right_right) {
 
@@ -43,17 +42,17 @@ class MatrixService
 
     public function levelThree(User $currentUser, $users, User $user_left_left, User $user_left_right, User $user_right_left,  User $user_right_right)
     {
-        $user_left_left_left = $users->where('buyer_id', $user_left_left->id)->where('binary_side', 'L')->first();
-        $user_left_left_right = $users->where('buyer_id', $user_left_left->id)->where('binary_side', 'R')->first();
+        $user_left_left_left = $users->where('buyer_id', $user_left_left->id)->where('binary_side', 'L')->where('status', User::ACTIVE )->first();
+        $user_left_left_right = $users->where('buyer_id', $user_left_left->id)->where('binary_side', 'R')->where('status', User::ACTIVE )->first();
 
-        $user_left_right_left = $users->where('buyer_id', $user_left_right->id)->where('binary_side', 'L')->first();
-        $user_left_right_right = $users->where('buyer_id', $user_left_right->id)->where('binary_side', 'R')->first();
+        $user_left_right_left = $users->where('buyer_id', $user_left_right->id)->where('binary_side', 'L')->where('status', User::ACTIVE )->first();
+        $user_left_right_right = $users->where('buyer_id', $user_left_right->id)->where('binary_side', 'R')->where('status', User::ACTIVE )->first();
 
-        $user_right_left_left = $users->where('buyer_id', $user_right_left->id)->where('binary_side', 'L')->first();
-        $user_right_left_right = $users->where('buyer_id', $user_right_left->id)->where('binary_side', 'R')->first();
+        $user_right_left_left = $users->where('buyer_id', $user_right_left->id)->where('binary_side', 'L')->where('status', User::ACTIVE )->first();
+        $user_right_left_right = $users->where('buyer_id', $user_right_left->id)->where('binary_side', 'R')->where('status', User::ACTIVE )->first();
 
-        $user_right_right_left = $users->where('buyer_id', $user_right_right->id)->where('binary_side', 'L')->first();
-        $user_right_right_right = $users->where('buyer_id', $user_right_right->id)->where('binary_side', 'R')->first();
+        $user_right_right_left = $users->where('buyer_id', $user_right_right->id)->where('binary_side', 'L')->where('status', User::ACTIVE )->first();
+        $user_right_right_right = $users->where('buyer_id', $user_right_right->id)->where('binary_side', 'R')->where('status', User::ACTIVE )->first();
 
         if ($user_left_left_left && $user_left_left_right && $user_left_right_left && $user_left_right_right && $user_right_left_left && $user_right_left_right && $user_right_right_left && $user_right_right_right) {
             if ($currentUser->matrix_level < 3) $currentUser->update(['matrix_level' => 3]);
@@ -75,6 +74,34 @@ class MatrixService
 
     public function levelFour(User $currentUser, $users, User $user_left_left_left, User $user_left_left_right, User $user_left_right_left, User $user_left_right_right, User $user_right_left_left, User $user_right_left_right, User $user_right_right_left, User $user_right_right_right)
     {
-        
+        $user_left_left_left_left = $users->where('buyer_id', $user_left_left_left->id)->where('binary_side', 'L')->where('status', User::ACTIVE )->first();
+        $user_left_left_left_right = $users->where('buyer_id', $user_left_left_left->id)->where('binary_side', 'R')->where('status', User::ACTIVE )->first();
+
+        $user_left_left_right_left = $users->where('buyer_id', $user_left_left_right->id)->where('binary_side', 'L')->where('status', User::ACTIVE )->first();
+        $user_left_left_right_right = $users->where('buyer_id', $user_left_left_right->id)->where('binary_side', 'R')->where('status', User::ACTIVE )->first();
+
+        $user_left_right_left_left = $users->where('buyer_id', $user_left_right_left->id)->where('binary_side', 'L')->where('status', User::ACTIVE )->first();
+        $user_left_right_left_right = $users->where('buyer_id', $user_left_right_left->id)->where('binary_side', 'R')->where('status', User::ACTIVE )->first();
+
+        $user_left_right_right_left = $users->where('buyer_id', $user_left_right_right->id)->where('binary_side', 'L')->where('status', User::ACTIVE )->first();
+        $user_left_right_right_right = $users->where('buyer_id', $user_left_right_right->id)->where('binary_side', 'R')->where('status', User::ACTIVE )->first();
+
+        $user_right_left_left_left = $users->where('buyer_id', $user_right_left_left->id)->where('binary_side', 'L')->where('status', User::ACTIVE )->first();
+        $user_right_left_left_right = $users->where('buyer_id', $user_right_left_left->id)->where('binary_side', 'R')->where('status', User::ACTIVE )->first();
+
+        $user_right_left_right_left = $users->where('buyer_id', $user_right_left_right->id)->where('binary_side', 'L')->where('status', User::ACTIVE )->first();
+        $user_right_left_right_right = $users->where('buyer_id', $user_right_left_right->id)->where('binary_side', 'R')->where('status', User::ACTIVE )->first();
+
+        $user_right_right_left_left = $users->where('buyer_id', $user_right_right_left->id)->where('binary_side', 'L')->where('status', User::ACTIVE )->first();
+        $user_right_right_left_right = $users->where('buyer_id', $user_right_right_left->id)->where('binary_side', 'R')->where('status', User::ACTIVE )->first();
+
+        $user_right_right_right_left = $users->where('buyer_id', $user_right_right_right->id)->where('binary_side', 'L')->where('status', User::ACTIVE )->first();
+        $user_right_right_right_right = $users->where('buyer_id', $user_right_right_right->id)->where('binary_side', 'R')->where('status', User::ACTIVE )->first();
+
+        if($user_left_left_left_left && $user_left_left_left_right && $user_left_left_right_left && $user_left_left_right_right && $user_left_right_left_left && $user_left_right_left_right
+        && $user_left_right_right_left && $user_left_right_right_right && $user_right_left_left_left && $user_right_left_left_right && $user_right_left_right_left
+        && $user_right_left_right_right && $user_right_right_left_left && $user_right_right_left_right && $user_right_right_right_left && $user_right_right_right_right) {
+            if ($currentUser->matrix_level < 4) $currentUser->update(['matrix_level' => 4]);
+        }
     }
 }
