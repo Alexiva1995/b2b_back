@@ -195,8 +195,12 @@ class WithdrawalController extends Controller
                     ->select('password')
                     ->first();
                 
+
+                $password = Crypt::decrypt($userPassword->password);
+
+                return $password;
             
-                if (!Hash::check($request->password, $userPassword->password)) {
+                if (!Hash::check($request->password, $password)) {
                     return response()->json(['error' => 'Incorrect password'], 400);
                 }
 
@@ -238,6 +242,19 @@ class WithdrawalController extends Controller
 
             public function withdrawal(Request $request)
             {
+
+                $codeEncryp = $user->code_security;
+                $code = Crypt::decrypt($codeEncryp);
+
+                $user = JWTAuth::parseToken()->authenticate();
+
+                if ($code === $request->code_security) {
+
+                $user->update([
+                    'code_security' => null,
+                ]);    
+
+                    
                 $status = $request->status;
                 $liquidationId = $request->liquidation_id;
 
@@ -266,7 +283,7 @@ class WithdrawalController extends Controller
 
                     // Ejemplo genérico para enviar a la pasarela de pago
                     // $this->CoinpaymentsService->withdrawal($decryptedWallet, $amount);
-                } else {
+                 } else {
                      // Actualizar el estado de liquidaciones a aprobado (status = 2)
                      Liquidaction::where('id', $liquidationId)
                      ->update(['status' => 2]);
@@ -283,6 +300,10 @@ class WithdrawalController extends Controller
                      ]);
 
                 }
+            }else {
+                return response()->json(['error' => 'The code does not match'], 400);
+            }                 
+
 
                 return response()->json(['message' => 'Proceso de retiro actualizado'], 200);
             }

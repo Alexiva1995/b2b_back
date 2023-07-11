@@ -39,7 +39,7 @@ return [
             'driver' => 'mysql',
             'host' => env('DB_HOST', 'localhost'),
             'port' => env('DB_PORT', '3306'),
-            'database' => env('DB_DATABASE', 'nombre_base_de_datos'),
+            'database' => env('DB_DATABASE', 'b2b_auth'),
             'username' => env('DB_USERNAME', 'nombre_usuario'),
             'password' => env('DB_PASSWORD', 'contraseña'),
             'charset' => 'utf8mb4',
@@ -48,6 +48,7 @@ return [
             'strict' => false,
             'engine' => null,
         ],
+        
 
         'sqlite' => [
             'driver' => 'sqlite',
