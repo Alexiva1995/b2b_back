@@ -242,11 +242,11 @@ class WithdrawalController extends Controller
 
             public function withdrawal(Request $request)
             {
+                $user = JWTAuth::parseToken()->authenticate();
 
                 $codeEncryp = $user->code_security;
                 $code = Crypt::decrypt($codeEncryp);
 
-                $user = JWTAuth::parseToken()->authenticate();
 
                 if ($code === $request->code_security) {
 
