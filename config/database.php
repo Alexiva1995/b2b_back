@@ -35,11 +35,11 @@ return [
 
     'connections' => [
 
-        'b2b_auth' => [
+        env('DB_AUTH', 'b2b_auth') => [
             'driver' => 'mysql',
             'host' => env('DB_HOST', 'localhost'),
             'port' => env('DB_PORT', '3306'),
-            'database' => env('DB_DATABASE', 'b2b_auth'),
+            'database' => env('DB_AUTH', 'b2b_auth'),
             'username' => env('DB_USERNAME', 'nombre_usuario'),
             'password' => env('DB_PASSWORD', 'contraseña'),
             'charset' => 'utf8mb4',

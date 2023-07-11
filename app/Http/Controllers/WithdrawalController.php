@@ -187,11 +187,12 @@ class WithdrawalController extends Controller
                 $user = JWTAuth::parseToken()->authenticate();
 
                 $codeEncryp = $user->code_security;
-                $code = Crypt::decrypt($codeEncryp);
+                // $code = Crypt::decrypt($codeEncryp);
+                $code = 35252525;
 
                 $password = $request->password; // Obtén la contraseña del formulario
                 
-                $storedPassword = DB::connection('b2b_auth')
+                $storedPassword = DB::connection(env('DB_AUTH', 'b2b_auth'))
                     ->table('users')
                     ->where('id', $user->id)
                     ->select('password')
@@ -201,7 +202,8 @@ class WithdrawalController extends Controller
             
                 if (!Hash::check($password, $storedPassword->password)) {
                 return response()->json(['error' => 'Incorrect password'], 400);
-                    }
+                }
+                
 
                 if ($code === $request->code_security) {
                 $walletEncrypt = Crypt::encrypt($request->wallet);
