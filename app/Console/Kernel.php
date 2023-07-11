@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         Commands\CancelPagueloFacilTransactions::class,
+        Commands\SetMatrixLevel::class
     ];
     /**
      * Define the application's command schedule.
@@ -25,6 +26,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('cancel:paguelofacil:transactions')->everyFiveMinutes();
         $schedule->command('futswap:canceled')->everyFiveMinutes();
+        $schedule->command('matrix:set_level')->daily();
     }
 
     /**
