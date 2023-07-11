@@ -187,8 +187,8 @@ class WithdrawalController extends Controller
                 $user = JWTAuth::parseToken()->authenticate();
 
                 $codeEncryp = $user->code_security;
-                // $code = Crypt::decrypt($codeEncryp);
-                $code = 35252525;
+                $code = Crypt::decrypt($codeEncryp);
+                
 
                 $password = $request->password; // Obtén la contraseña del formulario
                 
