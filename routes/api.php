@@ -252,6 +252,7 @@ Route::middleware('jwt')->group(function () {
         Route::get('/get-mt-account', 'getMT5User');
         Route::get('/get-mt-summary', 'getMTSummary');
         Route::post('/create-mt-user', 'createMT5User');
+        Route::get('/get-referal_links', 'getReferalLinks');
 
 
         //Ruta DashboardUser B2B obtener Balance del usuario
