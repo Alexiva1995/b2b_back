@@ -36,12 +36,13 @@ class AuthController extends Controller
     {
         // Aca valida si el link de referido es valido, es decir el link de la matrix.Si no lo es, termina la ejecución acá.
         if($request->link_code) {
-            $sponsor_id = $this->checkMatrix($request->link_code);
+
+            $sponsor_id = $this->checkMatrix($request->link_code, $request->side);
             if(!$sponsor_id) {
                 $response = ['Error' => 'Invalid referral link'];
                 return response()->json($response, 400);
             }
-        } 
+        }
         // En $sponsor_id esta el id del padre (el dueño del link) aplicar logica correspondiente y obtener el lado adecuado (tarea processes de auth back)
         $binary_side = 'R';
         $binary_id = 1;
@@ -370,7 +371,7 @@ class AuthController extends Controller
     /**
      * Ruta para verificar que el token es valido
      * @param \Iluminate\Http\Request $request
-     * @return Json 
+     * @return Json
      */
     public function verifyToken(Request $request)
     {
@@ -414,26 +415,33 @@ class AuthController extends Controller
         return response()->json($user, 200);
     }
 
-    public function checkMatrix(String $code) 
+    public function checkMatrix(String $code , $side)
     {
         $link = ReferalLink::where('link_code', $code)->with('user')->first();
 
+        //side 1 es izquierda side 2 es derecha
+        if($side == '1' && $link->right == '1' || $side == '2' && $link->left == '1')
+        {
+            return response()->json(['message' => 'Invalid link'], 400);
+
+        }
+
         if(request()->wantsJson()) {
             if(!$link) return response()->json(['message' => 'Invalid link code'], 400);
-    
+
             if($link->status == ReferalLink::STATUS_INACTIVE ) {
                 return response()->json(['message' => 'This matrix is already complete'], 400);
             }
-    
+
             return response()->json(['sponsor' => $link->user], 200);
         } else {
 
             if(!$link) return false;
-    
+
             if($link->status == ReferalLink::STATUS_INACTIVE ) return false;
 
             return $link->user->id;
-            
+
         }
     }
 }
