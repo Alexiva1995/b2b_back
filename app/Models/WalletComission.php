@@ -36,6 +36,13 @@ class WalletComission extends Model
     //     );
     // }
 
+    public function scopeFilter($query, $filter)
+    {
+        if($filter) {
+            $query->where('description', 'LIKE', "%$filter%");
+        }
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');

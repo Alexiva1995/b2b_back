@@ -72,12 +72,16 @@ class WalletController extends Controller
 
 
 
-    public function walletUserDataList()
+    public function walletUserDataList(Request $request)
     {
+        $filter = $request->get('dataFilter');
+
         $user = JWTAuth::parseToken()->authenticate();
+        
 
         $walletCommissions = WalletComission::where('user_id', $user->id)
             ->select('description', 'status', 'created_at', 'amount','id')
+            ->filter($filter)
             ->get();
 
         $data = $walletCommissions->map(function ($walletCommission) {
