@@ -48,8 +48,14 @@ class WalletController extends Controller
         // Obtener los datos de la tabla 'Wallet comision' ordenados por fecha de creación y usuairo especificado
         $monthlyGains = WalletComission::where('user_id', $user->id)->orderBy('created_at')->get();
 
+        $totalMonthlyGains = $monthlyGains->sum('amount');
+
         // Crear un arreglo para almacenar los datos de la gráfica
         $data = [];
+
+        $data = [
+            'totalMonthlyGains' => $totalMonthlyGains,
+        ];
 
          // Iterar sobre los registros de la tabla 'ordenes'
          foreach ($monthlyGains as $item) {
