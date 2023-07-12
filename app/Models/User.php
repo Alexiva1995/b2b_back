@@ -190,12 +190,12 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Package::class, 'user_id');
     }
-    
-    
+
+
     public function getStatus()
     {
         $status = 'inactive';
-        
+
         switch ($this->status) {
             case '0':
                 $status = 'Inactive';
@@ -225,5 +225,10 @@ class User extends Authenticatable implements JWTSubject
     public function inversions()
     {
         return $this->hasMany(Inversion::class);
+    }
+
+    public function marketPurchased()
+    {
+        return $this->hasMany(MarketPurchased::class);
     }
 }
