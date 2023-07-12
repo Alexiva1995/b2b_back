@@ -33,7 +33,7 @@ class UserController extends Controller
 
     public function showReferrals()
     {
-        $user = auth()->user();
+        $user = JWTAuth::parseToken()->authenticate();
         $referrals = $this->getReferrals($user);
 
         return response()->json($referrals, 200);
@@ -41,8 +41,8 @@ class UserController extends Controller
 
     public function listReferrals(User $user, $level = 1, $maxLevel = 4)
     {
+        $user = JWTAuth::parseToken()->authenticate();
         $referrals = $this->getReferrals($user, $level, $maxLevel);
-        $user = auth()->user();
 
         $referralList = $referrals->map(function ($referral) {
             return [
