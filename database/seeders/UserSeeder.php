@@ -43,7 +43,6 @@ class UserSeeder extends Seeder
             'email_verified_at' => now(),
             'status' => '1',
             'buyer_id' => '1',
-            'affiliate' => '1',
             'binary_id' => 1,
         ]);
 
@@ -58,7 +57,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '2',
-             'affiliate' => '1',
              'binary_id' => 2,
              'binary_side' => 'L'
          ]);
@@ -74,7 +72,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '2',
-             'affiliate' => '1',
              'binary_id' => 2,
              'binary_side' => 'R'
          ]);
@@ -90,7 +87,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '3',
-             'affiliate' => '1',
              'binary_id' => 3,
              'binary_side' => 'L',
          ]);
@@ -105,7 +101,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '3',
-             'affiliate' => '1',
              'binary_id' => 3,
              'binary_side' => 'R',
          ]);
@@ -120,7 +115,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '4',
-             'affiliate' => '1',
              'binary_id' => 4,
              'binary_side' => 'L',
          ]);
@@ -135,7 +129,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '4',
-             'affiliate' => '1',
              'binary_id' => 4,
              'binary_side' => 'R',
          ]);
@@ -150,7 +143,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '5',
-             'affiliate' => '1',
              'binary_id' => 5,
              'binary_side' => 'L',
          ]);
@@ -165,7 +157,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '5',
-             'affiliate' => '1',
              'binary_id' => 5,
              'binary_side' => 'R',
          ]);
@@ -180,7 +171,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '6',
-             'affiliate' => '1',
              'binary_id' => 6,
              'binary_side' => 'L',
          ]);
@@ -195,7 +185,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '6',
-             'affiliate' => '1',
              'binary_id' => 6,
              'binary_side' => 'R',
          ]);
@@ -210,7 +199,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '7',
-             'affiliate' => '1',
              'binary_id' =>7,
              'binary_side' => 'L',
          ]);
@@ -225,7 +213,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '7',
-             'affiliate' => '1',
              'binary_id' => 7,
              'binary_side' => 'R',
          ]);
@@ -240,7 +227,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '8',
-             'affiliate' => '1',
              'binary_id' => 8,
              'binary_side' => 'L',
          ]);
@@ -255,7 +241,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '8',
-             'affiliate' => '1',
              'binary_id' => 8,
              'binary_side' => 'R',
          ]);
@@ -270,7 +255,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '9',
-             'affiliate' => '1',
              'binary_id' => 9,
              'binary_side' => 'L',
          ]);
@@ -285,7 +269,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '9',
-             'affiliate' => '1',
              'binary_id' => 9,
              'binary_side' => 'R',
          ]);
@@ -300,7 +283,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '10',
-             'affiliate' => '1',
              'binary_id' => 10,
              'binary_side' => 'L',
          ]);
@@ -315,7 +297,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '10',
-             'affiliate' => '1',
              'binary_id' => 10,
              'binary_side' => 'R',
          ]);
@@ -330,7 +311,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '11',
-             'affiliate' => '1',
              'binary_id' => 11,
              'binary_side' => 'L',
          ]);
@@ -345,7 +325,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '11',
-             'affiliate' => '1',
              'binary_id' => 11,
              'binary_side' => 'R',
          ]);
@@ -360,7 +339,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '12',
-             'affiliate' => '1',
              'binary_id' => 12,
              'binary_side' => 'L',
          ]);
@@ -375,7 +353,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '12',
-             'affiliate' => '1',
              'binary_id' => 12,
              'binary_side' => 'R',
          ]);
@@ -390,7 +367,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '13',
-             'affiliate' => '1',
              'binary_id' => 13,
              'binary_side' => 'L',
          ]);
@@ -405,7 +381,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '13',
-             'affiliate' => '1',
              'binary_id' => 13,
              'binary_side' => 'R',
          ]);
@@ -420,7 +395,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '14',
-             'affiliate' => '1',
              'binary_id' => 14,
              'binary_side' => 'L',
          ]);
@@ -435,7 +409,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '14',
-             'affiliate' => '1',
              'binary_id' => 14,
              'binary_side' => 'R',
          ]);
@@ -450,7 +423,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '15',
-             'affiliate' => '1',
              'binary_id' => 15,
              'binary_side' => 'L',
          ]);
@@ -465,7 +437,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '15',
-             'affiliate' => '1',
              'binary_id' => 15,
              'binary_side' => 'R',
          ]);
@@ -480,7 +451,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '16',
-             'affiliate' => '1',
              'binary_id' => 16,
              'binary_side' => 'L',
          ]);
@@ -495,7 +465,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '16',
-             'affiliate' => '1',
              'binary_id' => 16,
              'binary_side' => 'R',
          ]);
@@ -510,7 +479,6 @@ class UserSeeder extends Seeder
              'email_verified_at' => now(),
              'status' => '1',
              'buyer_id' => '17',
-             'affiliate' => '1',
              'binary_id' => 17,
              'binary_side' => 'R',
          ]);

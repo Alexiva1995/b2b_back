@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Liquidaction;
+use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use App\Models\ProfileLog;
@@ -25,19 +26,19 @@ class WithdrawalController extends Controller
     //     $this->CoinpaymentsService = $CoinpaymentsService;
     // }
 
-    public function getWithdrawals(Request $request)
+    public function getWithdrawals($id = null)
     {
         $user = JWTAuth::parseToken()->authenticate();
         if ($user->admin == 1) {
-            if (isset($request->id)) {
-                $withdrawals = Liquidaction::where('user_id', $request->id)->with('user', 'package')->get();
+            if ($id != null) {
+                $withdrawals = Liquidaction::where('user_id', $id)->with('user', 'package')->get();
                 foreach ($withdrawals as $withdrawal) {
                     $withdrawal->wallet_used = Crypt::decrypt($withdrawal->wallet_used) ?? $withdrawal->wallet_used;
                     $withdrawal->hash = $withdrawal->hash ?? "";
                 }
             }
             else {
-                $withdrawals = Liquidaction::where('user_id', '>', 1)->with('user', 'package')->get();
+                $withdrawals = Liquidaction::with('user', 'package')->get();
                 foreach ($withdrawals as $withdrawal) {
                     $withdrawal->wallet_used = Crypt::decrypt($withdrawal->wallet_used) ?? $withdrawal->wallet_used;
                     $withdrawal->hash = $withdrawal->hash ?? "";
@@ -147,7 +148,6 @@ class WithdrawalController extends Controller
         return response()->json(['message' => 'Retiro registrado y pendiente de aprobación'], 200);
     }
     
-
         public function generateCode()
             {
                 $user = JWTAuth::parseToken()->authenticate();
