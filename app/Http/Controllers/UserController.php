@@ -32,6 +32,66 @@ use Illuminate\Support\Facades\Log;
 class UserController extends Controller
 {
 
+    public function showReferrals()
+    {
+        $user = auth()->user();
+        $referrals = $this->getReferrals($user);
+
+        return response()->json($referrals, 200);
+    }
+
+
+    public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide = null): Collection
+    {
+        $referrals = new Collection();
+    
+        if ($level <= $maxLevel) {
+            // Obtener los referidos del usuario actual en el lado izquierdo (binary_side = 'L')
+            $leftReferrals = User::where('buyer_id', $user->id)
+                ->where('binary_side', 'L')
+                ->get(['id', 'name', 'profile_picture'])
+                ->map(function ($referral) use ($level, $parentSide) {
+                    return [
+                        'id' => $referral->id,
+                        'name' => $referral->name,
+                        'level' => $level,
+                        'side' => $parentSide ?: 'L',
+                        'profile_picture' => $referral->profile_picture,
+                    ];
+                });
+    
+            // Obtener los referidos del usuario actual en el lado derecho (binary_side = 'R')
+            $rightReferrals = User::where('buyer_id', $user->id)
+                ->where('binary_side', 'R')
+                ->get(['id', 'name', 'profile_picture'])
+                ->map(function ($referral) use ($level, $parentSide) {
+                    return [
+                        'id' => $referral->id,
+                        'name' => $referral->name,
+                        'level' => $level,
+                        'side' => $parentSide ?: 'R',
+                        'profile_picture' => $referral->profile_picture,
+                    ];
+                });
+    
+            // Agregar los referidos a la colección
+            $referrals = $referrals->concat($leftReferrals)->concat($rightReferrals);
+    
+            // Recorrer los referidos y obtener sus referidos recursivamente
+            foreach ($referrals as $referral) {
+                $subReferrals = $this->getReferrals(User::find($referral['id']), $level + 1, $maxLevel, $referral['side']);
+    
+                $referrals = $referrals->concat($subReferrals);
+            }
+        }
+    
+        // Ordenar los referidos por nivel
+        $sortedReferrals = $referrals->sortBy('level');
+    
+        return $sortedReferrals;
+    }
+    
+
     public function getLast10Withdrawals()
     {
         $user = Auth::user();
