@@ -39,6 +39,25 @@ class UserController extends Controller
         return response()->json($referrals, 200);
     }
 
+    public function listReferrals(User $user, $level = 1, $maxLevel = 4)
+    {
+        $referrals = $this->getReferrals($user, $level, $maxLevel);
+        $user = auth()->user();
+
+        $referralList = $referrals->map(function ($referral) {
+            return [
+                'Name' => $referral['name'],
+                'Buyer ID' => User::find($referral['id'])->buyer_id,
+                'User ID' => $referral['id'],
+                'Side' => ($referral['side'] === 'L') ? 'Left' : 'Right',
+                'Date' => date('Y-m-d H:i:s'),
+            ];
+        });
+
+        return $referralList;
+    }
+
+
 
     public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide = null): Collection
     {
