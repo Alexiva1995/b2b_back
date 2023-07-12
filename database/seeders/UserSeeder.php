@@ -30,7 +30,6 @@ class UserSeeder extends Seeder
             'email_verified_at' => now(),
             'status' => '1',
             'binary_id' => 0,
-            'affiliate' => '2',
             'binary_side' => 'L'
         ]);
 

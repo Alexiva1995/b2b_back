@@ -35,6 +35,20 @@ return [
 
     'connections' => [
 
+        'b2b_auth' => [
+            'driver' => 'mysql',
+            'host' => env('DB_HOST', 'localhost'),
+            'port' => env('DB_PORT', '3306'),
+            'database' => env('DB_DATABASE', 'nombre_base_de_datos'),
+            'username' => env('DB_USERNAME', 'nombre_usuario'),
+            'password' => env('DB_PASSWORD', 'contraseña'),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => false,
+            'engine' => null,
+        ],
+
         'sqlite' => [
             'driver' => 'sqlite',
             'url' => env('DATABASE_URL'),
