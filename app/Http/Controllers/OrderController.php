@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\MarketPurchased;
 use App\Models\Order;
 use App\Models\Project;
 use App\Models\ReferalLink;
@@ -152,15 +153,16 @@ class OrderController extends Controller
         ];
 
         ReferalLink::create($referal);
+        MarketPurchased::created(['user_id' => $order->user_id, 'cyborg_id' => $order->cyborg_id, 'order_id' => $order->id]);
+
     }
 
     private function generateCode()
     {
         $code = Str::random(6);
-        if(ReferalLink::where('link_code', $code)->exists()){
-            $this->generateCode();
+        if(!ReferalLink::where('link_code', $code)->exists()){
+            return $code;
         }
-
-        return $code;
+        $this->generateCode();
     }
 }
