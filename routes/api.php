@@ -290,6 +290,10 @@ Route::middleware('jwt')->group(function () {
         Route::get('get/user/orders','getUserOrders');
         //Fin
 
+        //Ruta Matrix User B2B 
+        Route::get('get/user/matrix','showReferrals');
+        //Fin
+
     });
     Route::apiResource('users', UserController::class);
 
