@@ -11,6 +11,7 @@ class WalletComission extends Model
 {
     use HasFactory;
     protected $table = 'wallets_commissions';
+    
     protected $fillable = [
         'user_id',
         'buyer_id',

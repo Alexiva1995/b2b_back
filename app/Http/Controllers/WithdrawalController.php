@@ -101,8 +101,7 @@ class WithdrawalController extends Controller
             'wallet' => 'required',
             'amount' => 'required',
             'code_security' => 'required',
-            'comission_ids' => 'required|array',
-            'comission_ids.*' => 'exists:walletcomissions,id', // Validar que cada ID de comisión exista en la tabla walletcomissions
+            'comission_ids' => 'required',
         ];
     
         $validator = Validator::make($request->all(), $rules);
@@ -126,6 +125,11 @@ class WithdrawalController extends Controller
         $fechaCode = date('Y-m-d H:i:s'); // Obtener la fecha y hora actual
     
         if ($code === $request->code_security) {
+
+            $user->update([
+                'code_security' => null,
+            ]);
+
             $liquidAction = Liquidaction::create([
                 'user_id' => $user->id,
                 'reference' => 'Pago de Comisiones Matrix',
@@ -133,18 +137,23 @@ class WithdrawalController extends Controller
                 'monto_bruto' => $amount - $feed,
                 'feed' => $feed,
                 'wallet_used' => $encryptedWallet,
-                'code_correo' => $codeEncryp,
                 'fecha_code' => $fechaCode,
                 'type' => 0,
                 'status' => 0,
             ]);
     
             // Actualizar la columna liquidation_id en las filas de walletcomissions
-            WalletComission::whereIn('id', $request->comission_ids)
-                ->update(['liquidation_id' => $liquidAction->id]);
+            foreach ($request->comission_ids as $comission_id) {
+                WalletComission::where('id', $comission_id)
+                    ->update([
+                        'liquidation_id' => $liquidAction->id,
+                        'status' => 1
+                    ]);
+            }
+        
         }
     
-        return response()->json(['message' => 'Retiro registrado y pendiente de aprobación'], 200);
+        return response()->json(['message' => 'Retiro registrado y pendiente de aprobacion'], 200);
     }
     
 
