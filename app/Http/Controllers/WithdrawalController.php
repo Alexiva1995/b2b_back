@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Liquidaction;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Services\CoinpaymentsService;
 use Illuminate\Support\Facades\DB;
 use App\Models\ProfileLog;
 use Illuminate\Support\Facades\Validator;
@@ -21,10 +22,11 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class WithdrawalController extends Controller
 {
-    // public function __construct(CoinpaymentsService $CoinpaymentsService)
-    // {
-    //     $this->CoinpaymentsService = $CoinpaymentsService;
-    // }
+    protected $CoinpaymentsService;
+    public function __construct(CoinpaymentsService $CoinpaymentsService)
+    {
+        $this->CoinpaymentsService = $CoinpaymentsService;
+    }
 
     public function getWithdrawals($id = null)
     {
@@ -100,10 +102,7 @@ class WithdrawalController extends Controller
     {
         $rules = [
             'wallet' => 'required',
-            'amount' => 'required',
             'code_security' => 'required',
-            'comission_ids' => 'required|array',
-            'comission_ids.*' => 'exists:walletcomissions,id', // Validar que cada ID de comisión exista en la tabla walletcomissions
         ];
     
         $validator = Validator::make($request->all(), $rules);
@@ -115,6 +114,10 @@ class WithdrawalController extends Controller
         $user = JWTAuth::parseToken()->authenticate();
     
         $encryptedWallet = Crypt::encrypt($request->wallet);
+
+        $wallets = WalletComission::where('user_id', $user->id)->where('status', 0)->get();
+
+        $walletsAmount = $wallets->sum('amount_available');
     
         $amount = $request->amount;
     
@@ -126,26 +129,33 @@ class WithdrawalController extends Controller
     
         $fechaCode = date('Y-m-d H:i:s'); // Obtener la fecha y hora actual
     
-        if ($code === $request->code_security) {
+        if ($code == $request->code_security) {
             $liquidAction = Liquidaction::create([
                 'user_id' => $user->id,
                 'reference' => 'Pago de Comisiones Matrix',
-                'total' => $amount,
-                'monto_bruto' => $amount - $feed,
+                'total' => $walletsAmount,
+                'monto_bruto' => $walletsAmount - $feed,
                 'feed' => $feed,
                 'wallet_used' => $encryptedWallet,
-                'code_correo' => $codeEncryp,
+                'code_correo' => $code,
                 'fecha_code' => $fechaCode,
                 'type' => 0,
                 'status' => 0,
             ]);
     
             // Actualizar la columna liquidation_id en las filas de walletcomissions
-            WalletComission::whereIn('id', $request->comission_ids)
-                ->update(['liquidation_id' => $liquidAction->id]);
+            foreach ($wallets as $wallet) {
+                $wallet->update([
+                    'liquidation_id' => $liquidAction->id,
+                    'status' => 1,
+                    'amount_available' => 0,
+                    'amount_retired' => $wallet->amount
+                ]);
+            }
+            return response()->json(['message' => 'Retiro registrado y pendiente de aprobación'], 200);
+        } else {
+            return response()->json(['message' => 'Withdrawal request failure'], 400);
         }
-    
-        return response()->json(['message' => 'Retiro registrado y pendiente de aprobación'], 200);
     }
     
         public function generateCode()
@@ -236,52 +246,50 @@ class WithdrawalController extends Controller
             
             
 
-            public function withdrawal(Request $request)
+            public function withdrawalUpdate(Request $request)
             {
                 $status = $request->status;
                 $liquidationId = $request->liquidation_id;
-
+                $liquidation = Liquidaction::findOrFail($liquidationId);
                 if ($status == 1) {
                     // Actualizar el estado de liquidaciones a aprobado (status = 1)
-                    Liquidaction::where('id', $liquidationId)
-                        ->update(['status' => 1]);
+                   
 
                     // Buscar datos en walletcomissions con el mismo liquidation_id y actualizar los valores
-                    WalletComission::where('liquidation_id', $liquidationId)
-                        ->where('status', 2)
-                        ->where('liquidado', 1)
-                        ->where('avaliable_withdraw', 0)
-                        ->update([
-                            'status' => 2, // Actualizar el estado a 2 (procesado)
-                            'liquidado' => 1, // Cambiar liquidado a 0
-                            'avaliable_withdraw' => 0, // Cambiar avaliable_withdraw a 0
-                        ]);
+
 
                     // Obtener los datos de la liquidación
-                    $liquidation = Liquidaction::findOrFail($liquidationId);
+                    
                     $amount = $liquidation->amount;
                     $decryptedWallet = Crypt::decrypt($liquidation->wallet_used);
 
                     // Lógica para enviar a la pasarela de pago (coinpayment) utilizando el método withdrawal
 
                     // Ejemplo genérico para enviar a la pasarela de pago
-                    // $this->CoinpaymentsService->withdrawal($decryptedWallet, $amount);
+                    $balanceConpaymentStatus = $this->CoinpaymentsService->get_balances();
+                    if ($balanceConpaymentStatus['USDT.TRC20']->balancef > $amount) {
+                        Liquidaction::where('id', $liquidationId)
+                        ->update(['status' => 1]);
+                        $this->CoinpaymentsService->create_withdrawal($amount, $decryptedWallet, $liquidation->id);
+                    } else {
+                        return response()->json(['message' => 'No balance available'], 422);
+                    }
                 } else {
+
                      // Actualizar el estado de liquidaciones a aprobado (status = 2)
-                     Liquidaction::where('id', $liquidationId)
-                     ->update(['status' => 2]);
+                     $liquidation->status = 3;
+                     $liquidation->save();
+                     
 
-                 // Buscar datos en walletcomissions con el mismo liquidation_id y actualizar los valores
-                 WalletComission::where('liquidation_id', $liquidationId)
-                     ->where('status', 3)
-                     ->where('liquidado', 1)
-                     ->where('avaliable_withdraw', 0)
-                     ->update([
-                         'status' => 3, // Actualizar el estado a 3 (Rechazado)
-                         'liquidado' => 0, // Cambiar liquidado a 0
-                         'avaliable_withdraw' => 0, // Cambiar avaliable_withdraw a 0
-                     ]);
-
+                    // Buscar datos en walletcomissions con el mismo liquidation_id y actualizar los valores
+                    $wallets = WalletComission::where('liquidation_id', $liquidationId)->where('status', 1)->get();
+                    foreach ($wallets as $wallet) {
+                        $wallet->update([
+                            'status' => 0, // Actualizar el estado a 3 (Rechazado)
+                            'amount_available' => $wallet->amount,
+                            'amount_retired' => 0
+                        ]);
+                    } 
                 }
 
                 return response()->json(['message' => 'Proceso de retiro actualizado'], 200);

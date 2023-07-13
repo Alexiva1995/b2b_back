@@ -182,6 +182,9 @@ Route::middleware('jwt')->group(function () {
                 Route::post('/token-auth', 'saveTokenAuth');
             }
         );
+        Route::controller(WithdrawalController::class)->group(function () {
+            Route::post('withdrawal-update','withdrawalUpdate');
+        });
     });
 
     // USER
@@ -205,7 +208,6 @@ Route::middleware('jwt')->group(function () {
         Route::get('/get/user/code','generateCode');
         Route::post('/save/user/wallet','saveWallet');
         Route::post('/withdrawal/process/user','processWithdrawal');
-        Route::post('/withdrawal','withdrawal');
         Route::get('get/withdrawals/download', 'getWithdrawalsDownload');
 
     });
