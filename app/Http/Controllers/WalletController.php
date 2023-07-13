@@ -42,36 +42,45 @@ class WalletController extends Controller
     }
 
     public function getMonthlyGain()
-    {
-        $user = JWTAuth::parseToken()->authenticate();
+{
+    $user = JWTAuth::parseToken()->authenticate();
 
-        // Obtener los datos de la tabla 'Wallet comision' ordenados por fecha de creación y usuairo especificado
-        $monthlyGains = WalletComission::where('user_id', $user->id)->orderBy('created_at')->get();
+    // Obtener los datos de la tabla 'Wallet comision' ordenados por fecha de creación y usuario especificado
+    $monthlyGains = WalletComission::where('user_id', $user->id)->orderBy('created_at')->get();
 
-        // Crear un arreglo para almacenar los datos de la gráfica
-        $data = [];
+    $totalMonthlyGains = $monthlyGains->sum('amount');
 
-         // Iterar sobre los registros de la tabla 'ordenes'
-         foreach ($monthlyGains as $item) {
-             $diaSemana = $item->created_at->format('D');
-             $ganancias = $item->amount;
+    // Crear un arreglo para almacenar los datos de la gráfica
+    $data = [
+        'totalMonthlyGains' => $totalMonthlyGains,
+        'days' => [],
+    ];
 
-             // Agregar los datos al arreglo de la gráfica
-             $data[$diaSemana] = $ganancias;
-         }
+    // Iterar sobre los registros de la tabla 'Wallet comision'
+    foreach ($monthlyGains as $item) {
+        $diaSemana = $item->created_at->format('D');
+        $ganancias = $item->amount;
 
-         // Devolver los datos de la gráfica como respuesta JSON
-         return response()->json($data, 200);
+        // Agregar los datos al arreglo de los días de la semana
+        $data['days'][$diaSemana] = $ganancias;
     }
 
+    // Devolver los datos de la gráfica como respuesta JSON
+    return response()->json($data, 200);
+}
 
 
-    public function walletUserDataList()
+
+    public function walletUserDataList(Request $request)
     {
+        $filter = $request->get('dataFilter');
+
         $user = JWTAuth::parseToken()->authenticate();
+        
 
         $walletCommissions = WalletComission::where('user_id', $user->id)
             ->select('description', 'status', 'created_at', 'amount','id')
+            ->filter($filter)
             ->get();
 
         $data = $walletCommissions->map(function ($walletCommission) {

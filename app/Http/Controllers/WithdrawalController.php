@@ -129,7 +129,11 @@ class WithdrawalController extends Controller
     
         $fechaCode = date('Y-m-d H:i:s'); // Obtener la fecha y hora actual
     
+
         if ($code == $request->code_security) {
+            $user->update([
+                'code_security' => null,
+            ]);
             $liquidAction = Liquidaction::create([
                 'user_id' => $user->id,
                 'reference' => 'Pago de Comisiones Matrix',
@@ -137,7 +141,6 @@ class WithdrawalController extends Controller
                 'monto_bruto' => $walletsAmount - $feed,
                 'feed' => $feed,
                 'wallet_used' => $encryptedWallet,
-                'code_correo' => $code,
                 'fecha_code' => $fechaCode,
                 'type' => 0,
                 'status' => 0,
@@ -156,8 +159,8 @@ class WithdrawalController extends Controller
         } else {
             return response()->json(['message' => 'Withdrawal request failure'], 400);
         }
+
     }
-    
         public function generateCode()
             {
                 $user = JWTAuth::parseToken()->authenticate();
@@ -181,11 +184,12 @@ class WithdrawalController extends Controller
 
         public function saveWallet(Request $request)
             {
-                $rules = [
-                    'wallet' => 'required',
-                    'code_security' => 'required',
-                    'password' => 'required',
-                ];
+                
+                 $rules = [
+                   'wallet' => 'required',
+                   'code_security' => 'required',
+                   'password' => 'required',
+                 ];
                 
 
                 $validator = Validator::make($request->all(), $rules);
@@ -199,29 +203,34 @@ class WithdrawalController extends Controller
                 $codeEncryp = $user->code_security;
                 $code = Crypt::decrypt($codeEncryp);
                 
-                $userPassword = DB::connection('b2b_auth')
+
+                // Obtén la contraseña del formulario
+                $password = $request->password;
+
+                $storedPassword = DB::connection('b2b_auth')
                     ->table('users')
                     ->where('id', $user->id)
                     ->select('password')
                     ->first();
-                
+              
             
-                if (!Hash::check($request->password, $userPassword->password)) {
-                    return response()->json(['error' => 'Incorrect password'], 400);
+            
+                if (!Hash::check($password, $storedPassword->password)) {
+                return response()->json(['error' => 'Incorrect password'], 400);
                 }
-
-
+                
+                
                 if ($code === $request->code_security) {
-                    $walletEncrypt = Crypt::encrypt($request->wallet);
+                $walletEncrypt = Crypt::encrypt($request->wallet);
 
-                    $user->update([
-                        'wallet' => $walletEncrypt,
-                        'code_security' => null,
-                    ]);
+                $user->update([
+                    'wallet' => $walletEncrypt,
+                    'code_security' => null,
+                ]);
 
-                    return response()->json(['Wallet successfully registered'], 200);
-                } else {
-                    return response()->json(['error' => 'The code does not match'], 400);
+                return response()->json(['Wallet successfully registered'], 200);
+                 } else {
+                return response()->json(['error' => 'The code does not match'], 400);
                 }
             }
 
@@ -248,6 +257,19 @@ class WithdrawalController extends Controller
 
             public function withdrawalUpdate(Request $request)
             {
+                $user = JWTAuth::parseToken()->authenticate();
+
+                $codeEncryp = $user->code_security;
+                $code = Crypt::decrypt($codeEncryp);
+
+
+                if ($code === $request->code_security) {
+
+                $user->update([
+                    'code_security' => null,
+                ]);    
+
+                    
                 $status = $request->status;
                 $liquidationId = $request->liquidation_id;
                 $liquidation = Liquidaction::findOrFail($liquidationId);
@@ -291,6 +313,10 @@ class WithdrawalController extends Controller
                         ]);
                     } 
                 }
+            }else {
+                return response()->json(['error' => 'The code does not match'], 400);
+            }                 
+
 
                 return response()->json(['message' => 'Proceso de retiro actualizado'], 200);
             }
