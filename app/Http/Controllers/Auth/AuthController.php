@@ -34,7 +34,7 @@ class AuthController extends Controller
      */
     public function register(UserStoreRequest $request)
     {
-        
+
         // En $sponsor_id esta el id del padre (el dueño del link) aplicar logica correspondiente y obtener el lado adecuado (tarea processes de auth back)
         $binary_side = 'R';
         $sponsor_id = 1;
@@ -54,7 +54,7 @@ class AuthController extends Controller
         if ($request->has('binary_side')) $binary_side = $request->binary_side;
 
         $userFather = User::findOrFail($sponsor_id);
-        
+
         if(gettype($sponsor_id) == 'integer'){
             $binary_id = $this->treController->getPosition(intval($sponsor_id), $binary_side);
         }
@@ -90,7 +90,7 @@ class AuthController extends Controller
             $response = Http::withHeaders([
                 'apikey' => config('services.backend_auth.key'),
             ])->post("{$url}register", $data);
-
+            Log::alert($response);
             if ($response->successful()) {
                 $res = $response->object();
                 $user->update(['id' => $res->user->id]);
@@ -114,7 +114,7 @@ class AuthController extends Controller
                 return response()->json([$user], 201);
             }
             DB::rollback();
-            $response = ['Error' => 'Error registering user'];
+            $response = ['Error' => 'Error registering users'];
 
             return response()->json($response, 500);
         } catch (\Throwable $th) {
@@ -449,7 +449,7 @@ class AuthController extends Controller
             if(!$link) return $response['status'] = false;
 
             if($link->status == ReferalLink::STATUS_INACTIVE ) $response['status'] = false;
-            
+
             if($side == 'R' && $link->right == '1' || $side == 'L' && $link->left == '1')  $response['status'] = false;
 
             $response['status'] = true;
@@ -458,4 +458,6 @@ class AuthController extends Controller
             return $response;
         }
     }
+
+
 }
