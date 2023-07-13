@@ -43,6 +43,7 @@ class SetMatrixLevel extends Command
     public function handle()
     {
         Log::info('Cron Matrix - '.Carbon::now());
-        return $this->matrix_service->levelOne();
+        $this->matrix_service->levelOne();
+        Log::info('Cron Matrix endend - '.Carbon::now());
     }
 }

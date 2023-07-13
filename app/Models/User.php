@@ -47,6 +47,7 @@ class User extends Authenticatable implements JWTSubject
         'kyc',
         'can_buy_fast',
         'profile_picture',
+        'father_cyborg_purchased_id'
     ];
 
     // protected $with = [
@@ -230,5 +231,10 @@ class User extends Authenticatable implements JWTSubject
     public function marketPurchased()
     {
         return $this->hasMany(MarketPurchased::class);
+    }
+
+    public function getMarketPurchased()
+    {
+        return MarketPurchased::where('user_id', $this->buyer_id)->where('id', $this->father_cyborg_purchased_id)->first();
     }
 }
