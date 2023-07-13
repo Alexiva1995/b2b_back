@@ -232,8 +232,10 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(MarketPurchased::class);
     }
-
-    public function getMarketPurchased()
+    /**
+     * Este metodo retorna la matrix/cyborg a la que pertenece este usuario, donde el dueño es su padre (es decir el buyer_id)
+     */
+    public function getFatherMarketPurchased()
     {
         return MarketPurchased::where('user_id', $this->buyer_id)->where('id', $this->father_cyborg_purchased_id)->first();
     }
