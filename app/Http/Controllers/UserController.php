@@ -34,41 +34,55 @@ class UserController extends Controller
 
     public function showReferrals()
     {
-        $user = JWTAuth::parseToken()->authenticate();
+        $user = Auth::user();
         $referrals = $this->getReferrals($user);
 
         return response()->json($referrals, 200);
     }
 
-    public function listReferrals(User $user, $level = 1, $maxLevel = 4)
-    {
-        $user = JWTAuth::parseToken()->authenticate();
-        $referrals = $this->getReferrals($user, $level, $maxLevel);
+    public function listReferrals()
+{
+    $user = Auth::user();
+    $referrals = $this->getReferrals($user);
 
-        $referralList = $referrals->map(function ($referral) {
-            return [
-                'Name' => $referral['name'],
-                'Buyer ID' => User::find($referral['id'])->buyer_id,
-                'User ID' => $referral['id'],
-                'Side' => ($referral['side'] === 'L') ? 'Left' : 'Right',
-                'Date' => date('Y-m-d H:i:s'),
-            ];
-        });
+    $referralList = $referrals->map(function ($referral) {
+        $buyerUser = User::find($referral['buyer_id']);
+        $buyerName = $buyerUser ? $buyerUser->name : '';
 
-        return $referralList;
-    }
+        $user = User::find($referral['id']);
+        $plan = $user ? $user->matrix_type : '';
+
+        // Si el plan es nulo, asignarle el valor 20
+        $plan = $plan ?? 20;
+
+        return [
+            'Name' => $referral['name'],
+            'Buyer ID' => $buyerName,
+            'User ID' => $referral['id'],
+            'Side' => ($referral['side'] === 'L') ? 'Left' : 'Right',
+            'Date' => date('Y-m-d H:i:s'),
+            'Plan' => $plan,
+        ];
+    });
+
+    return $referralList;
+}
+
+    
+    
+
 
 
 
     public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide = null): Collection
     {
         $referrals = new Collection();
-    
+
         if ($level <= $maxLevel) {
             // Obtener los referidos del usuario actual en el lado izquierdo (binary_side = 'L')
             $leftReferrals = User::where('buyer_id', $user->id)
                 ->where('binary_side', 'L')
-                ->get(['id', 'name', 'profile_picture'])
+                ->get(['id', 'name', 'profile_picture', 'buyer_id'])
                 ->map(function ($referral) use ($level, $parentSide) {
                     return [
                         'id' => $referral->id,
@@ -76,13 +90,14 @@ class UserController extends Controller
                         'level' => $level,
                         'side' => $parentSide ?: 'L',
                         'profile_picture' => $referral->profile_picture,
+                        'buyer_id' => $referral->buyer_id,
                     ];
                 });
-    
+
             // Obtener los referidos del usuario actual en el lado derecho (binary_side = 'R')
             $rightReferrals = User::where('buyer_id', $user->id)
                 ->where('binary_side', 'R')
-                ->get(['id', 'name', 'profile_picture'])
+                ->get(['id', 'name', 'profile_picture', 'buyer_id'])
                 ->map(function ($referral) use ($level, $parentSide) {
                     return [
                         'id' => $referral->id,
@@ -90,25 +105,27 @@ class UserController extends Controller
                         'level' => $level,
                         'side' => $parentSide ?: 'R',
                         'profile_picture' => $referral->profile_picture,
+                        'buyer_id' => $referral->buyer_id,
                     ];
                 });
-    
+
             // Agregar los referidos a la colección
             $referrals = $referrals->concat($leftReferrals)->concat($rightReferrals);
-    
+
             // Recorrer los referidos y obtener sus referidos recursivamente
             foreach ($referrals as $referral) {
                 $subReferrals = $this->getReferrals(User::find($referral['id']), $level + 1, $maxLevel, $referral['side']);
-    
+
                 $referrals = $referrals->concat($subReferrals);
             }
         }
-    
+
         // Ordenar los referidos por nivel
         $sortedReferrals = $referrals->sortBy('level');
-    
+
         return $sortedReferrals;
     }
+
     
 
     public function getLast10Withdrawals()
