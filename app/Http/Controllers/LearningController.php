@@ -97,6 +97,7 @@ class LearningController extends Controller
 
         $message = [
             'video.required' => 'The video is required',
+            'video.max' => 'The selected video is too heavy',
             'title.required' => 'the title is required and must be a pdf file',
             'description.required' => 'The description is required and must be a pdf file',
         ];

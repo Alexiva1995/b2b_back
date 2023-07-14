@@ -20,12 +20,12 @@ class WalletComisionSeeder extends Seeder
             'order_id' => '1',
             'level' =>'1',
             'description' => 'pruebas',
-            'membership_id'=> '1',
             'amount' => '1000',
             'amount_available' => '1000',
             'type' => '0',
             'user_id'=> '2',
             'status' => '0',
+            'type_matrix' => 0,
         ]);
 
         WalletComission::create([
@@ -33,12 +33,12 @@ class WalletComisionSeeder extends Seeder
             'order_id' => '2',
             'level' =>'1',
             'description' => 'pruebas',
-            'membership_id'=> '2',
             'amount' => '2000',
             'amount_available' => '2000',
             'type' => '0',
             'user_id'=> '3',
             'status' => '0',
+            'type_matrix' => 0,
         ]);
 
         WalletComission::create([
@@ -46,12 +46,12 @@ class WalletComisionSeeder extends Seeder
             'order_id' => '3',
             'level' =>'1',
             'description' => 'pruebas',
-            'membership_id'=> '3',
             'amount' => '3000',
             'amount_available' => '3000',
             'type' => '0',
             'user_id'=> '4',
             'status' => '0',
+            'type_matrix' => 0,
         ]);
 
         WalletComission::create([
@@ -59,12 +59,12 @@ class WalletComisionSeeder extends Seeder
             'order_id' => '4',
             'level' =>'1',
             'description' => 'pruebas',
-            'membership_id'=> '3',
             'amount' => '200',
             'amount_available' => '200',
             'type' => '3',
             'user_id'=> '4',
             'status' => '0',
+            'type_matrix' => 0,
         ]);
 
         WalletComission::create([
@@ -72,12 +72,12 @@ class WalletComisionSeeder extends Seeder
             'order_id' => '5',
             'level' =>'1',
             'description' => 'pruebas',
-            'membership_id'=> '3',
             'amount' => '3000',
             'amount_available' => '3000',
             'type' => '3',
             'user_id'=> '4',
             'status' => '0',
+            'type_matrix' => 0,
         ]);
 
         WalletComission::create([
@@ -85,12 +85,12 @@ class WalletComisionSeeder extends Seeder
             'order_id' => '6',
             'level' =>'1',
             'description' => 'pruebas',
-            'membership_id'=> '3',
             'amount' => '1000',
             'amount_available' => '1000',
             'type' => '3',
             'user_id'=> '4',
             'status' => '0',
+            'type_matrix' => 0,
         ]);
     }
 }

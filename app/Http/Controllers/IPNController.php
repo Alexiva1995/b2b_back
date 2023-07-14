@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\WalletComission;
 use Illuminate\Http\Request;
 use App\Services\CoinpaymentsService;
 use Hexters\CoinPayment\Entities\CoinpaymentTransaction;
@@ -124,10 +125,12 @@ class IPNController extends Controller
 
                 try {
                         if ($info['result']['status'] == 2) {
-                            $liquidation->status = 1;
+                            $liquidation->status = 2;
                             $liquidation->hash = $req->id;
                             $liquidation->save();
-
+                            WalletComission::where('status', 1)->where('liquidation_id', $liquidation->id)->update([
+                                'status' => 2
+                            ]);
                             $user = User::find($liquidation->user_id);
 
                             $dataEmail = [
@@ -139,17 +142,23 @@ class IPNController extends Controller
                             });
                         }
                         if ($info['result']['status'] == -1 ) {
-
-                            $liquidation->status = 2;
-                            $liquidation->hash = $req->id;
-                            $liquidation->save();
-
-                        }
-                        if ($info['result']['status'] == 1) {
                             $liquidation->status = 3;
                             $liquidation->hash = $req->id;
                             $liquidation->save();
+                            $wallets =  WalletComission::where('status', 1)->where('liquidation_id', $liquidation->id)->get();
+                            foreach ($wallets as $wallet) {
+                                $wallet->update([
+                                    'status' => 0, // Actualizar el estado a 3 (Rechazado)
+                                    'amount_available' => $wallet->amount,
+                                    'amount_retired' => 0
+                                ]);
+                            } 
                         }
+                        // if ($info['result']['status'] == 1) {
+                        //     $liquidation->status = 3;
+                        //     $liquidation->hash = $req->id;
+                        //     $liquidation->save();
+                        // }
 
                     $transactions->update($info['result']);
                 } catch (\Exception $e) {

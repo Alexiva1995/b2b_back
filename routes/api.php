@@ -182,6 +182,9 @@ Route::middleware('jwt')->group(function () {
                 Route::post('/token-auth', 'saveTokenAuth');
             }
         );
+        Route::controller(WithdrawalController::class)->group(function () {
+            Route::post('withdrawal-update','withdrawalUpdate');
+        });
     });
 
     // USER
@@ -201,11 +204,10 @@ Route::middleware('jwt')->group(function () {
 
     //Ruta de retiros B2B
     Route::controller(WithdrawalController::class)->group(function () {
-        Route::get('/get/withdrawals', 'getWithdrawals');
+        Route::get('/get/withdrawals/{id?}', 'getWithdrawals');
         Route::get('/get/user/code','generateCode');
         Route::post('/save/user/wallet','saveWallet');
         Route::post('/withdrawal/process/user','processWithdrawal');
-        Route::post('/withdrawal','withdrawal');
         Route::get('get/withdrawals/download', 'getWithdrawalsDownload');
 
     });
