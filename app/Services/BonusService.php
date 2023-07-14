@@ -69,24 +69,21 @@ class BonusService
 
     public function subtract($amount, int $user_id, int $matrix_id, int $level) 
     {
-        Log::info('entre aca a sustraer');
         $wallets = WalletComission::where('user_id', $user_id)->where('status', WalletComission::STATUS_PENDING)
                     ->where('father_cyborg_purchased_id', $matrix_id )->where('level', $level)->get();
 
         foreach ($wallets as $wallet) {
-            if ($amount == 0) {
-                $wallet->status = WalletComission::STATUS_AVAILABLE;
+            $wallet->status = WalletComission::STATUS_AVAILABLE;
+
+            if ($amount > $wallet->amount_available) {
+                $amount = $amount - $wallet->amount_available;
+                $wallet->amount_available = 0;
+                $wallet->status = WalletComission::STATUS_PAID;
             } else {
-                if ($amount > $wallet->amount_available) {
-                    $amount = $amount - $wallet->amount_available;
-                    $wallet->amount_available = 0;
-                    $wallet->status = WalletComission::STATUS_PAID;
-                } else {
-                    $wallet->amount_available = $wallet->amount_available - $amount;
-                    $amount = 0;
-                    $wallet->status = WalletComission::STATUS_AVAILABLE;
-                }
+                $wallet->amount_available = $wallet->amount_available - $amount;
+                $amount = 0;
             }
+            
             $wallet->save();
         }
     }
