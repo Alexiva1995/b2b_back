@@ -93,4 +93,9 @@ class Order extends Model
     {
         return $this->hasOne(CoinpaymentTransaction::class);
     }
+
+    public function marketPurchased()
+    {
+        return $this->hasOne(MarketPurchased::class);
+    }
 }

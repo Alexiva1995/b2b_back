@@ -57,6 +57,7 @@ Route::controller(AuthController::class)->group(function ($router) {
     Route::get('get-sponsor-name/{identifier}', 'getSponsorName');
     Route::get('auth/user', 'getAuthUser');
     Route::get('/check-matrix/{code}', 'checkMatrix');
+    Route::get('create-comision', 'createComission');
 });
 Route::controller(LandingController::class)->group(function ($router) {
     Route::post('contact-us', 'contactUs');
