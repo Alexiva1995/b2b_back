@@ -19,36 +19,38 @@ class MarketController extends Controller
     // }
 
     public function getAllCyborgs()
-    {
-        $user = JWTAuth::parseToken()->authenticate();
-        $lastApprovedCyborg = Order::where('user_id', $user->id)
-            ->where('status', 1)
-            ->latest('cyborg_id')
-            ->first();
+{
+    $user = JWTAuth::parseToken()->authenticate();
 
-        $cyborgs = Market::all();
-        $data = [];
+    $lastApprovedCyborg = Order::where('user_id', $user->id)
+        ->where('status', '1')
+        ->latest('cyborg_id')
+        ->first();
 
-        $available = false;
-        foreach ($cyborgs as $cyborg) {
-            if ($available) {
-                $available = false;
-            } elseif ($lastApprovedCyborg && $lastApprovedCyborg->cyborg_id + 1 == $cyborg->id) {
-                $available = true;
-            }
+    $nextCyborgId = $lastApprovedCyborg ? $lastApprovedCyborg->cyborg_id + 1 : 1;
 
-            $item = [
-                'cyborg_id' => $cyborg->id,
-                'product_name' => $cyborg->product_name,
-                'amount' => $cyborg->amount,
-                'available' => $available,
-            ];
+    $cyborgs = Market::all();
+    $data = [];
 
-            $data[] = $item;
-        }
+    foreach ($cyborgs as $cyborg) {
+        $available = ($cyborg->id == $nextCyborgId);
+        $isPurchased = ($cyborg->id < $nextCyborgId); // Agregar la condición para isPurchased
 
-        return response()->json($data, 200);
+        $item = [
+            'cyborg_id' => $cyborg->id,
+            'product_name' => $cyborg->product_name,
+            'amount' => $cyborg->amount,
+            'available' => $available,
+            'isPurchased' => $isPurchased, // Agregar isPurchased a la colección
+        ];
+
+        $data[] = $item;
     }
+
+    return response()->json($data, 200);
+}
+
+    
 
     public function purchaseCyborg(Request $request)
     {
