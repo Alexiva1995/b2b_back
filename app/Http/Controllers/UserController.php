@@ -34,7 +34,7 @@ class UserController extends Controller
 
     public function showReferrals()
     {
-        $user = Auth::user();
+        $user = JWTAuth::parseToken()->authenticate();
         $referrals = $this->getReferrals($user);
 
         return response()->json($referrals, 200);
@@ -42,7 +42,7 @@ class UserController extends Controller
 
     public function listReferrals()
 {
-    $user = Auth::user();
+    $user = JWTAuth::parseToken()->authenticate();
     $referrals = $this->getReferrals($user);
 
     $referralList = $referrals->map(function ($referral) {
@@ -130,7 +130,7 @@ class UserController extends Controller
 
     public function getLast10Withdrawals()
     {
-        $user = Auth::user();
+        $user = JWTAuth::parseToken()->authenticate();
 
         $data = WalletComission::select('amount', 'created_at')
             ->where('user_id', $user->id)
@@ -143,7 +143,7 @@ class UserController extends Controller
 
     public function getUserOrders()
     {
-        $user = Auth::user();
+        $user = JWTAuth::parseToken()->authenticate();
 
         $data = [];
 
@@ -168,7 +168,7 @@ class UserController extends Controller
     public function getMonthlyOrders()
     {
 
-        $user = Auth::user();
+        $user = JWTAuth::parseToken()->authenticate();
 
         $data = Order::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, COUNT(*) AS total_orders')
             ->where('user_id', $user->id)
@@ -180,7 +180,7 @@ class UserController extends Controller
 
     public function getMonthlyEarnigs()
     {
-        $user = Auth::user();
+        $user = JWTAuth::parseToken()->authenticate();
 
         $data = WalletComission::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount) AS total_amount')
             ->where('user_id', $user->id)
@@ -192,7 +192,7 @@ class UserController extends Controller
 
     public function getMonthlyCommissions()
     {
-        $user = Auth::user();
+        $user = JWTAuth::parseToken()->authenticate();
 
         $data = WalletComission::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount_available) AS total_amount')
             ->where('user_id', $user->id)
@@ -204,7 +204,7 @@ class UserController extends Controller
 
     public function myBestMatrixData()
     {
-        $user = Auth::user();
+        $user = JWTAuth::parseToken()->authenticate();
 
         $profilePicture = $user->profile_picture ?? '';
 
@@ -233,7 +233,7 @@ class UserController extends Controller
 
         public function getAllWithdrawals()
     {
-        $user = Auth::user();
+        $user = JWTAuth::parseToken()->authenticate();
 
         $data = WalletComission::select('amount', 'created_at')
             ->where('user_id', $user->id)
@@ -245,7 +245,7 @@ class UserController extends Controller
 
     public function getUserBalance()
     {
-        $user = Auth::user();
+        $user = JWTAuth::parseToken()->authenticate();
         $data = 0;
 
         $walletCommissions = WalletComission::where('user_id', $user->id)
@@ -264,7 +264,7 @@ class UserController extends Controller
 
     public function getUserBonus()
     {
-        $user = Auth::user();
+        $user = JWTAuth::parseToken()->authenticate();
         $data = 0;
 
         $walletCommissions = WalletComission::where('user_id', $user->id)
