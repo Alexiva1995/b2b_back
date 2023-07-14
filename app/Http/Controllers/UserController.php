@@ -178,53 +178,88 @@ class UserController extends Controller
         return response()->json($data, 200);
     }
 
-    public function getMonthlyEarnigs()
+    public function getMonthlyEarnings()
     {
         $user = JWTAuth::parseToken()->authenticate();
-
-        $data = WalletComission::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount) AS total_amount')
+    
+        $commissions = WalletComission::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount) AS total_amount')
             ->where('user_id', $user->id)
             ->groupBy('year', 'month')
             ->get();
-
+    
+        $data = [];
+    
+        foreach ($commissions as $commission) {
+            $month = $commission->month;
+            $earnings = $commission->total_amount;
+    
+            $data[$month] = $earnings;
+        }
+    
         return response()->json($data, 200);
     }
+    
 
     public function getMonthlyCommissions()
-    {
-        $user = JWTAuth::parseToken()->authenticate();
+{
+    $user = JWTAuth::parseToken()->authenticate();
 
-        $data = WalletComission::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount_available) AS total_amount')
-            ->where('user_id', $user->id)
-            ->groupBy('year', 'month')
-            ->get();
+    $commissions = WalletComission::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount_available) AS total_amount')
+        ->where('user_id', $user->id)
+        ->groupBy('year', 'month')
+        ->get();
 
-        return response()->json($data, 200);
+    $data = [];
+
+    foreach ($commissions as $commission) {
+        $month = $commission->month;
+        $year = $commission->year;
+        $totalAmount = $commission->total_amount;
+
+        // Formatear la fecha para que coincida con el formato del método gainWeekly()
+        $date = Carbon::create($year, $month)->format('D');
+
+        // Agregar los datos al arreglo de la gráfica
+        $data[$date] = $totalAmount;
     }
+
+    return response()->json($data, 200);
+}
+
 
     public function myBestMatrixData()
     {
-        $user = JWTAuth::parseToken()->authenticate();
+        $user = Auth::user();
+
+        $lastApprovedCyborg = Order::where('user_id', $user->id)
+        ->where('status', '1')
+        ->latest('cyborg_id')
+        ->first();
 
         $profilePicture = $user->profile_picture ?? '';
 
-        $userPlan = $user->getPackage;
+        $userPlan = User::where('id', $user->id)->value('type_matrix'); 
 
-        $userLevel = WalletComission::where('user_id', $user->id)->value('level');
+        $userPlan = $userPlan ?? 20;
 
-        $matrixType = WalletComission::where('user_id', $user->id)->value('type_matrix');
+        $referrals = $this->getReferrals($user);
+
+        $userLevel = $referrals->max('level');
+
 
         $earning = 0;
 
         $earning = WalletComission::where('user_id', $user->id)
             ->sum('amount');
 
+        $cyborg = $lastApprovedCyborg->cyborg_id;    
+
         $data = [
             'id' => $user->id,
             'profilePhoto' =>  $profilePicture,
             'userPlan' => $userPlan,
             'userLevel' => $userLevel,
-            'matrixType' => $matrixType,
+            'Cyborg' => $cyborg,
             'earning' => $earning,
         ];
 
