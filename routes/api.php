@@ -56,7 +56,7 @@ Route::controller(AuthController::class)->group(function ($router) {
     Route::post('send-email-verification-code', 'sendVerificationCode');
     Route::get('get-sponsor-name/{identifier}', 'getSponsorName');
     Route::get('auth/user', 'getAuthUser');
-    Route::get('/check-matrix/{code}', 'checkMatrix');
+    Route::get('/check-matrix/{code}/{side}', 'checkMatrix');
 });
 Route::controller(LandingController::class)->group(function ($router) {
     Route::post('contact-us', 'contactUs');
@@ -254,6 +254,7 @@ Route::middleware('jwt')->group(function () {
         Route::get('/get-mt-account', 'getMT5User');
         Route::get('/get-mt-summary', 'getMTSummary');
         Route::post('/create-mt-user', 'createMT5User');
+        Route::get('/get-referal_links', 'getReferalLinks');
 
 
         //Ruta DashboardUser B2B obtener Balance del usuario
@@ -294,6 +295,10 @@ Route::middleware('jwt')->group(function () {
 
         //Ruta Matrix User B2B 
         Route::get('get/user/matrix','showReferrals');
+        //Fin
+
+        //Ruta Lista Matrix User B2B 
+        Route::get('get/user/list/matrix','listReferrals');
         //Fin
 
     });

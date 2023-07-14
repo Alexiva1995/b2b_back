@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',
         // ]);
+        $this->call(marketSeeder::class);
         $this->call(MembershipsPackageSeeder::class);
         $this->call(PrefixSeeder::class);
         $this->call(UserSeeder::class);
@@ -33,6 +34,8 @@ class DatabaseSeeder extends Seeder
         $this->call(MembershipSeeder::class);
         $this->call(LiquidactionSeeder::class);
         // $this->call(DocumentSeeder::class);
-        $this->call(marketSeeder::class);
+        $this->call(OrderSeeder::class);
+        $this->call(MarketPurchaseSeeder::class);
+        $this->call(FatherCyborgForUserSeeders::class);
     }
 }

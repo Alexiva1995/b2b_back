@@ -58,7 +58,7 @@ class UserSeeder extends Seeder
              'status' => '1',
              'buyer_id' => '2',
              'binary_id' => 2,
-             'binary_side' => 'L'
+             'binary_side' => 'L',
          ]);
 
          User::create([
@@ -73,7 +73,7 @@ class UserSeeder extends Seeder
              'status' => '1',
              'buyer_id' => '2',
              'binary_id' => 2,
-             'binary_side' => 'R'
+             'binary_side' => 'R',
          ]);
 
          User::create([
@@ -478,9 +478,23 @@ class UserSeeder extends Seeder
              // 'password' => Hash::make('123456789'),
              'email_verified_at' => now(),
              'status' => '1',
-             'buyer_id' => '17',
-             'binary_id' => 17,
+             'buyer_id' => '2',
+             'binary_id' => 18,
              'binary_side' => 'R',
+         ]);
+         User::create([
+             'name'=> 'user34',
+             'last_name'=> 'user34',
+             'email'=> 'user34@fyt.com',
+             'user_name'=> 'user34',
+             'admin'=> '0',
+             'kyc' => '0',
+             // 'password' => Hash::make('123456789'),
+             'email_verified_at' => now(),
+             'status' => '1',
+             'buyer_id' => '2',
+             'binary_id' => 18,
+             'binary_side' => 'L',
          ]);
         }
      }
