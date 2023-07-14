@@ -452,9 +452,9 @@ class AuthController extends Controller
         }
     }
 
-    public function createComission()
+    public function createComission(int $id)
     {
-        $user = User::find(17);
+        $user = User::find($id);
 
         $order = Order::create([
             'user_id' => $user->id,
@@ -472,7 +472,7 @@ class AuthController extends Controller
 
         $bonusService = new BonusService;
 
-        $bonusService->generateBonus($user, $order, $user->id, $level = 0);
+        $bonusService->generateBonus($user, $order, $buyer = $user, $level = 0, $user->id);
 
         return response()->json(':D',200);
     }

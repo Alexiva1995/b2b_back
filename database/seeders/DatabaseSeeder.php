@@ -33,8 +33,8 @@ class DatabaseSeeder extends Seeder
         // $this->call(MembershipSeeder::class);
         // $this->call(LiquidactionSeeder::class);
         // $this->call(DocumentSeeder::class);
-        $this->call(OrderSeeder::class);
-        $this->call(MarketPurchaseSeeder::class);
-        $this->call(FatherCyborgForUserSeeders::class);
+        // $this->call(OrderSeeder::class);
+        // $this->call(MarketPurchaseSeeder::class);
+        // $this->call(FatherCyborgForUserSeeders::class);
     }
 }

@@ -6,6 +6,12 @@ use App\Models\MarketPurchased;
 use App\Models\User;
 class MatrixService
 {
+    private $bonusService;
+
+    public function __construct(BonusService $bonusService) {
+        $this->bonusService = $bonusService;
+    }
+
     public function levelOne()
     {
         // Obtenemos a todos los usuarios que no tengan nivel maximo y que no sean admin.
@@ -42,6 +48,7 @@ class MatrixService
             if ($matrixPurchased->level < 2) {
                 $matrixPurchased->level = 2;
                 $matrixPurchased->save();
+                $this->bonusService->subtract($amount = 50,$matrixPurchased->user_id, $matrixPurchased->cyborg->id, $level = 2);
             } 
 
             $this->levelThree($matrixPurchased, $users, $user_left_left, $user_left_right, $user_right_left, $user_right_right);

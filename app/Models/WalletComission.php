@@ -32,6 +32,7 @@ class WalletComission extends Model
     ];
     const STATUS_AVAILABLE = 0;
     const STATUS_PENDING = 4;
+    const STATUS_PAID = 2;
 
     // protected function status(): Attribute {
     //     return new Attribute(
