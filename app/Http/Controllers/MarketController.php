@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Market;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\Order;
 // use app\Services\CoinpaymentsService;
 use Illuminate\Support\Facades\Auth;
@@ -19,7 +20,7 @@ class MarketController extends Controller
 
     public function getAllCyborgs()
     {
-        $user = Auth::user();
+        $user = JWTAuth::parseToken()->authenticate();
         $lastApprovedCyborg = Order::where('user_id', $user->id)
             ->where('status', 1)
             ->latest('cyborg_id')
@@ -51,7 +52,7 @@ class MarketController extends Controller
 
     public function purchaseCyborg(Request $request)
     {
-        $user = Auth::user();
+        $user = JWTAuth::parseToken()->authenticate();
         $cyborgId = $request->input('cyborg_id', 1);
 
         $cyborg = Market::find($cyborgId);
