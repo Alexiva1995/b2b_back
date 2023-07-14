@@ -18,8 +18,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('order_id')->constrained('orders');
             $table->unsignedBigInteger('cyborg_id');
+            $table->tinyInteger('level')->default(0)->comment('El nivel de la matrix o cyborg');
             $table->timestamps();
-
             $table->foreign('cyborg_id')->references('id')->on('market')->onDelete('cascade');
         });
     }
