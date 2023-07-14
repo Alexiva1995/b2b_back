@@ -11,6 +11,7 @@ class WalletComission extends Model
 {
     use HasFactory;
     protected $table = 'wallets_commissions';
+    
     protected $fillable = [
         'user_id',
         'buyer_id',
@@ -35,6 +36,13 @@ class WalletComission extends Model
     //         get: fn($value) => ['Available', 'Requested', 'Paid', 'Voided', 'Subtracted'][$value],
     //     );
     // }
+
+    public function scopeFilter($query, $filter)
+    {
+        if($filter) {
+            $query->where('description', 'LIKE', "%$filter%");
+        }
+    }
 
     public function user()
     {

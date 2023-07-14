@@ -4,11 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Liquidaction;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use App\Models\ProfileLog;
 use Illuminate\Support\Facades\Validator;
 use App\Models\WalletComission;
 use Illuminate\Support\Facades\Mail;
-use app\Services\CoinpaymentsService;
+// use app\Services\CoinpaymentsService;
 use App\Mail\CodeSecurity;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
@@ -19,10 +20,10 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class WithdrawalController extends Controller
 {
-    public function __construct(CoinpaymentsService $CoinpaymentsService)
-    {
-        $this->CoinpaymentsService = $CoinpaymentsService;
-    }
+    // public function __construct(CoinpaymentsService $CoinpaymentsService)
+    // {
+    //     $this->CoinpaymentsService = $CoinpaymentsService;
+    // }
 
     public function getWithdrawals(Request $request)
     {
@@ -100,8 +101,7 @@ class WithdrawalController extends Controller
             'wallet' => 'required',
             'amount' => 'required',
             'code_security' => 'required',
-            'comission_ids' => 'required|array',
-            'comission_ids.*' => 'exists:walletcomissions,id', // Validar que cada ID de comisión exista en la tabla walletcomissions
+            'comission_ids' => 'required',
         ];
     
         $validator = Validator::make($request->all(), $rules);
@@ -125,6 +125,11 @@ class WithdrawalController extends Controller
         $fechaCode = date('Y-m-d H:i:s'); // Obtener la fecha y hora actual
     
         if ($code === $request->code_security) {
+
+            $user->update([
+                'code_security' => null,
+            ]);
+
             $liquidAction = Liquidaction::create([
                 'user_id' => $user->id,
                 'reference' => 'Pago de Comisiones Matrix',
@@ -132,18 +137,23 @@ class WithdrawalController extends Controller
                 'monto_bruto' => $amount - $feed,
                 'feed' => $feed,
                 'wallet_used' => $encryptedWallet,
-                'code_correo' => $codeEncryp,
                 'fecha_code' => $fechaCode,
                 'type' => 0,
                 'status' => 0,
             ]);
     
             // Actualizar la columna liquidation_id en las filas de walletcomissions
-            WalletComission::whereIn('id', $request->comission_ids)
-                ->update(['liquidation_id' => $liquidAction->id]);
+            foreach ($request->comission_ids as $comission_id) {
+                WalletComission::where('id', $comission_id)
+                    ->update([
+                        'liquidation_id' => $liquidAction->id,
+                        'status' => 1
+                    ]);
+            }
+        
         }
     
-        return response()->json(['message' => 'Retiro registrado y pendiente de aprobación'], 200);
+        return response()->json(['message' => 'Retiro registrado y pendiente de aprobacion'], 200);
     }
     
 
@@ -170,11 +180,13 @@ class WithdrawalController extends Controller
 
         public function saveWallet(Request $request)
             {
-                $rules = [
-                    'wallet' => 'required',
-                    'code_security' => 'required',
-                    'password' => 'required',
-                ];
+                
+                 $rules = [
+                   'wallet' => 'required',
+                   'code_security' => 'required',
+                   'password' => 'required',
+                 ];
+                
 
                 $validator = Validator::make($request->all(), $rules);
 
@@ -185,25 +197,36 @@ class WithdrawalController extends Controller
                 $user = JWTAuth::parseToken()->authenticate();
 
                 $codeEncryp = $user->code_security;
-
                 $code = Crypt::decrypt($codeEncryp);
+                
 
-                    // Validar el password del usuario
-                if (!Hash::check($request->password, $user->password)) {
+                // Obtén la contraseña del formulario
+                $password = $request->password;
+
+                $storedPassword = DB::connection('b2b_auth')
+                    ->table('users')
+                    ->where('id', $user->id)
+                    ->select('password')
+                    ->first();
+              
+            
+            
+                if (!Hash::check($password, $storedPassword->password)) {
                 return response()->json(['error' => 'Incorrect password'], 400);
                 }
-
+                
+                
                 if ($code === $request->code_security) {
-                    $walletEncrypt = Crypt::encrypt($request->wallet);
+                $walletEncrypt = Crypt::encrypt($request->wallet);
 
-                    $user->update([
-                        'wallet' => $walletEncrypt,
-                        'code_security' => null,
-                    ]);
+                $user->update([
+                    'wallet' => $walletEncrypt,
+                    'code_security' => null,
+                ]);
 
-                    return response()->json(['Wallet successfully registered'], 200);
-                } else {
-                    return response()->json(['error' => 'The code does not match'], 400);
+                return response()->json(['Wallet successfully registered'], 200);
+                 } else {
+                return response()->json(['error' => 'The code does not match'], 400);
                 }
             }
 
@@ -230,6 +253,19 @@ class WithdrawalController extends Controller
 
             public function withdrawal(Request $request)
             {
+                $user = JWTAuth::parseToken()->authenticate();
+
+                $codeEncryp = $user->code_security;
+                $code = Crypt::decrypt($codeEncryp);
+
+
+                if ($code === $request->code_security) {
+
+                $user->update([
+                    'code_security' => null,
+                ]);    
+
+                    
                 $status = $request->status;
                 $liquidationId = $request->liquidation_id;
 
@@ -257,8 +293,8 @@ class WithdrawalController extends Controller
                     // Lógica para enviar a la pasarela de pago (coinpayment) utilizando el método withdrawal
 
                     // Ejemplo genérico para enviar a la pasarela de pago
-                    $this->CoinpaymentsService->withdrawal($decryptedWallet, $amount);
-                } else {
+                    // $this->CoinpaymentsService->withdrawal($decryptedWallet, $amount);
+                 } else {
                      // Actualizar el estado de liquidaciones a aprobado (status = 2)
                      Liquidaction::where('id', $liquidationId)
                      ->update(['status' => 2]);
@@ -275,6 +311,10 @@ class WithdrawalController extends Controller
                      ]);
 
                 }
+            }else {
+                return response()->json(['error' => 'The code does not match'], 400);
+            }                 
+
 
                 return response()->json(['message' => 'Proceso de retiro actualizado'], 200);
             }

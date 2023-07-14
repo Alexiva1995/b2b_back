@@ -18,8 +18,12 @@ class WalletsCommissionsSeeder extends Seeder
         WalletComission::create([
             'type'=> 3,
             'user_id'=> 2,
+            'description'=>'Comisiones de Matrix',
+            'level'=>1,
+            'Amount'=>500,
             'order_id'=> 1,
             'type'=> 3,
+            'type_matrix'=> 1,
         ]);
     }
 }

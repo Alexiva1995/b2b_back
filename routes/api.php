@@ -21,6 +21,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\FiltersController;
 use App\Http\Controllers\MarketController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\LearningController;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\BonusService;
@@ -55,7 +56,7 @@ Route::controller(AuthController::class)->group(function ($router) {
     Route::post('send-email-verification-code', 'sendVerificationCode');
     Route::get('get-sponsor-name/{identifier}', 'getSponsorName');
     Route::get('auth/user', 'getAuthUser');
-    Route::get('/check-matrix/{code}', 'checkMatrix');
+    Route::get('/check-matrix/{code}/{side}', 'checkMatrix');
 });
 Route::controller(LandingController::class)->group(function ($router) {
     Route::post('contact-us', 'contactUs');
@@ -169,6 +170,13 @@ Route::middleware('jwt')->group(function () {
             Route::post('documents-delete', 'destroy');
             Route::post('documents-download', 'download');
         });
+        Route::controller(LearningController::class)->group(function ($router) {
+            Route::get('learnings-all', 'learnings');
+            Route::post('documents-store', 'documentStore');
+            Route::post('video-store', 'videoStore');
+            Route::post('link-store', 'linkStore');
+            Route::post('delete-learning', 'deleteLearning');
+        });
         Route::controller(FutswapTransactionController::class)->group(
             function ($router) {
                 Route::post('/token-auth', 'saveTokenAuth');
@@ -244,6 +252,7 @@ Route::middleware('jwt')->group(function () {
         Route::get('/get-mt-account', 'getMT5User');
         Route::get('/get-mt-summary', 'getMTSummary');
         Route::post('/create-mt-user', 'createMT5User');
+        Route::get('/get-referal_links', 'getReferalLinks');
 
 
         //Ruta DashboardUser B2B obtener Balance del usuario
@@ -280,6 +289,10 @@ Route::middleware('jwt')->group(function () {
 
         //Ruta Dashboard User B2B ultimos 10 retiros
         Route::get('get/user/orders','getUserOrders');
+        //Fin
+
+        //Ruta Matrix User B2B 
+        Route::get('get/user/matrix','showReferrals');
         //Fin
 
     });
@@ -343,6 +356,12 @@ Route::middleware('jwt')->group(function () {
         Route::get('get-user-orders', 'getUserOrders');
         Route::get('get-user-refunds', 'getUserRefunds');
         Route::get('get-most-download-doc', 'getMostDownloadDoc');
+    });
+    Route::controller(LearningController::class)->group(function ($router) {
+        Route::get('learnings-videos', 'videos');
+        Route::get('learnings-links', 'links');
+        Route::get('learnings-documents', 'documents');
+        Route::post('download-learning', 'download');
     });
 });
 

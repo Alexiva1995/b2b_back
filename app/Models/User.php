@@ -39,15 +39,15 @@ class User extends Authenticatable implements JWTSubject
         'last_name',
         'admin',
         'status',
-        'affiliate',
         'token_auth',
         'token_jwt',
         'email_verified_at',
-        'affiliate',
+        'matrix_level',
         'wallet',
         'kyc',
         'can_buy_fast',
         'profile_picture',
+        'father_cyborg_purchased_id'
     ];
 
     // protected $with = [
@@ -57,6 +57,9 @@ class User extends Authenticatable implements JWTSubject
     //     'wallets'
     // ];
 
+    const INACTIVE = 0;
+    const ACTIVE = 1;
+    const ELIMINATED = 2;
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -99,11 +102,6 @@ class User extends Authenticatable implements JWTSubject
         return [];
     }
 
-    // protected function affiliate(): Attribute {
-    //     return new Attribute(
-    //         get: fn($value) => ['unaffiliate', 'affiliate', 'super_affiliate'][$value],
-    //     );
-    // }
     public function coupon()
     {
         return $this->hasMany(Coupon::class, 'user_id');
@@ -173,23 +171,6 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(WalletComission::class);
     }
 
-    public function getAffiliateStatus()
-    {
-        $response = '';
-        switch ($this->affiliate) {
-            case '0':
-                $response = 'Unaffiliated';
-                break;
-            case '1':
-                $response = 'Affiliated';
-                break;
-            case '2':
-                $response = 'Super Affiliated';
-                break;
-        }
-        return $response;
-    }
-
     public function decryptWallet()
     {
         return Crypt::decrypt($this->wallet);
@@ -210,12 +191,12 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Package::class, 'user_id');
     }
-    
-    
+
+
     public function getStatus()
     {
         $status = 'inactive';
-        
+
         switch ($this->status) {
             case '0':
                 $status = 'Inactive';
@@ -245,5 +226,17 @@ class User extends Authenticatable implements JWTSubject
     public function inversions()
     {
         return $this->hasMany(Inversion::class);
+    }
+
+    public function marketPurchased()
+    {
+        return $this->hasMany(MarketPurchased::class);
+    }
+    /**
+     * Este metodo retorna la matrix/cyborg a la que pertenece este usuario, donde el dueño es su padre (es decir el buyer_id)
+     */
+    public function getFatherMarketPurchased()
+    {
+        return MarketPurchased::where('user_id', $this->buyer_id)->where('id', $this->father_cyborg_purchased_id)->first();
     }
 }

@@ -11,6 +11,7 @@ use App\Models\WalletComission;
 use App\Models\Order;
 use App\Models\Formulary;
 use App\Models\Inversion;
+use App\Models\ReferalLink;
 use App\Rules\ChangePassword;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -30,6 +31,85 @@ use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
+
+    public function showReferrals()
+    {
+        $user = JWTAuth::parseToken()->authenticate();
+        $referrals = $this->getReferrals($user);
+
+        return response()->json($referrals, 200);
+    }
+
+    public function listReferrals(User $user, $level = 1, $maxLevel = 4)
+    {
+        $user = JWTAuth::parseToken()->authenticate();
+        $referrals = $this->getReferrals($user, $level, $maxLevel);
+
+        $referralList = $referrals->map(function ($referral) {
+            return [
+                'Name' => $referral['name'],
+                'Buyer ID' => User::find($referral['id'])->buyer_id,
+                'User ID' => $referral['id'],
+                'Side' => ($referral['side'] === 'L') ? 'Left' : 'Right',
+                'Date' => date('Y-m-d H:i:s'),
+            ];
+        });
+
+        return $referralList;
+    }
+
+
+
+    public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide = null): Collection
+    {
+        $referrals = new Collection();
+    
+        if ($level <= $maxLevel) {
+            // Obtener los referidos del usuario actual en el lado izquierdo (binary_side = 'L')
+            $leftReferrals = User::where('buyer_id', $user->id)
+                ->where('binary_side', 'L')
+                ->get(['id', 'name', 'profile_picture'])
+                ->map(function ($referral) use ($level, $parentSide) {
+                    return [
+                        'id' => $referral->id,
+                        'name' => $referral->name,
+                        'level' => $level,
+                        'side' => $parentSide ?: 'L',
+                        'profile_picture' => $referral->profile_picture,
+                    ];
+                });
+    
+            // Obtener los referidos del usuario actual en el lado derecho (binary_side = 'R')
+            $rightReferrals = User::where('buyer_id', $user->id)
+                ->where('binary_side', 'R')
+                ->get(['id', 'name', 'profile_picture'])
+                ->map(function ($referral) use ($level, $parentSide) {
+                    return [
+                        'id' => $referral->id,
+                        'name' => $referral->name,
+                        'level' => $level,
+                        'side' => $parentSide ?: 'R',
+                        'profile_picture' => $referral->profile_picture,
+                    ];
+                });
+    
+            // Agregar los referidos a la colección
+            $referrals = $referrals->concat($leftReferrals)->concat($rightReferrals);
+    
+            // Recorrer los referidos y obtener sus referidos recursivamente
+            foreach ($referrals as $referral) {
+                $subReferrals = $this->getReferrals(User::find($referral['id']), $level + 1, $maxLevel, $referral['side']);
+    
+                $referrals = $referrals->concat($subReferrals);
+            }
+        }
+    
+        // Ordenar los referidos por nivel
+        $sortedReferrals = $referrals->sortBy('level');
+    
+        return $sortedReferrals;
+    }
+    
 
     public function getLast10Withdrawals()
     {
@@ -165,7 +245,6 @@ class UserController extends Controller
         return response()->json($data, 200);
     }
 
-
     public function getUserBonus()
     {
         $user = Auth::user();
@@ -185,7 +264,6 @@ class UserController extends Controller
 
         return response()->json($data, 200);
     }
-
 
     public function getUsersWalletsList()
     {
@@ -314,6 +392,7 @@ class UserController extends Controller
 
         return response()->json($withdrawals, 200);
     }
+
     public function filterUsersList(Request $request)
     {
         $user = User::where('admin', '0')
@@ -647,11 +726,13 @@ class UserController extends Controller
         }
         return response()->json(['status' => 'warning', 'message' => "This user don't have any wallet"], 200);
     }
+
     public function auditUserProfile(Request $request)
     {
         $user = User::with('prefix')->findOrFail($request->user_id);
         return response()->json($user, 200);
     }
+
     public function auditUserDashboard(Request $request)
     {
         $user = User::with('prefix')->findOrFail($request->user_id);
@@ -675,7 +756,6 @@ class UserController extends Controller
 
         return response()->json(['status' => 'success', 'message' => 'User updated!'], 200);
     }
-
     /**
      * Update the specified resource in storage.
      *
@@ -901,5 +981,12 @@ class UserController extends Controller
         }
 
         return response()->json(['data' => array_reverse($summaryResponse['data']), 'data2' => $loginObject->project->order, 'data3' => $loginObject->project->order->packageMembership], 200);
+    }
+
+    public function getReferalLinks()
+    {
+        $user = JWTAuth::parseToken()->authenticate();
+        $referal_links = ReferalLink::where('user_id', $user->id)->where('status', ReferalLink::STATUS_ACTIVE)->with('cyborg')->get();
+        return response()->json($referal_links, 200);
     }
 }
