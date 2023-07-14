@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Market;
 use App\Models\Order;
-use app\Services\CoinpaymentsService;
+// use app\Services\CoinpaymentsService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
@@ -12,10 +12,10 @@ class MarketController extends Controller
 {
     protected $CoinpaymentsService;
 
-    public function __construct(CoinpaymentsService $CoinpaymentsService)
-    {
-        $this->CoinpaymentsService = $CoinpaymentsService;
-    }
+    // public function __construct(CoinpaymentsService $CoinpaymentsService)
+    // {
+    //     $this->CoinpaymentsService = $CoinpaymentsService;
+    // }
 
     public function getAllCyborgs()
     {
@@ -65,7 +65,7 @@ class MarketController extends Controller
         $order->save();
 
          // Ejecutar la lógica de la pasarela de pago y obtener la respuesta
-         $this->CoinpaymentsService->create_transaction($cyborg->amount, $cyborg, $request, $order);
+        //  $this->CoinpaymentsService->create_transaction($cyborg->amount, $cyborg, $request, $order);
 
     }
 
