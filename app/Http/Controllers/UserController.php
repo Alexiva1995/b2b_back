@@ -34,32 +34,41 @@ class UserController extends Controller
 
     public function showReferrals()
     {
-        $user = JWTAuth::parseToken()->authenticate();
+        $user = Auth::user();
         $referrals = $this->getReferrals($user);
 
         return response()->json($referrals, 200);
     }
 
     public function listReferrals()
-    {
-        $user = JWTAuth::parseToken()->authenticate();
-        $referrals = $this->getReferrals($user);
+{
+    $user = Auth::user();
+    $referrals = $this->getReferrals($user);
+
+    $referralList = $referrals->map(function ($referral) {
+        $buyerUser = User::find($referral['buyer_id']);
+        $buyerName = $buyerUser ? $buyerUser->name : '';
+
+        $user = User::find($referral['id']);
+        $plan = $user ? $user->matrix_type : '';
+
+        // Si el plan es nulo, asignarle el valor 20
+        $plan = $plan ?? 20;
+
+        return [
+            'Name' => $referral['name'],
+            'Buyer ID' => $buyerName,
+            'User ID' => $referral['id'],
+            'Side' => ($referral['side'] === 'L') ? 'Left' : 'Right',
+            'Date' => date('Y-m-d H:i:s'),
+            'Plan' => $plan,
+        ];
+    });
+
+    return $referralList;
+}
+
     
-        $referralList = $referrals->map(function ($referral) {
-            $buyerUser = User::find($referral['buyer_id']);
-            $buyerName = $buyerUser ? $buyerUser->name : '';
-    
-            return [
-                'Name' => $referral['name'],
-                'Buyer ID' => $buyerName,
-                'User ID' => $referral['id'],
-                'Side' => ($referral['side'] === 'L') ? 'Left' : 'Right',
-                'Date' => date('Y-m-d H:i:s'),
-            ];
-        });
-    
-        return $referralList;
-    }
     
 
 
