@@ -286,7 +286,7 @@ Route::middleware('jwt')->group(function () {
         //Fin
 
         //Ruta Dashboard User B2B ultimos 10 retiros
-        Route::get('get/monthly/last/orders','getLast10Withdrawals');
+        Route::get('get/monthly/last/withdrawals','getLast10Withdrawals');
         //Fin
 
         //Ruta Dashboard User B2B ultimos 10 retiros
