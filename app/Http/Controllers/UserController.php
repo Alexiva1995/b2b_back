@@ -40,35 +40,49 @@ class UserController extends Controller
         return response()->json($referrals, 200);
     }
 
-    public function listReferrals(User $user, $level = 1, $maxLevel = 4)
-    {
-        $user = JWTAuth::parseToken()->authenticate();
-        $referrals = $this->getReferrals($user, $level, $maxLevel);
+    public function listReferrals()
+{
+    $user = JWTAuth::parseToken()->authenticate();
+    $referrals = $this->getReferrals($user);
 
-        $referralList = $referrals->map(function ($referral) {
-            return [
-                'Name' => $referral['name'],
-                'Buyer ID' => User::find($referral['id'])->buyer_id,
-                'User ID' => $referral['id'],
-                'Side' => ($referral['side'] === 'L') ? 'Left' : 'Right',
-                'Date' => date('Y-m-d H:i:s'),
-            ];
-        });
+    $referralList = $referrals->map(function ($referral) {
+        $buyerUser = User::find($referral['buyer_id']);
+        $buyerName = $buyerUser ? $buyerUser->name : '';
 
-        return $referralList;
-    }
+        $user = User::find($referral['id']);
+        $plan = $user ? $user->matrix_type : '';
+
+        // Si el plan es nulo, asignarle el valor 20
+        $plan = $plan ?? 20;
+
+        return [
+            'Name' => $referral['name'],
+            'Buyer ID' => $buyerName,
+            'User ID' => $referral['id'],
+            'Side' => ($referral['side'] === 'L') ? 'Left' : 'Right',
+            'Date' => date('Y-m-d H:i:s'),
+            'Plan' => $plan,
+        ];
+    });
+
+    return $referralList;
+}
+
+    
+    
+
 
 
 
     public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide = null): Collection
     {
         $referrals = new Collection();
-    
+
         if ($level <= $maxLevel) {
             // Obtener los referidos del usuario actual en el lado izquierdo (binary_side = 'L')
             $leftReferrals = User::where('buyer_id', $user->id)
                 ->where('binary_side', 'L')
-                ->get(['id', 'name', 'profile_picture'])
+                ->get(['id', 'name', 'profile_picture', 'buyer_id'])
                 ->map(function ($referral) use ($level, $parentSide) {
                     return [
                         'id' => $referral->id,
@@ -76,13 +90,14 @@ class UserController extends Controller
                         'level' => $level,
                         'side' => $parentSide ?: 'L',
                         'profile_picture' => $referral->profile_picture,
+                        'buyer_id' => $referral->buyer_id,
                     ];
                 });
-    
+
             // Obtener los referidos del usuario actual en el lado derecho (binary_side = 'R')
             $rightReferrals = User::where('buyer_id', $user->id)
                 ->where('binary_side', 'R')
-                ->get(['id', 'name', 'profile_picture'])
+                ->get(['id', 'name', 'profile_picture', 'buyer_id'])
                 ->map(function ($referral) use ($level, $parentSide) {
                     return [
                         'id' => $referral->id,
@@ -90,30 +105,32 @@ class UserController extends Controller
                         'level' => $level,
                         'side' => $parentSide ?: 'R',
                         'profile_picture' => $referral->profile_picture,
+                        'buyer_id' => $referral->buyer_id,
                     ];
                 });
-    
+
             // Agregar los referidos a la colección
             $referrals = $referrals->concat($leftReferrals)->concat($rightReferrals);
-    
+
             // Recorrer los referidos y obtener sus referidos recursivamente
             foreach ($referrals as $referral) {
                 $subReferrals = $this->getReferrals(User::find($referral['id']), $level + 1, $maxLevel, $referral['side']);
-    
+
                 $referrals = $referrals->concat($subReferrals);
             }
         }
-    
+
         // Ordenar los referidos por nivel
         $sortedReferrals = $referrals->sortBy('level');
-    
+
         return $sortedReferrals;
     }
+
     
 
     public function getLast10Withdrawals()
     {
-        $user = Auth::user();
+        $user = JWTAuth::parseToken()->authenticate();
 
         $data = WalletComission::select('amount', 'created_at')
             ->where('user_id', $user->id)
@@ -126,7 +143,7 @@ class UserController extends Controller
 
     public function getUserOrders()
     {
-        $user = Auth::user();
+        $user = JWTAuth::parseToken()->authenticate();
 
         $data = [];
 
@@ -151,7 +168,7 @@ class UserController extends Controller
     public function getMonthlyOrders()
     {
 
-        $user = Auth::user();
+        $user = JWTAuth::parseToken()->authenticate();
 
         $data = Order::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, COUNT(*) AS total_orders')
             ->where('user_id', $user->id)
@@ -161,53 +178,88 @@ class UserController extends Controller
         return response()->json($data, 200);
     }
 
-    public function getMonthlyEarnigs()
+    public function getMonthlyEarnings()
     {
-        $user = Auth::user();
-
-        $data = WalletComission::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount) AS total_amount')
+        $user = JWTAuth::parseToken()->authenticate();
+    
+        $commissions = WalletComission::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount) AS total_amount')
             ->where('user_id', $user->id)
             ->groupBy('year', 'month')
             ->get();
-
+    
+        $data = [];
+    
+        foreach ($commissions as $commission) {
+            $month = $commission->month;
+            $earnings = $commission->total_amount;
+    
+            $data[$month] = $earnings;
+        }
+    
         return response()->json($data, 200);
     }
+    
 
     public function getMonthlyCommissions()
-    {
-        $user = Auth::user();
+{
+    $user = JWTAuth::parseToken()->authenticate();
 
-        $data = WalletComission::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount_available) AS total_amount')
-            ->where('user_id', $user->id)
-            ->groupBy('year', 'month')
-            ->get();
+    $commissions = WalletComission::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount_available) AS total_amount')
+        ->where('user_id', $user->id)
+        ->groupBy('year', 'month')
+        ->get();
 
-        return response()->json($data, 200);
+    $data = [];
+
+    foreach ($commissions as $commission) {
+        $month = $commission->month;
+        $year = $commission->year;
+        $totalAmount = $commission->total_amount;
+
+        // Formatear la fecha para que coincida con el formato del método gainWeekly()
+        $date = Carbon::create($year, $month)->format('D');
+
+        // Agregar los datos al arreglo de la gráfica
+        $data[$date] = $totalAmount;
     }
+
+    return response()->json($data, 200);
+}
+
 
     public function myBestMatrixData()
     {
         $user = Auth::user();
 
+        $lastApprovedCyborg = Order::where('user_id', $user->id)
+        ->where('status', '1')
+        ->latest('cyborg_id')
+        ->first();
+
         $profilePicture = $user->profile_picture ?? '';
 
-        $userPlan = $user->getPackage;
+        $userPlan = User::where('id', $user->id)->value('type_matrix'); 
 
-        $userLevel = WalletComission::where('user_id', $user->id)->value('level');
+        $userPlan = $userPlan ?? 20;
 
-        $matrixType = WalletComission::where('user_id', $user->id)->value('type_matrix');
+        $referrals = $this->getReferrals($user);
+
+        $userLevel = $referrals->max('level');
+
 
         $earning = 0;
 
         $earning = WalletComission::where('user_id', $user->id)
             ->sum('amount');
 
+        $cyborg = $lastApprovedCyborg->cyborg_id;    
+
         $data = [
             'id' => $user->id,
             'profilePhoto' =>  $profilePicture,
             'userPlan' => $userPlan,
             'userLevel' => $userLevel,
-            'matrixType' => $matrixType,
+            'Cyborg' => $cyborg,
             'earning' => $earning,
         ];
 
@@ -216,7 +268,7 @@ class UserController extends Controller
 
         public function getAllWithdrawals()
     {
-        $user = Auth::user();
+        $user = JWTAuth::parseToken()->authenticate();
 
         $data = WalletComission::select('amount', 'created_at')
             ->where('user_id', $user->id)
@@ -228,7 +280,7 @@ class UserController extends Controller
 
     public function getUserBalance()
     {
-        $user = Auth::user();
+        $user = JWTAuth::parseToken()->authenticate();
         $data = 0;
 
         $walletCommissions = WalletComission::where('user_id', $user->id)
@@ -247,7 +299,7 @@ class UserController extends Controller
 
     public function getUserBonus()
     {
-        $user = Auth::user();
+        $user = JWTAuth::parseToken()->authenticate();
         $data = 0;
 
         $walletCommissions = WalletComission::where('user_id', $user->id)

@@ -295,6 +295,10 @@ Route::middleware('jwt')->group(function () {
         Route::get('get/user/matrix','showReferrals');
         //Fin
 
+        //Ruta Lista Matrix User B2B 
+        Route::get('get/user/list/matrix','listReferrals');
+        //Fin
+
     });
     Route::apiResource('users', UserController::class);
 
