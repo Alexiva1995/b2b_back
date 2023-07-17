@@ -167,7 +167,7 @@ class UserController extends Controller
 
     public function getMonthlyOrders()
 {
-    $user = Auth::user();
+    $user = JWTAuth::parseToken()->authenticate();
 
     $orders = Order::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount) AS total_amount')
         ->where('user_id', $user->id)
