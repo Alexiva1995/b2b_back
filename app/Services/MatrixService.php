@@ -74,6 +74,7 @@ class MatrixService
             if ($matrixPurchased->level < 3) {
                 $matrixPurchased->level = 3;
                 $matrixPurchased->save();
+                $this->bonusService->subtract($amount = 100,$matrixPurchased->user_id, $matrixPurchased->cyborg->id, $level = 3);
             } 
 
             $this->levelFour(
