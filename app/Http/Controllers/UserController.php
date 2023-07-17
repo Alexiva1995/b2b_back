@@ -181,7 +181,6 @@ class UserController extends Controller
         $year = $order->year;
         $totalAmount = $order->total_amount;
 
-        // Formatear la fecha para que coincida con el formato del método getMonthlyCommissions()
         $date = Carbon::create($year, $month)->format('M');
 
         // Agregar los datos al arreglo de la gráfica
@@ -207,8 +206,11 @@ class UserController extends Controller
         foreach ($commissions as $commission) {
             $month = $commission->month;
             $earnings = $commission->total_amount;
+
+            // Formatear la fecha para que coincida con el formato del método getMonthlyCommissions()
+              $date = Carbon::create( $month)->format('M');
     
-            $data[$month] = $earnings;
+            $data[$date] = $earnings;
         }
     
         return response()->json($data, 200);
