@@ -166,17 +166,31 @@ class UserController extends Controller
     }
 
     public function getMonthlyOrders()
-    {
+{
+    $user = JWTAuth::parseToken()->authenticate();
 
-        $user = JWTAuth::parseToken()->authenticate();
+    $orders = Order::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount) AS total_amount')
+        ->where('user_id', $user->id)
+        ->groupBy('year', 'month')
+        ->get();
 
-        $data = Order::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, COUNT(*) AS total_orders')
-            ->where('user_id', $user->id)
-            ->groupBy('year', 'month')
-            ->get();
+    $data = [];
 
-        return response()->json($data, 200);
+    foreach ($orders as $order) {
+        $month = $order->month;
+        $year = $order->year;
+        $totalAmount = $order->total_amount;
+
+        $date = Carbon::create($year, $month)->format('M');
+
+        // Agregar los datos al arreglo de la gráfica
+        $data[$date] = $totalAmount;
     }
+
+    return response()->json($data, 200);
+}
+
+    
 
     public function getMonthlyEarnings()
     {
@@ -192,8 +206,11 @@ class UserController extends Controller
         foreach ($commissions as $commission) {
             $month = $commission->month;
             $earnings = $commission->total_amount;
+
+            // Formatear la fecha para que coincida con el formato del método getMonthlyCommissions()
+              $date = Carbon::create( $month)->format('M');
     
-            $data[$month] = $earnings;
+            $data[$date] = $earnings;
         }
     
         return response()->json($data, 200);
@@ -204,7 +221,7 @@ class UserController extends Controller
 {
     $user = JWTAuth::parseToken()->authenticate();
 
-    $commissions = WalletComission::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount_available) AS total_amount')
+    $commissions = WalletComission::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount) AS total_amount')
         ->where('user_id', $user->id)
         ->groupBy('year', 'month')
         ->get();
@@ -217,7 +234,7 @@ class UserController extends Controller
         $totalAmount = $commission->total_amount;
 
         // Formatear la fecha para que coincida con el formato del método gainWeekly()
-        $date = Carbon::create($year, $month)->format('D');
+        $date = Carbon::create($year, $month)->format('M');
 
         // Agregar los datos al arreglo de la gráfica
         $data[$date] = $totalAmount;
@@ -229,7 +246,7 @@ class UserController extends Controller
 
     public function myBestMatrixData()
     {
-        $user = Auth::user();
+        $user = JWTAuth::parseToken()->authenticate();
 
         $lastApprovedCyborg = Order::where('user_id', $user->id)
         ->where('status', '1')
