@@ -130,7 +130,8 @@ class MatrixService
         ) {
 
             if ($matrixPurchased->level < 4) {
-                $matrixPurchased->level = 4;
+                $matrixPurchased->level = 0;
+                $matrixPurchased->type = MarketPurchased::MATRIX_200;
                 $matrixPurchased->save();
             }
         }
