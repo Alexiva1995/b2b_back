@@ -244,7 +244,7 @@ class UserController extends Controller
 
     public function myBestMatrixData()
     {
-        $user = Auth::user();
+        $user = JWTAuth::parseToken()->authenticate();
 
         $lastApprovedCyborg = Order::where('user_id', $user->id)
         ->where('status', '1')
