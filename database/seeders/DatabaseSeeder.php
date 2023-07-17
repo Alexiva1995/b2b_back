@@ -37,6 +37,7 @@ class DatabaseSeeder extends Seeder
         // $this->call(OrderSeeder::class);
         // $this->call(MarketPurchaseSeeder::class);
         // $this->call(FatherCyborgForUserSeeders::class);
+        // TestMatrixSeeder incluye usuarios, MarketPurchased, Orders y Comisiones relacionados como deben estar
         $this->call(TestMatrixSeeder::class);
     }
 }
