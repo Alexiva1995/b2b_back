@@ -24,7 +24,7 @@ class CoinpaymentsService
         $this->withdrawal = $withdrawal;
     }
 
-    public function create_transaction($amount, $item, $request, $order)
+    public function create_transaction($amount, $item, $request, $order, $user = null)
     {
         try {
             DB::beginTransaction();
@@ -47,8 +47,8 @@ class CoinpaymentsService
                 'amount' => $amount,
                 'currency1' => config('coinpayment.default_currency'),
                 'currency2' => config('coinpayment.default_currency'),
-                'buyer_email' => $request->user()->email,
-                'buyer_name' => $request->user()->name. ' '. $request->user()->last_name,
+                'buyer_email' => isset($request->user()->email) ? $request->user()->email : $request->email,
+                'buyer_name' => isset($request->user()->name) ? $request->user()->name. ' '. $request->user()->last_name: $user->name . ' '. $user->last_name,
                 'item_name' => $item->product_name,
             ];
 
@@ -88,7 +88,7 @@ class CoinpaymentsService
                 /**
                  * Create item transaction
                  */
-              
+
 
             }
 
@@ -100,14 +100,14 @@ class CoinpaymentsService
             ])));
 
             DB::commit();
-            return response()->json($result, 200);
+            return $result;
 
         } catch (Exception $e) {
             DB::rollback();
-            return response()->json([
+            return [
                 'status' => 'error',
-                'msj' => $e->getMessage(),
-            ], 400);
+                'message' => $e->getMessage(),
+            ];
         }
 
     }

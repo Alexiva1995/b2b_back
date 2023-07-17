@@ -47,7 +47,8 @@ class User extends Authenticatable implements JWTSubject
         'kyc',
         'can_buy_fast',
         'profile_picture',
-        'father_cyborg_purchased_id'
+        'father_cyborg_purchased_id',
+        'type_service',
     ];
 
     // protected $with = [

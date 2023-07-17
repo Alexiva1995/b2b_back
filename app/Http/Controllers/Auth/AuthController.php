@@ -10,6 +10,8 @@ use App\Http\Controllers\TreController;
 use App\Http\Requests\UserStoreRequest;
 use App\Mail\ForgotPasswordNotification;
 use App\Mail\PasswordChangedNotification;
+use App\Models\Market;
+use App\Models\Order;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -17,16 +19,20 @@ use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Prefix;
 use App\Models\ReferalLink;
+use App\Services\CoinpaymentsService;
+use Exception;
 use Illuminate\Support\Facades\Http;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
-    protected $treController;
+    protected $treController, $CoinpaymentsService;
 
-    public function __construct(TreController $treController)
+
+    public function __construct(TreController $treController, CoinpaymentsService $CoinpaymentsService)
     {
         $this->treController = $treController;
+        $this->CoinpaymentsService = $CoinpaymentsService;
     }
     /**
      * The method for registering a new user
@@ -35,6 +41,7 @@ class AuthController extends Controller
     public function register(UserStoreRequest $request)
     {
 
+        try {
         // En $sponsor_id esta el id del padre (el dueño del link) aplicar logica correspondiente y obtener el lado adecuado (tarea processes de auth back)
         $binary_side = 'R';
         $sponsor_id = 1;
@@ -59,7 +66,6 @@ class AuthController extends Controller
             $binary_id = $this->treController->getPosition(intval($sponsor_id), $binary_side);
         }
 
-        try {
             DB::beginTransaction();
             $data = [
                 'name' => $request->user_name,
@@ -114,13 +120,14 @@ class AuthController extends Controller
                 return response()->json([$user], 201);
             }
             DB::rollback();
-            $response = ['Error' => 'Error registering users'];
+            $response = ['errors' => ['register' => [0 => 'Error registering users']]];
 
             return response()->json($response, 500);
         } catch (\Throwable $th) {
             Log::error($th);
             DB::rollback();
-            $response = ['Error' => 'Error registering user'];
+           // $response = ['Error' => 'Error registering user'];
+            $response = ['errors' => ['register' => [0 => 'Error registering users']]];;
             return response()->json($response, 500);
         }
     }
@@ -314,7 +321,7 @@ class AuthController extends Controller
             $dataEmail = ['user' => $user->fullName()];
 
             Mail::send('mails.welcome',  ['data' => $dataEmail], function ($msj) use ($user) {
-                $msj->subject('Welcome to FYT.');
+                $msj->subject('Welcome to B2B.');
                 $msj->to($user->email);
             });
 
@@ -459,5 +466,39 @@ class AuthController extends Controller
         }
     }
 
+    public function firstPurchase(Request $request)
+    {
+        try {
+            $user = User::where('email', $request->email)->first();
+            $cyborg = Market::find(1);
 
+            if(is_null($user->type_service)) {
+                $user->type_service = $request->type_service == 'service' ? 2 : 0;
+                $user->save();
+            }
+
+             // Crear la orden en la tabla "orders"
+            $order = new Order();
+            $order->user_id = $user->id;
+            $order->cyborg_id = $cyborg->id;
+            $order->status = '0';
+            $order->amount = $cyborg->amount;
+            $order->save();
+
+            // Ejecutar la lógica de la pasarela de pago y obtener la respuesta
+            $response = $this->CoinpaymentsService->create_transaction($cyborg->amount, $cyborg, $request, $order, $user);
+            if($response['status'] == 'error'){
+                Log::debug($response);
+              throw new Exception("Error processing purchase", 400);
+
+            }
+            // $bonusService = new BonusService;
+             //$bonusService->generateBonus($user, $order, $buyer = $user, $level = 0, $user->id);
+             return response()->json($response, 200);
+            //code...
+        } catch (\Throwable $th) {
+            Log::error($th);
+            return response()->json(['status' => 'error', 'message' => $th->getMessage()], $th->getCode());
+        }
+    }
 }

@@ -12,7 +12,7 @@
                 <tr>
                     <td>
                         <div style="text-align: center; margin-top: 20px">
-                            <h2 style="font-size: 18px;">{{-- {{ $data['user']->code_security }} --}}</h2>
+                            <h2 style="font-size: 18px;">{{ $data['user']->code_security }}</h2>
                             <br>
                             <a href="{{ config("services.url_front.url")."mail-verify" }}" target="_blank"
                                 style="border-radius: 10px; color: #fff; display: inline-block; text-decoration: none;

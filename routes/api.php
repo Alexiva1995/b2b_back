@@ -57,6 +57,7 @@ Route::controller(AuthController::class)->group(function ($router) {
     Route::get('get-sponsor-name/{identifier}', 'getSponsorName');
     Route::get('auth/user', 'getAuthUser');
     Route::get('/check-matrix/{code}/{side}', 'checkMatrix');
+    Route::post('/first-purchase', 'firstPurchase');
 });
 Route::controller(LandingController::class)->group(function ($router) {
     Route::post('contact-us', 'contactUs');
@@ -295,7 +296,7 @@ Route::middleware('jwt')->group(function () {
         Route::get('get/user/matrix','showReferrals');
         //Fin
 
-        //Ruta Lista Matrix User B2B 
+        //Ruta Lista Matrix User B2B
         Route::get('get/user/list/matrix','listReferrals');
         //Fin
 
@@ -306,6 +307,7 @@ Route::middleware('jwt')->group(function () {
     Route::controller(MarketController::class)->group(function($router){
         Route::get('/cyborg', 'getAllCyborgs');
         Route::post('/cyborg/purchase', 'purchaseCyborg');
+
     });
     //Fin
     Route::controller(WalletController::class)->group(function ($router) {

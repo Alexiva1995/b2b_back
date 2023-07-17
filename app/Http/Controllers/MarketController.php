@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Market;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\Order;
+use App\Models\User;
+use App\Services\BonusService;
 // use app\Services\CoinpaymentsService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -50,7 +52,7 @@ class MarketController extends Controller
     return response()->json($data, 200);
 }
 
-    
+
 
     public function purchaseCyborg(Request $request)
     {
@@ -81,23 +83,6 @@ class MarketController extends Controller
         }
 
         return response()->json(['data' => $order], 200);
-    }
-
-    public function firstPurchase(Request $request)
-    {
-        $user = Auth::user();
-        $cyborg = Market::find(1);
-
-         // Crear la orden en la tabla "orders"
-        $order = new Order();
-        $order->user_id = $user->id;
-        $order->cyborg_id = $cyborg->id;
-        $order->status = 0;
-        $order->amount = $cyborg->amount;
-        $order->save();
-
-         // Ejecutar la lógica de la pasarela de pago y obtener la respuesta
-        return  $this->CoinpaymentsService->create_transaction($cyborg->amount, $cyborg, $request, $order);
     }
 
 }
