@@ -276,7 +276,7 @@ class UserController extends Controller
             'profilePhoto' =>  $profilePicture,
             'userPlan' => $userPlan,
             'userLevel' => $userLevel,
-            'Cyborg' => $cyborg,
+            'Cyborg' => $cyborg ?? 1,
             'earning' => $earning,
         ];
 
