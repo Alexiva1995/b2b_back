@@ -276,7 +276,7 @@ Route::middleware('jwt')->group(function () {
         //Fin
 
         //Ruta Dashboard User B2B ganancias mensuales
-        Route::get('get/monthly/earnings','getMonthlyEarnigs');
+        Route::get('get/monthly/earnings','getMonthlyEarnings');
         //Fin
 
         //Ruta Dashboard User B2B ordenes mensuales
