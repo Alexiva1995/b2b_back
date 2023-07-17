@@ -37,28 +37,30 @@ class AuthController extends Controller
      */
     public function register(UserStoreRequest $request)
     {
+        
+        // En $sponsor_id esta el id del padre (el dueño del link) aplicar logica correspondiente y obtener el lado adecuado (tarea processes de auth back)
+        $binary_side = 'R';
+        $sponsor_id = 1;
+        $binary_id = 1;
+        $link = null;
         // Aca valida si el link de referido es valido, es decir el link de la matrix.Si no lo es, termina la ejecución acá.
-
         if($request->link_code) {
-
-            $sponsor_id = $this->checkMatrix($request->link_code, $request->side);
-            if(!$sponsor_id) {
+            $validation = $this->checkMatrix($request->link_code, $request->binary_side, false);
+            if(!$validation['status']) {
                 $response = ['Error' => 'Invalid referral link'];
                 return response()->json($response, 400);
             }
+            $sponsor_id = $validation['sponsor_id'];
+            $link = $validation['link'];
         }
-        // En $sponsor_id esta el id del padre (el dueño del link) aplicar logica correspondiente y obtener el lado adecuado (tarea processes de auth back)
-        $binary_side = 'R';
-        $binary_id = 1;
 
         if ($request->has('binary_side')) $binary_side = $request->binary_side;
 
-
-        if ($request->has('buyer_id')) {
-            $userFather = User::findOrFail($request->buyer_id);
-            $binary_id = $this->treController->getPosition(intval($request->buyer_id), $binary_side);
+        $userFather = User::findOrFail($sponsor_id);
+        
+        if(gettype($sponsor_id) == 'integer'){
+            $binary_id = $this->treController->getPosition(intval($sponsor_id), $binary_side);
         }
-
 
         try {
             DB::beginTransaction();
@@ -78,7 +80,7 @@ class AuthController extends Controller
                 'email' => $request->email,
                 'email_verified_at' => now(),
                 'binary_side' => $binary_side,
-                'buyer_id' => $request->buyer_id ?? 1,
+                'buyer_id' => $sponsor_id,
                 'prefix_id' => $request->prefix_id,
                 'status' => '0',
                 'code_security' => Str::random(12),
@@ -97,12 +99,20 @@ class AuthController extends Controller
                 $user->update(['id' => $res->user->id]);
                 $dataEmail = ['user' => $user];
 
+                // Actualizamos el link si existe en el proceso
+                if($link) {
+                    if($binary_side == 'R') $link->right = 1;
+                    if($binary_side == 'L') $link->left = 1;
+                    if($link->right == 1 && $link->left == 1) $link->status = ReferalLink::STATUS_INACTIVE;
+                    $link->save();
+                }
+
+                DB::commit();
 
                 Mail::send('mails.verification',  ['data' => $dataEmail], function ($msj) use ($request) {
                     $msj->subject('Email verification.');
                     $msj->to($request->email);
                 });
-                DB::commit();
 
                 return response()->json([$user], 201);
             }
@@ -419,36 +429,36 @@ class AuthController extends Controller
         return response()->json($user, 200);
     }
 
-    public function checkMatrix(String $code , $side)
+    public function checkMatrix(String $code , String $side, $come_from_front = true)
     {
         $link = ReferalLink::where('link_code', $code)->with('user')->first();
 
-        if($side == null){
-            return response()->json(['message' => 'Invalid Side'], 400);
-        }
-        //side 1 es izquierda side 2 es derecha
-        if($side == '1' && $link->right == '1' || $side == '2' && $link->left == '1')
-        {
-            return response()->json(['message' => 'Invalid link'], 400);
-
-        }
-
-        if(request()->wantsJson()) {
+        if($come_from_front) {
             if(!$link) return response()->json(['message' => 'Invalid link code'], 400);
 
             if($link->status == ReferalLink::STATUS_INACTIVE ) {
                 return response()->json(['message' => 'This matrix is already complete'], 400);
             }
 
+            if($side == 'R' && $link->right == '1' || $side == 'L' && $link->left == '1')
+            {
+                return response()->json(['message' => 'Invalid link'], 400);
+            }
+
             return response()->json(['sponsor' => $link->user], 200);
         } else {
+            $response = ['status' => true, 'link' => $link, 'sponsor_id' => null];
 
-            if(!$link) return false;
+            if(!$link) return $response['status'] = false;
 
-            if($link->status == ReferalLink::STATUS_INACTIVE ) return false;
+            if($link->status == ReferalLink::STATUS_INACTIVE ) $response['status'] = false;
+            
+            if($side == 'R' && $link->right == '1' || $side == 'L' && $link->left == '1')  $response['status'] = false;
 
-            return $link->user->id;
+            $response['status'] = true;
+            $response['sponsor_id'] = $link->user->id;
 
+            return $response;
         }
     }
 
