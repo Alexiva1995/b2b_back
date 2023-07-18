@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\MarketPurchased;
 use App\Models\Order;
+use App\Models\Package;
 use App\Models\Product;
 use App\Models\ReferalLink;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -21,6 +22,15 @@ class TestMatrixSeeder extends Seeder
      */
     public function run()
     {
+        Package::create([
+            'package' => 'Test',
+            'description' => 'Hi i am a description',
+            'gain' => 50,
+            'amount' => 50,
+            'type' => 0,
+            'level' => 1
+        ]);
+        
         // admin
         $bonusService = new BonusService;
 

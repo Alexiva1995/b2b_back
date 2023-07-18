@@ -14,6 +14,7 @@ class Package extends Model
         'package',
         'description',
         'gain',
+        'amount',
         'type',
         'level'
     ];
