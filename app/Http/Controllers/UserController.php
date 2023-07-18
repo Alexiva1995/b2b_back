@@ -134,8 +134,8 @@ class UserController extends Controller
 
         $data = WalletComission::select('amount', 'created_at')
             ->where('user_id', $user->id)
-            ->where('available_withdraw', '=', 0)
-            ->take(10)
+            ->where('avaliable_withdraw', '=', 0)
+            ->take(15)
             ->get();
 
         return response()->json($data, 200);
