@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class MarketPurchased extends Model
 {
     use HasFactory;
+    const MATRIX_20 = 1;
+    const MATRIX_200 = 2;
+    const MATRIX_2000 =  3;
 
     protected $fillable = ['user_id', 'cyborg_id', 'order_id'];
 
@@ -25,4 +28,5 @@ class MarketPurchased extends Model
     {
         return $this->belongsTo(Order::class);
     }
+
 }

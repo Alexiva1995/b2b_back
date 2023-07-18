@@ -10,6 +10,8 @@ use App\Http\Controllers\TreController;
 use App\Http\Requests\UserStoreRequest;
 use App\Mail\ForgotPasswordNotification;
 use App\Mail\PasswordChangedNotification;
+use App\Models\MarketPurchased;
+use App\Models\Order;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -17,6 +19,7 @@ use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Prefix;
 use App\Models\ReferalLink;
+use App\Services\BonusService;
 use Illuminate\Support\Facades\Http;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -457,5 +460,30 @@ class AuthController extends Controller
 
             return $response;
         }
+    }
+
+    public function createComission(int $id)
+    {
+        $user = User::find($id);
+
+        $order = Order::create([
+            'user_id' => $user->id,
+            'amount' => '100',
+            'hash' => null,
+            'status' => '1',
+            'cyborg_id' => '1'
+        ]);
+
+        $marketPurchased = MarketPurchased::create([
+            'user_id' => $user->id,
+            'cyborg_id' => 1,
+            'order_id' => $order->id
+        ]);
+
+        $bonusService = new BonusService;
+
+        $bonusService->generateBonus($user, $order, $buyer = $user, $level = 0, $user->id);
+
+        return response()->json(':D',200);
     }
 }

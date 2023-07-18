@@ -2,11 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\MarketPurchased;
 use App\Models\User;
-use App\Models\Investment;
-use App\Models\Membership;
 use App\Models\Order;
 use App\Models\WalletComission;
+use App\Repositories\WalletComissionRepository;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
@@ -16,139 +16,75 @@ use Illuminate\Support\Facades\DB;
 class BonusService
 {
     /**
-     * Aplica el bono directo.
-     * El % a recibir dependera del rol o rango del usuario. 
+     * Aplica el bono por compra el cual ignora al padre direct.
+     * @user es el usuario que recibira el bono
+     * @order es la orden original de la compra
+     * @buyer es el hijo del usuario que recibira la comision, se usa para saber a que matrix pertenece
+     * @level es el nivel de la comsision (maximo de 4)
+     * @buyer_id es el id del usuario que realizo la compra
+     * El monto siempre es de 20 y se genera el status pending
      */
-    public function directBonus(User $user, $amount, $buyer_id, $order)
+    public function generateBonus(User $user, Order $order, User $buyer, int $level, int $buyer_id)
     {
         try {
-            DB::beginTransaction();
+            if($user->id == 1) return;
+
+            if($level >= 2) {
             
-            $referred = $user->padre;
-            $can_recieve_bonus = $this->validations($referred, $buyer_id);
-            
-            // Log::debug('entra aca');
-            if($can_recieve_bonus) {
-                // Log::debug('si recibe');
-                $percent = 0;
-                $skip = false;
-                // Se aplica un % segun el rango ? del usuario
-                switch ($referred->affiliate) {
-                    case '1':
-                        $percent = 0.10;
-                        if ($order->coupon_id != null) {
-                            if ($order->coupon->percentage == 5) {
-                                $percent = 0.05;
-                            } else  {
-                                $skip = true;
-                            }
-                        }
-                        break;
-                    case '2':
-                        $percent = 0.20;
-                        if ($order->coupon_id != null) {
-                            if ($order->coupon->percentage == 5) {
-                                $percent = 0.15;
-                            } elseif  ($order->coupon->percentage == 10) {
-                                $percent = 0.10;
-                            } else {
-                                $skip = true;
-                            }
-                        }
-                        break;
-                }
-                if ($skip == false){
-                    $wallet = WalletComission::create([
-                        'user_id' => $referred->id,
-                        'buyer_id' => $buyer_id,
-                        'membership_id' => $order->project->id,
-                        'order_id' => $order->id,
-                        'description' => 'Bono directo',
-                        'type' => '0',
-                        'level' => '1',
-                        'status' => 0,
-                        'avaliable_withdraw' => 0,
-                        'amount_available' => $amount * $percent,
-                        'amount' => $amount * $percent,
-                    ]);
-                    if ($referred->affiliate != '2') $this->unilevelBonus($referred, $amount, $buyer_id, $order, $level = 2);
-                    DB::commit();
-                }
+                DB::beginTransaction();
+                
+                $walletComissionRepository = new WalletComissionRepository;
+
+                $marketPurchase = MarketPurchased::where('user_id', $user->id);
+
+                $walletComission = new WalletComission([
+                    'user_id' => $user->id,
+                    'buyer_id' => $buyer_id,
+                    'order_id' => $order->id,
+                    'description' => 'Comision por compra',
+                    'amount' => 20,
+                    'amount_available' => 20,
+                    'type' => 0, //matrix 20
+                    'status' => WalletComission::STATUS_PENDING,
+                    'father_cyborg_purchased_id' => is_null($buyer->getFatherMarketPurchased()) ? null : $buyer->getFatherMarketPurchased()->id,
+                    'level' => $level
+                ]);
+
+                $walletComissionRepository->save($walletComission);
+
+                DB::commit();
+
             }
+
+            if($user->padre && $level < 4) {
+                $this->generateBonus($user->padre, $order, $user, $level + 1, $buyer_id);
+            }
+            
         } catch (\Throwable $th) {
             DB::rollback();
             Log::info('Fallo al aplicar bono directo');
             Log::error($th);
         }
     }
-    /**
-     * Aplica el bono unilevel
-     * El nivel maximo depende de la suscripción del usuario. 
-     */
-    public function unilevelBonus(User $user, $amount, $buyer_id, $order, $level)
+
+    public function subtract($amount, int $user_id, int $matrix_id, int $level) 
     {
-        try {
+        $wallets = WalletComission::where('user_id', $user_id)->where('status', WalletComission::STATUS_PENDING)
+                    ->where('father_cyborg_purchased_id', $matrix_id )->where('level', $level)->get();
 
-            $referred = $user->padre;
-            
-            $can_recieve_bonus = $this->validations($referred, $buyer_id);
+        foreach ($wallets as $wallet) {
+            $wallet->status = WalletComission::STATUS_AVAILABLE;
 
-            if ($can_recieve_bonus && $level == 2) {
-                $gain = $amount * 0.10;
-                if($referred->affiliate == 2) 
-                {
-                    $wallet = WalletComission::make([
-                        'user_id' => $referred->id,
-                        'buyer_id' => $buyer_id,
-                        'membership_id' => $order->project->id,
-                        'order_id' => $order->id,
-                        'description' => 'Bono Unilevel',
-                        'type' => '2',
-                        'level' => $level,
-                        'status' => 0,
-                        'avaliable_withdraw' => 0,
-                        'amount_available' => $gain,
-                        'amount' => $gain,
-                    ]);
-                    $wallet->save();
-                }
-                // El padre puede recibir bono de nivel 2 si tiene el rol de super afiliado
+            if ($amount > $wallet->amount_available) {
+                $amount = $amount - $wallet->amount_available;
+                $wallet->amount_available = 0;
+                $wallet->status = WalletComission::STATUS_PAID;
+            } else {
+                $wallet->amount_available = $wallet->amount_available - $amount;
+                $amount = 0;
             }
-            //El nivel maximo es 2
-            // if ($level < 2) {
-            //     $this->unilevelBonus($referred, $amount, $buyer_id, $order, $level + 1);
-            // }
-        } catch (\Throwable $th) {
-            // DB::rollback();
-            Log::info('Fallo al aplicar bono unilevel');
-            Log::error($th);
+            
+            $wallet->save();
         }
-    }
-
-    private function validations($referred, int $buyer_id)
-    {
-        $res = true;
-        // Si por alguna razon el padre no existe se cancela
-        if (!$referred) {
-            $res = false;
-        }
-        if (isset($referred) && $referred->admin == '1') {
-            $res = false;
-        }
-        // Si el id del padre es mayor al del hijo se cancela
-        if (isset($referred) && $referred->id > $buyer_id) {
-             $res = false;
-        }
-
-        /*Se el padre no tiene suscripción activa se cancela.
-        if (!$referred->hasActiveSuscription()) {
-            $res = false;
-        }*/
-        // Si el padre no es afiliado o super afiliado se cancela
-        if(isset($referred) && $referred->affiliate == 0)
-        {
-             $res = false;
-        }
-        return $res;
     }
 }

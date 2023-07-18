@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('wallets_commissions', function (Blueprint $table) {
-            $table->integer('type_matrix')->comment('0 - Matrix 1 , 1 - Matrix 2 , 2 - Matrix 3, 3 - Matrix 4 , 4 - Matrix 5');
+            $table->foreignId('father_cyborg_purchased_id')->nullable()->references('id')->on('market_purchaseds')->after('buyer_id')->comment('La ID de la compra de matrix del padre a la cual pertenece');
         });
     }
 
@@ -26,7 +26,7 @@ return new class extends Migration
     public function down()
     {
         Schema::table('wallets_commissions', function (Blueprint $table) {
-            $table->dropColumn('type_matrix');
+            $table->dropColumn('father_cyborg_purchased_id');
         });
     }
 };
