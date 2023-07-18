@@ -4,10 +4,12 @@ namespace Database\Seeders;
 
 use App\Models\MarketPurchased;
 use App\Models\Order;
+use App\Models\ReferalLink;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Services\BonusService;
+use Illuminate\Support\Str;
 
 class TestMatrixSeeder extends Seeder
 {
@@ -62,6 +64,14 @@ class TestMatrixSeeder extends Seeder
             'order_id' => $order->id
         ]);
 
+        ReferalLink::create([
+            'user_id' => $user->id,
+            'link_code' => Str::random(6),
+            'cyborg_id' => 1,
+            'right' => 1,
+            'left' => 1,
+        ]);
+
         $bonusService->generateBonus($user, $order, $buyer = $user, $level = 0, $user->id);
 
         for($i = 3; $i < 33; $i++) {
@@ -95,6 +105,14 @@ class TestMatrixSeeder extends Seeder
                 'user_id' => $user->id,
                 'cyborg_id' => 1,
                 'order_id' => $order->id
+            ]);
+
+            ReferalLink::create([
+                'user_id' => $user->id,
+                'link_code' => Str::random(6),
+                'cyborg_id' => 1,
+                'right' => 1,
+                'left' => 1,
             ]);
 
             $bonusService->generateBonus($user, $order, $buyer = $user, $level = 0, $user->id);
