@@ -305,41 +305,28 @@ class UserController extends Controller
     public function getUserBalance()
     {
         $user = JWTAuth::parseToken()->authenticate();
-        $data = 0;
-
-        $walletCommissions = WalletComission::where('user_id', $user->id)
-            ->where(function ($query) {
-                $query->where('avaliable_withdraw', 1)
-                    ->orWhere('status', 0);
-            })
-            ->get();
-
-        foreach ($walletCommissions as $walletCommission) {
-            $data += $walletCommission->amount;
-        }
-
+    
+        $data = WalletComission::where('status', 0)
+            ->where('user_id', $user->id)
+            ->sum('amount');
+    
         return response()->json($data, 200);
     }
+    
 
     public function getUserBonus()
     {
         $user = JWTAuth::parseToken()->authenticate();
-        $data = 0;
-
-        $walletCommissions = WalletComission::where('user_id', $user->id)
-            ->where(function ($query) {
-                $query->where('avaliable_withdraw', 1)
-                    ->orWhere('status', 0);
-            })
-            ->where('type', 0)
-            ->get();
-
-        foreach ($walletCommissions as $walletCommission) {
-            $data += $walletCommission->amount_available;
-        }
-
+    
+        $data = WalletComission::where('status', 0)
+            ->where('user_id', $user->id)
+            ->where('avaliable_withdraw', 1)
+            ->sum('amount');
+    
         return response()->json($data, 200);
     }
+    
+    
 
     public function getUsersWalletsList()
     {
