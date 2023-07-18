@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\MarketPurchased;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\ReferalLink;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -55,7 +56,8 @@ class TestMatrixSeeder extends Seeder
             'amount' => '100',
             'hash' => null,
             'status' => '1',
-            'cyborg_id' => '1'
+            'cyborg_id' => '1',
+            'membership_packages_id' => 1
         ]);
 
         $marketPurchased = MarketPurchased::create([
@@ -102,13 +104,27 @@ class TestMatrixSeeder extends Seeder
                 'binary_side' => ($i % 2) == 0 ? 'R' : 'L',
                 'father_cyborg_purchased_id' => $father->marketPurchased->first()->id
             ]);
+
+            Product::create([
+                'name'=> "prueba {$i}",
+                'user_id'=> $user->id,
+                'country'=> '0',
+                'document_id'=> '1',
+                'postal_code'=> '1',
+                'phone_number' => rand(10000000,99999999),
+                'status' => '1',
+                'state' => 'united',
+                'street' => '1',
+                'department' => $i
+            ]);
     
             $order = Order::create([
                 'user_id' => $user->id,
                 'amount' => '100',
                 'hash' => null,
                 'status' => '1',
-                'cyborg_id' => '1'
+                'cyborg_id' => '1',
+                'membership_packages_id' => 1
             ]);
     
             $marketPurchased = MarketPurchased::create([
@@ -131,7 +147,7 @@ class TestMatrixSeeder extends Seeder
                 $data['left'] = 0;
                 $data['status'] = ReferalLink::STATUS_ACTIVE;
             }
-            
+
             ReferalLink::create($data);
 
             $bonusService->generateBonus($user, $order, $buyer = $user, $level = 0, $user->id);
