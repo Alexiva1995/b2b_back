@@ -10,6 +10,9 @@ use App\Http\Controllers\TreController;
 use App\Http\Requests\UserStoreRequest;
 use App\Mail\ForgotPasswordNotification;
 use App\Mail\PasswordChangedNotification;
+use App\Models\Market;
+use App\Models\MarketPurchased;
+use App\Models\Order;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -17,16 +20,21 @@ use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Prefix;
 use App\Models\ReferalLink;
+use App\Services\CoinpaymentsService;
+use Exception;
+use App\Services\BonusService;
 use Illuminate\Support\Facades\Http;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
-    protected $treController;
+    protected $treController, $CoinpaymentsService;
 
-    public function __construct(TreController $treController)
+
+    public function __construct(TreController $treController, CoinpaymentsService $CoinpaymentsService)
     {
         $this->treController = $treController;
+        $this->CoinpaymentsService = $CoinpaymentsService;
     }
     /**
      * The method for registering a new user
@@ -34,32 +42,32 @@ class AuthController extends Controller
      */
     public function register(UserStoreRequest $request)
     {
-        
-        // En $sponsor_id esta el id del padre (el dueño del link) aplicar logica correspondiente y obtener el lado adecuado (tarea processes de auth back)
-        $binary_side = 'R';
-        $sponsor_id = 1;
-        $binary_id = 1;
-        $link = null;
-        // Aca valida si el link de referido es valido, es decir el link de la matrix.Si no lo es, termina la ejecución acá.
-        if($request->link_code) {
-            $validation = $this->checkMatrix($request->link_code, $request->binary_side, false);
-            if(!$validation['status']) {
-                $response = ['Error' => 'Invalid referral link'];
-                return response()->json($response, 400);
-            }
-            $sponsor_id = $validation['sponsor_id'];
-            $link = $validation['link'];
-        }
-
-        if ($request->has('binary_side')) $binary_side = $request->binary_side;
-
-        $userFather = User::findOrFail($sponsor_id);
-        
-        if(gettype($sponsor_id) == 'integer'){
-            $binary_id = $this->treController->getPosition(intval($sponsor_id), $binary_side);
-        }
 
         try {
+            // En $sponsor_id esta el id del padre (el dueño del link) aplicar logica correspondiente y obtener el lado adecuado (tarea processes de auth back)
+            $binary_side = 'R';
+            $sponsor_id = 1;
+            $binary_id = 1;
+            $link = null;
+            // Aca valida si el link de referido es valido, es decir el link de la matrix.Si no lo es, termina la ejecución acá.
+            if ($request->link_code) {
+                $validation = $this->checkMatrix($request->link_code, $request->binary_side, false);
+                if (!$validation['status']) {
+                    $response = ['Error' => 'Invalid referral link'];
+                    return response()->json($response, 400);
+                }
+                $sponsor_id = $validation['sponsor_id'];
+                $link = $validation['link'];
+            }
+
+            if ($request->has('binary_side')) $binary_side = $request->binary_side;
+
+            $userFather = User::findOrFail($sponsor_id);
+
+            if (gettype($sponsor_id) == 'integer') {
+                $binary_id = $this->treController->getPosition(intval($sponsor_id), $binary_side);
+            }
+
             DB::beginTransaction();
             $data = [
                 'name' => $request->user_name,
@@ -90,17 +98,17 @@ class AuthController extends Controller
             $response = Http::withHeaders([
                 'apikey' => config('services.backend_auth.key'),
             ])->post("{$url}register", $data);
-
+            Log::alert($response);
             if ($response->successful()) {
                 $res = $response->object();
                 $user->update(['id' => $res->user->id]);
                 $dataEmail = ['user' => $user];
 
                 // Actualizamos el link si existe en el proceso
-                if($link) {
-                    if($binary_side == 'R') $link->right = 1;
-                    if($binary_side == 'L') $link->left = 1;
-                    if($link->right == 1 && $link->left == 1) $link->status = ReferalLink::STATUS_INACTIVE;
+                if ($link) {
+                    if ($binary_side == 'R') $link->right = 1;
+                    if ($binary_side == 'L') $link->left = 1;
+                    if ($link->right == 1 && $link->left == 1) $link->status = ReferalLink::STATUS_INACTIVE;
                     $link->save();
                 }
 
@@ -114,13 +122,14 @@ class AuthController extends Controller
                 return response()->json([$user], 201);
             }
             DB::rollback();
-            $response = ['Error' => 'Error registering user'];
+            $response = ['errors' => ['register' => [0 => 'Error registering users']]];
 
             return response()->json($response, 500);
         } catch (\Throwable $th) {
             Log::error($th);
             DB::rollback();
-            $response = ['Error' => 'Error registering user'];
+            // $response = ['Error' => 'Error registering user'];
+            $response = ['errors' => ['register' => [0 => 'Error registering users']]];;
             return response()->json($response, 500);
         }
     }
@@ -314,7 +323,7 @@ class AuthController extends Controller
             $dataEmail = ['user' => $user->fullName()];
 
             Mail::send('mails.welcome',  ['data' => $dataEmail], function ($msj) use ($user) {
-                $msj->subject('Welcome to FYT.');
+                $msj->subject('Welcome to B2B.');
                 $msj->to($user->email);
             });
 
@@ -409,8 +418,8 @@ class AuthController extends Controller
     public function getSponsorName($identifier)
     {
         $user = User::where('id', $identifier)
-                    ->orWhere('nickname_referral_link', $identifier)
-                    ->first();
+            ->orWhere('nickname_referral_link', $identifier)
+            ->first();
         if ($user) {
             $data_sponsor = [
                 "name" => "$user->name $user->last_name",
@@ -426,19 +435,18 @@ class AuthController extends Controller
         return response()->json($user, 200);
     }
 
-    public function checkMatrix(String $code , String $side, $come_from_front = true)
+    public function checkMatrix(String $code, String $side, $come_from_front = true)
     {
         $link = ReferalLink::where('link_code', $code)->with('user')->first();
 
-        if($come_from_front) {
-            if(!$link) return response()->json(['message' => 'Invalid link code'], 400);
+        if ($come_from_front) {
+            if (!$link) return response()->json(['message' => 'Invalid link code'], 400);
 
-            if($link->status == ReferalLink::STATUS_INACTIVE ) {
+            if ($link->status == ReferalLink::STATUS_INACTIVE) {
                 return response()->json(['message' => 'This matrix is already complete'], 400);
             }
 
-            if($side == 'R' && $link->right == '1' || $side == 'L' && $link->left == '1')
-            {
+            if ($side == 'R' && $link->right == '1' || $side == 'L' && $link->left == '1') {
                 return response()->json(['message' => 'Invalid link'], 400);
             }
 
@@ -446,16 +454,76 @@ class AuthController extends Controller
         } else {
             $response = ['status' => true, 'link' => $link, 'sponsor_id' => null];
 
-            if(!$link) return $response['status'] = false;
+            if (!$link) return $response['status'] = false;
 
-            if($link->status == ReferalLink::STATUS_INACTIVE ) $response['status'] = false;
-            
-            if($side == 'R' && $link->right == '1' || $side == 'L' && $link->left == '1')  $response['status'] = false;
+            if ($link->status == ReferalLink::STATUS_INACTIVE) $response['status'] = false;
+
+            if ($side == 'R' && $link->right == '1' || $side == 'L' && $link->left == '1')  $response['status'] = false;
 
             $response['status'] = true;
             $response['sponsor_id'] = $link->user->id;
 
             return $response;
         }
+    }
+
+
+    public function firstPurchase(Request $request)
+    {
+        try {
+            $user = User::where('email', $request->email)->first();
+            $cyborg = Market::find(1);
+
+            if (is_null($user->type_service)) {
+                $user->type_service = $request->type_service == 'service' ? 2 : 0;
+                $user->save();
+            }
+
+            // Crear la orden en la tabla "orders"
+            $order = new Order();
+            $order->user_id = $user->id;
+            $order->cyborg_id = $cyborg->id;
+            $order->status = '0';
+            $order->amount = $cyborg->amount;
+            $order->save();
+
+            // Ejecutar la lógica de la pasarela de pago y obtener la respuesta
+            $response = $this->CoinpaymentsService->create_transaction($cyborg->amount, $cyborg, $request, $order, $user);
+            if ($response['status'] == 'error') {
+                Log::debug($response);
+                throw new Exception("Error processing purchase", 400);
+            }
+            // $bonusService = new BonusService;
+            //$bonusService->generateBonus($user, $order, $buyer = $user, $level = 0, $user->id);
+            return response()->json($response, 200);
+            //code...
+        } catch (\Throwable $th) {
+            Log::error($th);
+            return response()->json(['status' => 'error', 'message' => $th->getMessage()], $th->getCode());
+        }
+    }
+    public function createComission(int $id)
+    {
+        $user = User::find($id);
+
+        $order = Order::create([
+            'user_id' => $user->id,
+            'amount' => '100',
+            'hash' => null,
+            'status' => '1',
+            'cyborg_id' => '1'
+        ]);
+
+        $marketPurchased = MarketPurchased::create([
+            'user_id' => $user->id,
+            'cyborg_id' => 1,
+            'order_id' => $order->id
+        ]);
+
+        $bonusService = new BonusService;
+
+        $bonusService->generateBonus($user, $order, $buyer = $user, $level = 0, $user->id);
+
+        return response()->json(':D', 200);
     }
 }

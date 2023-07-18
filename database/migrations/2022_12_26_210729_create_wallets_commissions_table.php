@@ -33,8 +33,8 @@ class CreateWalletsCommissionsTable extends Migration
             $table->tinyInteger('type')->default(0)->comment('0 - matrix 20 , 1 - matrix 200, 2 - matrix 2000');
             $table->bigInteger('liquidation_id')->unsigned()->nullable();
             $table->tinyInteger('liquidado')->comment('0 - no , 1 - si')->default(0);
-            $table->tinyInteger('status')->default(0)->comment('0 - Available, 1 - Requested, 2 - Paid, 3 - Voided' );
-            $table->tinyInteger('avaliable_withdraw')->default(0)->comment('0 - No Disponible, 1 - Disponible');
+            $table->tinyInteger('status')->default(0)->comment('0 - Available, 1 - Requested, 2 - Paid, 3 - Voided, 4 - Pending');
+            $table->tinyInteger('available_withdraw')->default(0)->comment('0 - No Disponible, 1 - Disponible');
             $table->timestamps();
         });
     }

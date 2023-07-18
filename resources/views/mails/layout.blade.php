@@ -57,12 +57,13 @@
                 <table align="center" border="0" cellpadding="0" cellspacing="0" width="600"
                     style="border-collapse: collapse; border: 1px solid #e9e9e9; border-radius: 15px; box-shadow: 10px 10px 20px #00000015">
                     <tr>
-                        <td align="center" bgcolor="#FFFFFF">
+                        <td align="center" bgcolor="#FFFFFF" style="background: linear-gradient(112.69deg, #2FE7FA -24.41%, #7A21C7 88.97%);">
                             @if (isset($message))
-                                <img src="{{ $message->embed(public_path('/images') . '/logo/logo-fyt.png') }}"
-                                    alt="FYT Logo" style="display: block; width: 100%;" />
+                                <img src="{{ $message->embed(public_path('/images') . '/logo/logo-b2b.png') }}"
+                                    alt="B2B Logo" style="display: block; width: 100%;" />
                             @else
-                                <img src="/images/logo/logo-fyt.png" alt="FYT Logo" style="display: block; width:100%;" />
+                                <img src="/images/logo/logo-b2b.png" alt="B2B Logo" style="display: block; width:100%;" />
+
                             @endif
                         </td>
                     </tr>
@@ -78,15 +79,17 @@
                                 Note: Be careful with phishing websites and always make sure to visit the official
                                 website
                                 <a href="{{ config('services.url_front.url') }}" target="_blank"
-                                    style="text-decoration: underline; color: #078AF0;">www.fundyourtrades.com</a>
+                                    style="text-decoration: underline; color: #078AF0;">www.business2business.space</a>
+
                                 when entering confidential data.
                                 <a href="{{ config('app.url') . 'api/mails-terms-conditions' }}"
-                                    style="text-decoration: underline; color: #078AF0;">Terms and conditions.</a>
+                                    style="text-decoration: underline; color: #46087d;">Terms and conditions.</a>
                             </p>
                         </td>
                     </tr>
                     <tr>
-                        <td style="padding: 20px; background: linear-gradient(150deg, #04E886 -10%, #078AF0 );">
+
+                        <td style="padding: 20px; background: linear-gradient(112.69deg, #2FE7FA -24.41%, #7A21C7 88.97%); ">
                             <p style="text-align: center; color: #ffffff !important; margin: 0; font-size: 12px; letter-spacing: 1px;">
                                 &reg; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.
                             </p>

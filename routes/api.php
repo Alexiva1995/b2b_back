@@ -56,7 +56,10 @@ Route::controller(AuthController::class)->group(function ($router) {
     Route::post('send-email-verification-code', 'sendVerificationCode');
     Route::get('get-sponsor-name/{identifier}', 'getSponsorName');
     Route::get('auth/user', 'getAuthUser');
+    Route::get('/check-matrix/{code}', 'checkMatrix');
+    Route::get('create-comision/{id}', 'createComission');
     Route::get('/check-matrix/{code}/{side}', 'checkMatrix');
+    Route::post('/first-purchase', 'firstPurchase');
 });
 Route::controller(LandingController::class)->group(function ($router) {
     Route::post('contact-us', 'contactUs');
@@ -182,6 +185,9 @@ Route::middleware('jwt')->group(function () {
                 Route::post('/token-auth', 'saveTokenAuth');
             }
         );
+        Route::controller(WithdrawalController::class)->group(function () {
+            Route::post('withdrawal-update','withdrawalUpdate');
+        });
     });
 
     // USER
@@ -201,11 +207,10 @@ Route::middleware('jwt')->group(function () {
 
     //Ruta de retiros B2B
     Route::controller(WithdrawalController::class)->group(function () {
-        Route::get('/get/withdrawals', 'getWithdrawals');
+        Route::get('/get/withdrawals/{id?}', 'getWithdrawals');
         Route::get('/get/user/code','generateCode');
         Route::post('/save/user/wallet','saveWallet');
         Route::post('/withdrawal/process/user','processWithdrawal');
-        Route::post('/withdrawal','withdrawal');
         Route::get('get/withdrawals/download', 'getWithdrawalsDownload');
 
     });
@@ -291,11 +296,11 @@ Route::middleware('jwt')->group(function () {
         Route::get('get/user/orders','getUserOrders');
         //Fin
 
-        //Ruta Matrix User B2B 
+        //Ruta Matrix User B2B
         Route::get('get/user/matrix','showReferrals');
         //Fin
 
-        //Ruta Lista Matrix User B2B 
+        //Ruta Lista Matrix User B2B
         Route::get('get/user/list/matrix','listReferrals');
         //Fin
 
@@ -306,6 +311,7 @@ Route::middleware('jwt')->group(function () {
     Route::controller(MarketController::class)->group(function($router){
         Route::get('/cyborg', 'getAllCyborgs');
         Route::post('/cyborg/purchase', 'purchaseCyborg');
+
     });
     //Fin
     Route::controller(WalletController::class)->group(function ($router) {

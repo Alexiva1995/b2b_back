@@ -30,7 +30,7 @@ return new class extends Migration
             $table->string('code_correo')->nullable();
             $table->dateTime('fecha_code')->nullable();
             $table->tinyInteger('type')->default(0)->comment('0 - Comisiones, 1 - Capital');
-            $table->tinyInteger('status')->default(0)->comment('0 - Pendiente, 1 - Aprovada, 2 - Rechazada');
+            $table->tinyInteger('status')->default(0)->comment('0 - Pending, 1 - Requested, 2 - Approbed, 3 - Rejected');
             $table->timestamps();
         });
     }

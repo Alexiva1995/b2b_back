@@ -47,7 +47,8 @@ class User extends Authenticatable implements JWTSubject
         'kyc',
         'can_buy_fast',
         'profile_picture',
-        'father_cyborg_purchased_id'
+        'father_cyborg_purchased_id',
+        'type_service',
     ];
 
     // protected $with = [
@@ -57,9 +58,9 @@ class User extends Authenticatable implements JWTSubject
     //     'wallets'
     // ];
 
-    const INACTIVE = 0;
-    const ACTIVE = 1;
-    const ELIMINATED = 2;
+    const INACTIVE = '0';
+    const ACTIVE = '1';
+    const ELIMINATED = '2';
     /**
      * The attributes that should be hidden for serialization.
      *
