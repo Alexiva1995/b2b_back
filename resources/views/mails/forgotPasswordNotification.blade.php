@@ -8,7 +8,7 @@
           <td>
             <p style="text-align: start; font-weight: 600; font-size: 18px;">
               Hello, A password reset was requested for your 
-              <a style="text-decoration: underline; color: #078AF0;">{{ $email }}</a> account, 
+              <a style="text-decoration: underline; color:#46087d;">{{ $email }}</a> account, 
               click on the button that appears below to change your password.
             </p>
           </td>
@@ -19,7 +19,7 @@
             <p style="margin: 10px auto; font-size: 18px; font-weight: bold;">{{ $token }}</p>
             <a href="{{ config("services.url_front.url")."update-password" }}" target="_blank"
               style="border-radius: 10px; color: #fff; display: inline-block; text-decoration: none; 
-              background-color: #078AF0; margin: 25px 0; padding: 10px 28px;">
+              background-color: #46087d; padding: 10px 28px;">
               Change password
             </a>
           </td>

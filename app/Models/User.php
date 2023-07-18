@@ -58,9 +58,9 @@ class User extends Authenticatable implements JWTSubject
     //     'wallets'
     // ];
 
-    const INACTIVE = 0;
-    const ACTIVE = 1;
-    const ELIMINATED = 2;
+    const INACTIVE = '0';
+    const ACTIVE = '1';
+    const ELIMINATED = '2';
     /**
      * The attributes that should be hidden for serialization.
      *

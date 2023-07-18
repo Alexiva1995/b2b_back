@@ -11,6 +11,7 @@ use App\Http\Requests\UserStoreRequest;
 use App\Mail\ForgotPasswordNotification;
 use App\Mail\PasswordChangedNotification;
 use App\Models\Market;
+use App\Models\MarketPurchased;
 use App\Models\Order;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -21,6 +22,7 @@ use App\Models\Prefix;
 use App\Models\ReferalLink;
 use App\Services\CoinpaymentsService;
 use Exception;
+use App\Services\BonusService;
 use Illuminate\Support\Facades\Http;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -466,6 +468,7 @@ class AuthController extends Controller
         }
     }
 
+
     public function firstPurchase(Request $request)
     {
         try {
@@ -500,5 +503,29 @@ class AuthController extends Controller
             Log::error($th);
             return response()->json(['status' => 'error', 'message' => $th->getMessage()], $th->getCode());
         }
+  
+    public function createComission(int $id)
+    {
+        $user = User::find($id);
+
+        $order = Order::create([
+            'user_id' => $user->id,
+            'amount' => '100',
+            'hash' => null,
+            'status' => '1',
+            'cyborg_id' => '1'
+        ]);
+
+        $marketPurchased = MarketPurchased::create([
+            'user_id' => $user->id,
+            'cyborg_id' => 1,
+            'order_id' => $order->id
+        ]);
+
+        $bonusService = new BonusService;
+
+        $bonusService->generateBonus($user, $order, $buyer = $user, $level = 0, $user->id);
+
+        return response()->json(':D',200);
     }
 }

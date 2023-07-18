@@ -63,6 +63,7 @@
                                     alt="B2B Logo" style="display: block; width: 100%;" />
                             @else
                                 <img src="/images/logo/logo-b2b.png" alt="B2B Logo" style="display: block; width:100%;" />
+
                             @endif
                         </td>
                     </tr>
@@ -79,13 +80,15 @@
                                 website
                                 <a href="{{ config('services.url_front.url') }}" target="_blank"
                                     style="text-decoration: underline; color: #078AF0;">www.business2business.space</a>
+
                                 when entering confidential data.
                                 <a href="{{ config('app.url') . 'api/mails-terms-conditions' }}"
-                                    style="text-decoration: underline; color: #078AF0;">Terms and conditions.</a>
+                                    style="text-decoration: underline; color: #46087d;">Terms and conditions.</a>
                             </p>
                         </td>
                     </tr>
                     <tr>
+
                         <td style="padding: 20px; background: linear-gradient(112.69deg, #2FE7FA -24.41%, #7A21C7 88.97%); ">
                             <p style="text-align: center; color: #ffffff !important; margin: 0; font-size: 12px; letter-spacing: 1px;">
                                 &reg; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.
