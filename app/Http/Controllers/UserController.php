@@ -130,7 +130,7 @@ class UserController extends Controller
 
     public function getLast10Withdrawals()
     {
-        $user = Auth::user();
+        $user = JWTAuth::parseToken()->authenticate();
     
         $withdrawals = WalletComission::select('description', 'amount', 'created_at')
             ->where('user_id', $user->id)
