@@ -503,7 +503,7 @@ class AuthController extends Controller
             Log::error($th);
             return response()->json(['status' => 'error', 'message' => $th->getMessage()], $th->getCode());
         }
-  
+    }
     public function createComission(int $id)
     {
         $user = User::find($id);
