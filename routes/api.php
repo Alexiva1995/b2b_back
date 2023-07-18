@@ -59,6 +59,7 @@ Route::controller(AuthController::class)->group(function ($router) {
     Route::get('/check-matrix/{code}', 'checkMatrix');
     Route::get('create-comision/{id}', 'createComission');
     Route::get('/check-matrix/{code}/{side}', 'checkMatrix');
+    Route::post('/first-purchase', 'firstPurchase');
 });
 Route::controller(LandingController::class)->group(function ($router) {
     Route::post('contact-us', 'contactUs');
@@ -295,11 +296,11 @@ Route::middleware('jwt')->group(function () {
         Route::get('get/user/orders','getUserOrders');
         //Fin
 
-        //Ruta Matrix User B2B 
+        //Ruta Matrix User B2B
         Route::get('get/user/matrix','showReferrals');
         //Fin
 
-        //Ruta Lista Matrix User B2B 
+        //Ruta Lista Matrix User B2B
         Route::get('get/user/list/matrix','listReferrals');
         //Fin
 
@@ -310,6 +311,7 @@ Route::middleware('jwt')->group(function () {
     Route::controller(MarketController::class)->group(function($router){
         Route::get('/cyborg', 'getAllCyborgs');
         Route::post('/cyborg/purchase', 'purchaseCyborg');
+
     });
     //Fin
     Route::controller(WalletController::class)->group(function ($router) {
