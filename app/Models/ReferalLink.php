@@ -15,6 +15,7 @@ class ReferalLink extends Model
         'cyborg_id',
         'right',
         'left',
+        'status'
     ];
 
     const STATUS_ACTIVE = 1;

@@ -70,6 +70,16 @@ class TestMatrixSeeder extends Seeder
             'cyborg_id' => 1,
             'right' => 1,
             'left' => 1,
+            'status' => ReferalLink::STATUS_INACTIVE,
+        ]);
+
+        ReferalLink::create([
+            'user_id' => $user->id,
+            'link_code' => Str::random(6),
+            'cyborg_id' => 2,
+            'right' => 0,
+            'left' => 0,
+            'status' => ReferalLink::STATUS_ACTIVE,
         ]);
 
         $bonusService->generateBonus($user, $order, $buyer = $user, $level = 0, $user->id);
@@ -107,13 +117,22 @@ class TestMatrixSeeder extends Seeder
                 'order_id' => $order->id
             ]);
 
-            ReferalLink::create([
+            $data = [
                 'user_id' => $user->id,
                 'link_code' => Str::random(6),
                 'cyborg_id' => 1,
                 'right' => 1,
                 'left' => 1,
-            ]);
+                'status' => ReferalLink::STATUS_INACTIVE,
+            ];
+
+            if($i > 16) {
+                $data['right'] = 0;
+                $data['left'] = 0;
+                $data['status'] = ReferalLink::STATUS_ACTIVE;
+            }
+            
+            ReferalLink::create($data);
 
             $bonusService->generateBonus($user, $order, $buyer = $user, $level = 0, $user->id);
         }
