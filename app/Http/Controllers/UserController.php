@@ -57,8 +57,8 @@ class UserController extends Controller
 
         return [
             'Name' => $referral['name'],
-            'Buyer ID' => $buyerName,
-            'User ID' => $referral['id'],
+            'Buyer_ID' => $buyerName,
+            'User_ID' => $referral['id'],
             'Side' => ($referral['side'] === 'L') ? 'Left' : 'Right',
             'Date' => date('Y-m-d H:i:s'),
             'Plan' => $plan,
