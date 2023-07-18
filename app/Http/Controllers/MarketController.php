@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Market;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\Order;
+use App\Models\User;
+use App\Services\BonusService;
 // use app\Services\CoinpaymentsService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -50,7 +52,7 @@ class MarketController extends Controller
     return response()->json($data, 200);
 }
 
-    
+
 
     public function purchaseCyborg(Request $request)
     {

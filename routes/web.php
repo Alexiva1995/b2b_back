@@ -23,3 +23,7 @@ Route::get('/clear-cache', function () {
 Route::get('/', function () {
     return view('welcome');
 });
+
+/* Route::get('test', function (){
+    return view('mails.verification');
+}); */
