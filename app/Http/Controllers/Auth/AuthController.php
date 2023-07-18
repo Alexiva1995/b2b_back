@@ -44,29 +44,29 @@ class AuthController extends Controller
     {
 
         try {
-        // En $sponsor_id esta el id del padre (el dueño del link) aplicar logica correspondiente y obtener el lado adecuado (tarea processes de auth back)
-        $binary_side = 'R';
-        $sponsor_id = 1;
-        $binary_id = 1;
-        $link = null;
-        // Aca valida si el link de referido es valido, es decir el link de la matrix.Si no lo es, termina la ejecución acá.
-        if($request->link_code) {
-            $validation = $this->checkMatrix($request->link_code, $request->binary_side, false);
-            if(!$validation['status']) {
-                $response = ['Error' => 'Invalid referral link'];
-                return response()->json($response, 400);
+            // En $sponsor_id esta el id del padre (el dueño del link) aplicar logica correspondiente y obtener el lado adecuado (tarea processes de auth back)
+            $binary_side = 'R';
+            $sponsor_id = 1;
+            $binary_id = 1;
+            $link = null;
+            // Aca valida si el link de referido es valido, es decir el link de la matrix.Si no lo es, termina la ejecución acá.
+            if ($request->link_code) {
+                $validation = $this->checkMatrix($request->link_code, $request->binary_side, false);
+                if (!$validation['status']) {
+                    $response = ['Error' => 'Invalid referral link'];
+                    return response()->json($response, 400);
+                }
+                $sponsor_id = $validation['sponsor_id'];
+                $link = $validation['link'];
             }
-            $sponsor_id = $validation['sponsor_id'];
-            $link = $validation['link'];
-        }
 
-        if ($request->has('binary_side')) $binary_side = $request->binary_side;
+            if ($request->has('binary_side')) $binary_side = $request->binary_side;
 
-        $userFather = User::findOrFail($sponsor_id);
+            $userFather = User::findOrFail($sponsor_id);
 
-        if(gettype($sponsor_id) == 'integer'){
-            $binary_id = $this->treController->getPosition(intval($sponsor_id), $binary_side);
-        }
+            if (gettype($sponsor_id) == 'integer') {
+                $binary_id = $this->treController->getPosition(intval($sponsor_id), $binary_side);
+            }
 
             DB::beginTransaction();
             $data = [
@@ -105,10 +105,10 @@ class AuthController extends Controller
                 $dataEmail = ['user' => $user];
 
                 // Actualizamos el link si existe en el proceso
-                if($link) {
-                    if($binary_side == 'R') $link->right = 1;
-                    if($binary_side == 'L') $link->left = 1;
-                    if($link->right == 1 && $link->left == 1) $link->status = ReferalLink::STATUS_INACTIVE;
+                if ($link) {
+                    if ($binary_side == 'R') $link->right = 1;
+                    if ($binary_side == 'L') $link->left = 1;
+                    if ($link->right == 1 && $link->left == 1) $link->status = ReferalLink::STATUS_INACTIVE;
                     $link->save();
                 }
 
@@ -128,7 +128,7 @@ class AuthController extends Controller
         } catch (\Throwable $th) {
             Log::error($th);
             DB::rollback();
-           // $response = ['Error' => 'Error registering user'];
+            // $response = ['Error' => 'Error registering user'];
             $response = ['errors' => ['register' => [0 => 'Error registering users']]];;
             return response()->json($response, 500);
         }
@@ -418,8 +418,8 @@ class AuthController extends Controller
     public function getSponsorName($identifier)
     {
         $user = User::where('id', $identifier)
-                    ->orWhere('nickname_referral_link', $identifier)
-                    ->first();
+            ->orWhere('nickname_referral_link', $identifier)
+            ->first();
         if ($user) {
             $data_sponsor = [
                 "name" => "$user->name $user->last_name",
@@ -435,19 +435,18 @@ class AuthController extends Controller
         return response()->json($user, 200);
     }
 
-    public function checkMatrix(String $code , String $side, $come_from_front = true)
+    public function checkMatrix(String $code, String $side, $come_from_front = true)
     {
         $link = ReferalLink::where('link_code', $code)->with('user')->first();
 
-        if($come_from_front) {
-            if(!$link) return response()->json(['message' => 'Invalid link code'], 400);
+        if ($come_from_front) {
+            if (!$link) return response()->json(['message' => 'Invalid link code'], 400);
 
-            if($link->status == ReferalLink::STATUS_INACTIVE ) {
+            if ($link->status == ReferalLink::STATUS_INACTIVE) {
                 return response()->json(['message' => 'This matrix is already complete'], 400);
             }
 
-            if($side == 'R' && $link->right == '1' || $side == 'L' && $link->left == '1')
-            {
+            if ($side == 'R' && $link->right == '1' || $side == 'L' && $link->left == '1') {
                 return response()->json(['message' => 'Invalid link'], 400);
             }
 
@@ -455,11 +454,11 @@ class AuthController extends Controller
         } else {
             $response = ['status' => true, 'link' => $link, 'sponsor_id' => null];
 
-            if(!$link) return $response['status'] = false;
+            if (!$link) return $response['status'] = false;
 
-            if($link->status == ReferalLink::STATUS_INACTIVE ) $response['status'] = false;
+            if ($link->status == ReferalLink::STATUS_INACTIVE) $response['status'] = false;
 
-            if($side == 'R' && $link->right == '1' || $side == 'L' && $link->left == '1')  $response['status'] = false;
+            if ($side == 'R' && $link->right == '1' || $side == 'L' && $link->left == '1')  $response['status'] = false;
 
             $response['status'] = true;
             $response['sponsor_id'] = $link->user->id;
@@ -475,12 +474,12 @@ class AuthController extends Controller
             $user = User::where('email', $request->email)->first();
             $cyborg = Market::find(1);
 
-            if(is_null($user->type_service)) {
+            if (is_null($user->type_service)) {
                 $user->type_service = $request->type_service == 'service' ? 2 : 0;
                 $user->save();
             }
 
-             // Crear la orden en la tabla "orders"
+            // Crear la orden en la tabla "orders"
             $order = new Order();
             $order->user_id = $user->id;
             $order->cyborg_id = $cyborg->id;
@@ -490,14 +489,13 @@ class AuthController extends Controller
 
             // Ejecutar la lógica de la pasarela de pago y obtener la respuesta
             $response = $this->CoinpaymentsService->create_transaction($cyborg->amount, $cyborg, $request, $order, $user);
-            if($response['status'] == 'error'){
+            if ($response['status'] == 'error') {
                 Log::debug($response);
-              throw new Exception("Error processing purchase", 400);
-
+                throw new Exception("Error processing purchase", 400);
             }
             // $bonusService = new BonusService;
-             //$bonusService->generateBonus($user, $order, $buyer = $user, $level = 0, $user->id);
-             return response()->json($response, 200);
+            //$bonusService->generateBonus($user, $order, $buyer = $user, $level = 0, $user->id);
+            return response()->json($response, 200);
             //code...
         } catch (\Throwable $th) {
             Log::error($th);
@@ -526,6 +524,6 @@ class AuthController extends Controller
 
         $bonusService->generateBonus($user, $order, $buyer = $user, $level = 0, $user->id);
 
-        return response()->json(':D',200);
+        return response()->json(':D', 200);
     }
 }
