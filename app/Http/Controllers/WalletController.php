@@ -168,7 +168,7 @@ class WalletController extends Controller
             'type' => $type,
             'level' => 1,
             'status' => 0,
-            'avaliable_withdraw' => 0,
+            'available_withdraw' => 0,
             'amount_available' => $request->amount,
             'amount' => $request->amount,
         ]);

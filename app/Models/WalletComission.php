@@ -25,7 +25,7 @@ class WalletComission extends Model
         'type',
         'liquidation_id',
         'status',
-        'avaliable_withdraw',
+        'available_withdraw',
         'order_id',
         'liquidado',
         'father_cyborg_purchased_id'

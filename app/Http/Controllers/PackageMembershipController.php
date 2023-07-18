@@ -443,7 +443,7 @@ class PackageMembershipController extends Controller
             'type' => 3, //tipo retorno de inversión
             'level' => '1',
             'status' => 0,
-            'avaliable_withdraw' => 0,
+            'available_withdraw' => 0,
             'amount_available' => $project->order->amount,
             'amount' => $project->order->amount,
         ]);

@@ -302,7 +302,7 @@ class UserController extends Controller
 
         $walletCommissions = WalletComission::where('user_id', $user->id)
             ->where(function ($query) {
-                $query->where('avaliable_withdraw', 1)
+                $query->where('available_withdraw', 1)
                     ->orWhere('status', 0);
             })
             ->get();
@@ -321,7 +321,7 @@ class UserController extends Controller
 
         $walletCommissions = WalletComission::where('user_id', $user->id)
             ->where(function ($query) {
-                $query->where('avaliable_withdraw', 1)
+                $query->where('available_withdraw', 1)
                     ->orWhere('status', 0);
             })
             ->where('type', 0)
