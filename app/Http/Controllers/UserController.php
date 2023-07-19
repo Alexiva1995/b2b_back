@@ -61,6 +61,7 @@ class UserController extends Controller
             'User_ID' => $referral['id'],
             'Side' => ($referral['side'] === 'L') ? 'Left' : 'Right',
             'Date' => date('Y-m-d H:i:s'),
+            'Level' => $referral['level'],
             'Plan' => $plan,
         ];
     });
