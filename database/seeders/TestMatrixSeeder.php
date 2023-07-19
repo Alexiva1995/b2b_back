@@ -64,7 +64,7 @@ class TestMatrixSeeder extends Seeder
 
         $order = Order::create([
             'user_id' => $user->id,
-            'amount' => '100',
+            'amount' => 50,
             'hash' => null,
             'status' => '1',
             'cyborg_id' => '1',
@@ -76,7 +76,7 @@ class TestMatrixSeeder extends Seeder
             'orden_id' => $order->id,
             'user_id' => $user->id,
             'status' => Inversion::STATUS_APPROVED,
-            'amount' => 100,
+            'amount' => 50,
             'type' => Inversion::TYPE_INITIAL_MATRIX
         ]);
 
@@ -140,7 +140,7 @@ class TestMatrixSeeder extends Seeder
     
             $order = Order::create([
                 'user_id' => $user->id,
-                'amount' => '100',
+                'amount' => 50,
                 'hash' => null,
                 'status' => '1',
                 'cyborg_id' => '1',
