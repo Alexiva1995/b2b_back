@@ -57,8 +57,8 @@ class UserController extends Controller
 
         return [
             'Name' => $referral['name'],
-            'Buyer ID' => $buyerName,
-            'User ID' => $referral['id'],
+            'Buyer_ID' => $buyerName,
+            'User_ID' => $referral['id'],
             'Side' => ($referral['side'] === 'L') ? 'Left' : 'Right',
             'Date' => date('Y-m-d H:i:s'),
             'Plan' => $plan,
@@ -131,15 +131,23 @@ class UserController extends Controller
     public function getLast10Withdrawals()
     {
         $user = JWTAuth::parseToken()->authenticate();
-
-        $data = WalletComission::select('amount', 'created_at')
+    
+        $withdrawals = WalletComission::select('id', 'description', 'amount', 'created_at')
             ->where('user_id', $user->id)
-            ->where('available_withdraw', '=', 0)
-            ->take(10)
+            ->where('avaliable_withdraw', '=', 0)
+            ->take(15)
             ->get();
-
+    
+        $data = $withdrawals->map(function ($item) {
+            $item['created_at'] = $item['created_at']->format('Y-m-d');
+            return $item;
+        });
+    
         return response()->json($data, 200);
     }
+    
+    
+    
 
     public function getUserOrders()
     {
@@ -289,7 +297,7 @@ class UserController extends Controller
 
         $data = WalletComission::select('amount', 'created_at')
             ->where('user_id', $user->id)
-            ->where('available_withdraw', '=', 0)
+            ->where('avaliable_withdraw', '=', 0)
             ->get();
 
         return response()->json($data, 200);
@@ -298,41 +306,28 @@ class UserController extends Controller
     public function getUserBalance()
     {
         $user = JWTAuth::parseToken()->authenticate();
-        $data = 0;
-
-        $walletCommissions = WalletComission::where('user_id', $user->id)
-            ->where(function ($query) {
-                $query->where('available_withdraw', 1)
-                    ->orWhere('status', 0);
-            })
-            ->get();
-
-        foreach ($walletCommissions as $walletCommission) {
-            $data += $walletCommission->amount;
-        }
-
+    
+        $data = WalletComission::where('status', 0)
+            ->where('user_id', $user->id)
+            ->sum('amount');
+    
         return response()->json($data, 200);
     }
+    
 
     public function getUserBonus()
     {
         $user = JWTAuth::parseToken()->authenticate();
-        $data = 0;
-
-        $walletCommissions = WalletComission::where('user_id', $user->id)
-            ->where(function ($query) {
-                $query->where('available_withdraw', 1)
-                    ->orWhere('status', 0);
-            })
-            ->where('type', 0)
-            ->get();
-
-        foreach ($walletCommissions as $walletCommission) {
-            $data += $walletCommission->amount_available;
-        }
-
+    
+        $data = WalletComission::where('status', 0)
+            ->where('user_id', $user->id)
+            ->where('avaliable_withdraw', 1)
+            ->sum('amount');
+    
         return response()->json($data, 200);
     }
+    
+    
 
     public function getUsersWalletsList()
     {
