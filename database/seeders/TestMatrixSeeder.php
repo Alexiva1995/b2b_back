@@ -104,7 +104,7 @@ class TestMatrixSeeder extends Seeder
             'status' => ReferalLink::STATUS_ACTIVE,
         ]);
 
-        $bonusService->generateBonus($user, $order, $buyer = $user, $level = 0, $user->id);
+        $bonusService->generateBonus(50, $user, $order, $buyer = $user, $level = 0, $user->id);
 
         for($i = 3; $i < 33; $i++) {
             
@@ -170,7 +170,7 @@ class TestMatrixSeeder extends Seeder
 
             ReferalLink::create($data);
 
-            $bonusService->generateBonus($user, $order, $buyer = $user, $level = 0, $user->id);
+            $bonusService->generateBonus(50 ,$user, $order, $buyer = $user, $level = 0, $user->id);
         }
     }
 }

@@ -63,7 +63,7 @@ class MatrixService
                 $matrixPurchased->level = 2;
                 $matrixPurchased->save();
                 $amount = $matrixPurchased->type == MarketPurchased::MATRIX_20 ? 50 : ($matrixPurchased->type == MarketPurchased::MATRIX_200 ? 500 : 5_000);
-                $this->bonusService->subtract($amount, $matrixPurchased->user_id, $matrixPurchased->cyborg->id, $level = 2);
+                $this->bonusService->subtract($amount, $matrixPurchased->user_id, $matrixPurchased->cyborg->id, $level = 2, $matrixPurchased->user, $matrixPurchased->type);
             }
 
             $this->levelThree($matrixPurchased, $users, $user_left_left, $user_left_right, $user_right_left, $user_right_right);
@@ -106,7 +106,7 @@ class MatrixService
                 $matrixPurchased->level = 3;
                 $matrixPurchased->save();
                 $amount = $matrixPurchased->type == MarketPurchased::MATRIX_20 ? 100 : ($matrixPurchased->type == MarketPurchased::MATRIX_200 ? 1_000 : 10_000);
-                $this->bonusService->subtract($amount, $matrixPurchased->user_id, $matrixPurchased->cyborg->id, $level = 3);
+                $this->bonusService->subtract($amount, $matrixPurchased->user_id, $matrixPurchased->cyborg->id, $level = 3, $matrixPurchased->user, $matrixPurchased->type);
             }
 
             $this->levelFour(
