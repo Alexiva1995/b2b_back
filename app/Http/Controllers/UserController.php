@@ -132,7 +132,7 @@ class UserController extends Controller
     {
         $user = JWTAuth::parseToken()->authenticate();
     
-        $withdrawals = WalletComission::select('description', 'amount', 'created_at')
+        $withdrawals = WalletComission::select('id', 'description', 'amount', 'created_at')
             ->where('user_id', $user->id)
             ->where('avaliable_withdraw', '=', 0)
             ->take(15)
@@ -145,6 +145,7 @@ class UserController extends Controller
     
         return response()->json($data, 200);
     }
+    
     
     
 
