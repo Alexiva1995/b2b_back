@@ -132,9 +132,13 @@ class UserController extends Controller
 
     
 
-    public function getLast10Withdrawals()
+    public function getLast10Withdrawals($id = null)
     {
-        $user = JWTAuth::parseToken()->authenticate();
+        if ($id == null) {
+            $user = JWTAuth::parseToken()->authenticate();
+        } else {
+            $user = User::find($id);
+        }
     
         $withdrawals = WalletComission::select('id', 'description', 'amount', 'created_at')
             ->where('user_id', $user->id)
@@ -181,9 +185,13 @@ class UserController extends Controller
         return response()->json($data, 200);
     }
 
-    public function getMonthlyOrders()
+    public function getMonthlyOrders($id = null)
 {
-    $user = JWTAuth::parseToken()->authenticate();
+    if ($id == null) {
+        $user = JWTAuth::parseToken()->authenticate();
+    } else {
+        $user = User::find($id);
+    }
 
     $orders = Order::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount) AS total_amount')
         ->where('user_id', $user->id)
@@ -208,9 +216,13 @@ class UserController extends Controller
 
     
 
-    public function getMonthlyEarnings()
+    public function getMonthlyEarnings($id = null)
     {
-        $user = JWTAuth::parseToken()->authenticate();
+        if ($id == null) {
+            $user = JWTAuth::parseToken()->authenticate();
+        } else {
+            $user = User::find($id);
+        }
     
         $commissions = WalletComission::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount) AS total_amount')
             ->where('user_id', $user->id)
@@ -233,9 +245,13 @@ class UserController extends Controller
     }
     
 
-    public function getMonthlyCommissions()
+    public function getMonthlyCommissions($id = null)
 {
-    $user = JWTAuth::parseToken()->authenticate();
+    if ($id == null) {
+        $user = JWTAuth::parseToken()->authenticate();
+    } else {
+        $user = User::find($id);
+    }
 
     $commissions = WalletComission::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount) AS total_amount')
         ->where('user_id', $user->id)
@@ -260,9 +276,13 @@ class UserController extends Controller
 }
 
 
-    public function myBestMatrixData()
+    public function myBestMatrixData($id = null)
     {
-        $user = JWTAuth::parseToken()->authenticate();
+        if ($id == null) {
+            $user = JWTAuth::parseToken()->authenticate();
+        } else {
+            $user = User::find($id);
+        }
 
         $lastApprovedCyborg = Order::where('user_id', $user->id)
         ->where('status', '1')
@@ -311,9 +331,13 @@ class UserController extends Controller
         return response()->json($data, 200);
     }
 
-    public function getUserBalance()
-    {
-        $user = JWTAuth::parseToken()->authenticate();
+    public function getUserBalance($id = null)
+    { 
+        if($id == null) {
+            $user = JWTAuth::parseToken()->authenticate();
+        } else {
+            $user = User::find($id);
+        }
     
         $data = WalletComission::where('status', 0)
             ->where('user_id', $user->id)
@@ -323,9 +347,13 @@ class UserController extends Controller
     }
     
 
-    public function getUserBonus()
+    public function getUserBonus($id = null)
     {
-        $user = JWTAuth::parseToken()->authenticate();
+        if($id == null) {
+            $user = JWTAuth::parseToken()->authenticate();
+        } else {
+            $user = User::find($id);
+        }
     
         $data = WalletComission::where('status', 0)
             ->where('user_id', $user->id)
