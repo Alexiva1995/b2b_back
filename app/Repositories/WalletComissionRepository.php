@@ -2,9 +2,10 @@
 
 namespace App\Repositories;
 
+use App\Models\User;
 use App\Models\WalletComission;
 
-class WalletComissionRepository 
+class WalletComissionRepository
 {
     private $model;
 
@@ -18,4 +19,8 @@ class WalletComissionRepository
         return $walletComission->save();
     }
 
+    public function getByReinversionLevel(User $user, int $level, int $amount, $status)
+    {
+        return $this->model->where('user_id', $user->id)->where('level', $level)->where('amount', $amount)->where('status', $status)->sum('amount');
+    }
 }
