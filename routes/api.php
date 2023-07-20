@@ -301,7 +301,7 @@ Route::middleware('jwt')->group(function () {
         //Fin
 
         //Ruta Lista Matrix User B2B
-        Route::get('get/user/list/matrix','listReferrals');
+        Route::get('get/user/list/matrix/{matrix}','listReferrals');
         //Fin
 
     });
