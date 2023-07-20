@@ -29,7 +29,6 @@ class BonusService
             if ($user->id == 1) return;
 
             if ($level >= 2) {
-
                 DB::beginTransaction();
 
                 $walletComissionRepository = new WalletComissionRepository;
@@ -53,7 +52,7 @@ class BonusService
             }
         } catch (\Throwable $th) {
             DB::rollback();
-            Log::info('Fallo al aplicar bono directo');
+            Log::info('Fallo al aplicar bono por compra');
             Log::error($th);
         }
     }
