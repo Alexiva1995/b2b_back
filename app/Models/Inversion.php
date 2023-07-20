@@ -15,10 +15,13 @@ class Inversion extends Model
         'orden_id',
         'user_id',
         'status',
-        'amount'
+        'amount',
+        'type'
     ];
 
     const STATUS_APPROVED = 1;
+
+    const TYPE_INITIAL_MATRIX = 0;
 
     public function order()
     {

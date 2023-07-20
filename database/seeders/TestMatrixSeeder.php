@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Inversion;
 use App\Models\MarketPurchased;
 use App\Models\Order;
 use App\Models\Package;
@@ -30,7 +31,7 @@ class TestMatrixSeeder extends Seeder
             'type' => 0,
             'level' => 1
         ]);
-        
+
         // admin
         $bonusService = new BonusService;
 
@@ -63,11 +64,20 @@ class TestMatrixSeeder extends Seeder
 
         $order = Order::create([
             'user_id' => $user->id,
-            'amount' => '100',
+            'amount' => 50,
             'hash' => null,
             'status' => '1',
             'cyborg_id' => '1',
             'membership_packages_id' => 1
+        ]);
+
+        Inversion::create([
+            'package_id' => 1,
+            'orden_id' => $order->id,
+            'user_id' => $user->id,
+            'status' => Inversion::STATUS_APPROVED,
+            'amount' => 50,
+            'type' => Inversion::TYPE_INITIAL_MATRIX
         ]);
 
         $marketPurchased = MarketPurchased::create([
@@ -130,7 +140,7 @@ class TestMatrixSeeder extends Seeder
     
             $order = Order::create([
                 'user_id' => $user->id,
-                'amount' => '100',
+                'amount' => 50,
                 'hash' => null,
                 'status' => '1',
                 'cyborg_id' => '1',
