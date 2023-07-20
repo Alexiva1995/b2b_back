@@ -38,14 +38,6 @@ use App\Services\PagueloFacilService;
 |
 */
 
-// Route::post('/paguelo', function(){
-//     $pagueloService = new PagueloFacilService();
-//     $user = User::find(2);
-//     $order = Order::find(1);
-//     $result = $pagueloService->makeTransaction($user->id, $order->id);
-//     return response()->json(['url' => $result], 201);
-// });
-
 Route::controller(AuthController::class)->group(function ($router) {
     Route::post('register', 'register');
     Route::get('get-prefixes', 'getPrefixes');
