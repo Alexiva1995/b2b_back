@@ -293,11 +293,11 @@ Route::middleware('jwt')->group(function () {
         //Fin
 
         //Ruta Dashboard User B2B ultimos 10 retiros
-        Route::get('get/user/orders','getUserOrders');
+        Route::get('get/user/orders/{id?}','getUserOrders');
         //Fin
 
         //Ruta Matrix User B2B
-        Route::get('get/user/matrix','showReferrals');
+        Route::get('get/user/matrix/{id?}','showReferrals');
         //Fin
 
         //Ruta Lista Matrix User B2B
@@ -309,7 +309,7 @@ Route::middleware('jwt')->group(function () {
 
     //Ruta B2B para obtener datos para Cyborg y compra de Cyborg
     Route::controller(MarketController::class)->group(function($router){
-        Route::get('/cyborg', 'getAllCyborgs');
+        Route::get('/cyborg/{id?}', 'getAllCyborgs');
         Route::post('/cyborg/purchase', 'purchaseCyborg');
 
     });
@@ -326,8 +326,8 @@ Route::middleware('jwt')->group(function () {
         //Ruta Wallet b2b
         Route::get('/wallet/Data/list/user', 'walletUserDataList');
         Route::get('/wallet/Data/list/admin', 'walletAdminDataList');
-        Route::get('/wallet/Data/user/gain', 'getMonthlyGain');
-        Route::get('/wallet/Data/user/charts', 'getChartData');
+        Route::get('/wallet/Data/user/gain/{id?}', 'getMonthlyGain');
+        Route::get('/wallet/Data/user/charts/{id?}', 'getChartData');
         //
 
         Route::get('/get-total-available', 'getTotalAvailable');

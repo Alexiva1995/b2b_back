@@ -32,9 +32,13 @@ use Illuminate\Support\Facades\Log;
 class UserController extends Controller
 {
 
-    public function showReferrals()
+    public function showReferrals($id = null)
     {
-        $user = JWTAuth::parseToken()->authenticate();
+        if ($id == null) {
+            $user = JWTAuth::parseToken()->authenticate();
+        } else {
+            $user = User::find($id);
+        }
         $referrals = $this->getReferrals($user);
 
         return response()->json($referrals, 200);
@@ -149,9 +153,13 @@ class UserController extends Controller
     
     
 
-    public function getUserOrders()
+    public function getUserOrders($id = null)
     {
-        $user = JWTAuth::parseToken()->authenticate();
+        if ($id == null) {
+            $user = JWTAuth::parseToken()->authenticate();
+        } else {
+            $user = User::find($id);
+        }
 
         $data = [];
 
