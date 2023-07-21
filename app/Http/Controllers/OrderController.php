@@ -6,7 +6,9 @@ use App\Models\MarketPurchased;
 use App\Models\Order;
 use App\Models\Project;
 use App\Models\ReferalLink;
+use App\Models\User;
 use App\Repositories\OrderRepository;
+use App\Services\BonusService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -151,6 +153,14 @@ class OrderController extends Controller
             'right' => 0,
             'left' => 0,
         ];
+        $user = User::find($order->user_id);
+        if($user->status == '0'){
+            $user->status = '1';
+            $user->save();
+
+            $bonusService = new BonusService;
+            $bonusService->generateBonus($user, $order, $buyer = $user, $level = 0, $user->id);
+        }
 
         ReferalLink::create($referal);
         MarketPurchased::created(['user_id' => $order->user_id, 'cyborg_id' => $order->cyborg_id, 'order_id' => $order->id]);
