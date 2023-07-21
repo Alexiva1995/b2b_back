@@ -258,7 +258,7 @@ Route::middleware('jwt')->group(function () {
 
 
         //Ruta DashboardUser B2B obtener Balance del usuario
-        Route::get('get/user/balance', 'getUserBalance');
+        Route::get('get/user/balance/{id?}', 'getUserBalance');
         //Fin
 
         //Ruta DashboardUser B2B obtener Retiros del usuario
@@ -266,35 +266,35 @@ Route::middleware('jwt')->group(function () {
         //Fin
 
         //Ruta Dashboard User B2B obtener bonos matrix del user
-        Route::get('get/user/bonus','getUserBonus');
+        Route::get('get/user/bonus/{id?}','getUserBonus');
         //Fin
 
         //Ruta Dashboard User B2B para obtener plan del user
-        Route::get('get/user/matrix/data','myBestMatrixData');
+        Route::get('get/user/matrix/data/{id?}','myBestMatrixData');
         //Fin
 
         //Ruta Dashboard User B2B comisiones mensuales
-        Route::get('get/monthly/commissions','getMonthlyCommissions');
+        Route::get('get/monthly/commissions/{id?}','getMonthlyCommissions');
         //Fin
 
         //Ruta Dashboard User B2B ganancias mensuales
-        Route::get('get/monthly/earnings','getMonthlyEarnings');
+        Route::get('get/monthly/earnings/{id?}','getMonthlyEarnings');
         //Fin
 
         //Ruta Dashboard User B2B ordenes mensuales
-        Route::get('get/monthly/orders','getMonthlyOrders');
+        Route::get('get/monthly/orders/{id?}','getMonthlyOrders');
         //Fin
 
         //Ruta Dashboard User B2B ultimos 10 retiros
-        Route::get('get/monthly/last/withdrawals','getLast10Withdrawals');
+        Route::get('get/monthly/last/withdrawals/{id?}','getLast10Withdrawals');
         //Fin
 
         //Ruta Dashboard User B2B ultimos 10 retiros
-        Route::get('get/user/orders','getUserOrders');
+        Route::get('get/user/orders/{id?}','getUserOrders');
         //Fin
 
         //Ruta Matrix User B2B
-        Route::get('get/user/matrix','showReferrals');
+        Route::get('get/user/matrix/{id?}','showReferrals');
         //Fin
 
         //Ruta Lista Matrix User B2B
@@ -306,7 +306,7 @@ Route::middleware('jwt')->group(function () {
 
     //Ruta B2B para obtener datos para Cyborg y compra de Cyborg
     Route::controller(MarketController::class)->group(function($router){
-        Route::get('/cyborg', 'getAllCyborgs');
+        Route::get('/cyborg/{id?}', 'getAllCyborgs');
         Route::post('/cyborg/purchase', 'purchaseCyborg');
 
     });
@@ -316,15 +316,15 @@ Route::middleware('jwt')->group(function () {
         Route::get('get-refunds', 'getRefunds');
         Route::get('/refunds-list/{id}', 'refundsList');
         //ruta comision user b2b
-        Route::get('/wallet/comissions/list/user', 'getWallets');
+        Route::get('/wallet/comissions/list/user/{id?}', 'getWallets');
         Route::get('/wallet/comissions/list/admin', 'getWalletsAdmin');
         //fin
 
         //Ruta Wallet b2b
-        Route::get('/wallet/Data/list/user', 'walletUserDataList');
+        Route::get('/wallet/Data/list/user/{id?}', 'walletUserDataList');
         Route::get('/wallet/Data/list/admin', 'walletAdminDataList');
-        Route::get('/wallet/Data/user/gain', 'getMonthlyGain');
-        Route::get('/wallet/Data/user/charts', 'getChartData');
+        Route::get('/wallet/Data/user/gain/{id?}', 'getMonthlyGain');
+        Route::get('/wallet/Data/user/charts/{id?}', 'getChartData');
         //
 
         Route::get('/get-total-available', 'getTotalAvailable');

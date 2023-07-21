@@ -13,9 +13,13 @@ class WalletController extends Controller
 {
 
 
-    public function getChartData()
+    public function getChartData($id = null)
     {
-        $user = JWTAuth::parseToken()->authenticate();
+        if ($id == null) {
+            $user = JWTAuth::parseToken()->authenticate();
+        } else {
+            $user = User::find($id);
+        }
 
         $availableCommissions = WalletComission::where('user_id', $user->id)
         ->where('status', 0)
@@ -41,9 +45,13 @@ class WalletController extends Controller
         return response()->json($data, 200);
     }
 
-    public function getMonthlyGain()
+    public function getMonthlyGain($id = null)
 {
-    $user = JWTAuth::parseToken()->authenticate();
+    if ($id == null) {
+        $user = JWTAuth::parseToken()->authenticate();
+    } else {
+        $user = User::find($id);
+    }
 
     // Obtener los datos de la tabla 'Wallet comision' ordenados por fecha de creación y usuario especificado
     $monthlyGains = WalletComission::where('user_id', $user->id)->orderBy('created_at')->get();
@@ -71,11 +79,15 @@ class WalletController extends Controller
 
 
 
-    public function walletUserDataList(Request $request)
+    public function walletUserDataList(Request $request, $id = null)
     {
         $filter = $request->get('dataFilter');
 
-        $user = JWTAuth::parseToken()->authenticate();
+        if ($id == null) {
+            $user = JWTAuth::parseToken()->authenticate();
+        } else {
+            $user = User::find($id);
+        }
         
 
         $walletCommissions = WalletComission::where('user_id', $user->id)
@@ -310,51 +322,14 @@ class WalletController extends Controller
         return response()->json($devolutions, 200);
     }
 
-    public function getWallets(Request $request)
+    public function getWallets($id = null)
     {
-        $user = JWTAuth::parseToken()->authenticate();
-        if (isset($request->user_id)) {
-            $user = User::findOrFail($request->user_id);
+        if ($id == null) {
+            $user = JWTAuth::parseToken()->authenticate();
+        } else {
+            $user = User::findOrFail($id);
         }
-
         $data = WalletComission::with(['user', 'package'])->where('user_id', $user->id)->get();
-
-        // $data = new Collection();
-        // foreach ($wallets as $wallet) {
-        //     $buyer = User::find($wallet->buyer_id);
-
-        //     switch ($wallet->type) {
-        //         case '0':
-        //             $type = 'Referral I';
-        //             break;
-
-        //         case '1':
-        //             $type = 'Assigned';
-        //             break;
-
-        //         case '2':
-        //             $type = 'Referral II';
-        //             break;
-
-        //         default:
-        //             $type = 'Refund';
-        //             break;
-        //     }
-
-        //     $object = new \stdClass();
-        //     $object->id = $wallet->id;
-        //     if($wallet->order_id) {
-        //         $object->buyer = 'FYT ' . $wallet->order->packageMembership->getTypeName();
-        //     } else {
-        //         $object->buyer = ucwords(strtolower($buyer->name . " " . $buyer->last_name));
-        //     }
-        //     $object->type = $type;
-        //     $object->amount = $wallet->amount;
-        //     $object->status = $wallet->status;
-        //     $object->date = $wallet->created_at;
-        //     $object->program = $wallet->order != null ? "{$wallet->order->packageMembership->getTypeName()} {$wallet->order->packageMembership->account}" : "";
-        //     $data->push($object);
-        // }
         return response()->json($data, 200);
     }
 
