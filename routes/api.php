@@ -60,6 +60,9 @@ Route::controller(AuthController::class)->group(function ($router) {
     Route::get('create-comision/{id}', 'createComission');
     Route::get('/check-matrix/{code}/{side}', 'checkMatrix');
     Route::post('/first-purchase', 'firstPurchase');
+    Route::post('/data-payment', 'getDataPayment');
+    Route::post('check-order', 'checkOrder');
+    Route::post('mark-complete', 'paymentCompleted');
 });
 Route::controller(LandingController::class)->group(function ($router) {
     Route::post('contact-us', 'contactUs');
@@ -118,6 +121,7 @@ Route::middleware('jwt')->group(function () {
             Route::post('get-filter-users-wallet-list', 'getFilterUsersWalletsList');
             Route::post('filter-users-wallet-list', 'filterUsersWalletsList');
             Route::post('filter-users-list', 'filterUsersList');
+
 
         });
 
@@ -258,6 +262,7 @@ Route::middleware('jwt')->group(function () {
         Route::get('/get-mt-summary', 'getMTSummary');
         Route::post('/create-mt-user', 'createMT5User');
         Route::get('/get-referal_links', 'getReferalLinks');
+        Route::post('check-status-user/', 'checkStatus');
 
 
         //Ruta DashboardUser B2B obtener Balance del usuario

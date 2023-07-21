@@ -6,6 +6,7 @@ use App\Models\MarketPurchased;
 use App\Models\Order;
 use App\Models\Project;
 use App\Models\ReferalLink;
+use App\Models\User;
 use App\Repositories\OrderRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -151,6 +152,11 @@ class OrderController extends Controller
             'right' => 0,
             'left' => 0,
         ];
+        $user = User::find($order->user_id);
+        if($user->status == '0'){
+            $user->status = '0';
+            $user->save();
+        }
 
         ReferalLink::create($referal);
         MarketPurchased::created(['user_id' => $order->user_id, 'cyborg_id' => $order->cyborg_id, 'order_id' => $order->id]);

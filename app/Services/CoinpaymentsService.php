@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use GuzzleHttp\Client;
 use Exception;
-
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 /**
  * Class CoinpaymentsService.
@@ -43,12 +43,14 @@ class CoinpaymentsService
                 throw new Exception('Order ID: ' . $check_transaction->order_id . ' already exists, and the current status is ' . $check_transaction->status_text);
             }
 
+            if(is_null($user)) $user = JWTAuth::parseToken()->authenticate();
+
             $data = [
                 'amount' => $amount,
                 'currency1' => config('coinpayment.default_currency'),
                 'currency2' => config('coinpayment.default_currency'),
-                'buyer_email' => isset($request->user()->email) ? $request->user()->email : $request->email,
-                'buyer_name' => isset($request->user()->name) ? $request->user()->name. ' '. $request->user()->last_name: $user->name . ' '. $user->last_name,
+                'buyer_email' => $user->email,
+                'buyer_name' => $user->name . ' '. $user->last_name,
                 'item_name' => $item->product_name,
             ];
 
@@ -64,9 +66,9 @@ class CoinpaymentsService
             $result = array_merge($create['result'], $info['result'], [
                 'order_id' => $order->id,
                 'amount_total_fiat' => $amount,
-                'payload' => $request->payload,
-                'buyer_name' => $request->user()->name . ' ' . $request->user()->last_name ?? '-',
-                'buyer_email' => $request->user()->email ?? '-',
+                'payload' => isset($request->payload) ? $request->payload : '',
+                'buyer_name' => $user->name . ' '. $user->last_name,
+                'buyer_email' =>  $user->email,
                 'currency_code' => config('coinpayment.default_currency'),
             ]);
 
@@ -88,8 +90,6 @@ class CoinpaymentsService
                 /**
                  * Create item transaction
                  */
-
-
             }
 
             /**
@@ -104,6 +104,8 @@ class CoinpaymentsService
 
         } catch (Exception $e) {
             DB::rollback();
+            Log::error('Error al procesar orden COINPAYMENT - '. $e->getMessage());
+            Log::error($e);
             return [
                 'status' => 'error',
                 'message' => $e->getMessage(),
@@ -114,12 +116,21 @@ class CoinpaymentsService
 
     public function get_info($txn_id) {
 		try {
-			 $status = $this->api_call('get_tx_info', ['txid' => $txn_id]);
-			if($status['error'] != 'ok') {
-				throw new \Exception($status['error']);
+			 $resp = $this->api_call('get_tx_info', ['txid' => $txn_id]);
+			if($resp['error'] != 'ok') {
+				throw new \Exception($resp['error']);
 			}
+            $transaction = $this->model->where('txn_id', $txn_id)->first();
+            if ($transaction) {
+                /**
+                 * Update existing transaction
+                 */
+                $transaction->status = $resp['result']['status'];
+                $transaction->status_text = $resp['result']['status_text'];
+                 $transaction->save();
 
-			return (Array) $status['result'];
+            }
+			return (Array) $resp['result'];
 
 		} catch (\Exception $e) {
 			return $e->getMessage();

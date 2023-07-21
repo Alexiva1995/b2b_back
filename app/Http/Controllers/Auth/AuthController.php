@@ -98,7 +98,7 @@ class AuthController extends Controller
             $response = Http::withHeaders([
                 'apikey' => config('services.backend_auth.key'),
             ])->post("{$url}register", $data);
-            Log::alert($response);
+
             if ($response->successful()) {
                 $res = $response->object();
                 $user->update(['id' => $res->user->id]);
@@ -180,6 +180,7 @@ class AuthController extends Controller
                 'api_token' => $responseObject->token,
                 'created_at' => $user->created_at,
                 'updated_at' => $user->updated_at,
+                'status' => $user->status == "0" ? false : true,
                 'message' => 'Successful login.'
             ];
 
@@ -410,6 +411,7 @@ class AuthController extends Controller
             'api_token' => $user->token_jwt,
             'created_at' => $user->created_at,
             'updated_at' => $user->updated_at,
+            'status' => $user->status == "0" ? false : true,
             'message' => 'Successful login.'
         ];
         return response()->json($data, 200);
@@ -525,5 +527,35 @@ class AuthController extends Controller
         $bonusService->generateBonus($user, $order, $buyer = $user, $level = 0, $user->id);
 
         return response()->json(':D', 200);
+    }
+
+    public function getDataPayment(Request $request)
+    {
+        $user = User::where('email', $request->email)->first();
+        $order = $user->orders()->latest()->first()->coinpaymentTransaction()->first();
+        return $order;
+
+    }
+
+    public function checkOrder(Request $request)
+    {
+        $user = User::where('email', $request->email)->first();
+        $transaction = $user->orders()->latest()->first()->coinpaymentTransaction()->first();
+         $info =  $this->CoinpaymentsService->get_info($transaction->txn_id);
+        if(isset($info['coin'])){
+            return  $transaction = $user->orders()->latest()->first()->coinpaymentTransaction()->first();
+        }
+    }
+
+    public function paymentCompleted(Request $request)
+    {
+        $user = User::where('email', $request->email)->first();
+        $transaction = $user->orders()->latest()->first()->coinpaymentTransaction()->first();
+        $transaction->finish_pay = 1;
+        if($transaction->save()){
+            return response()->json(['status' => 'Ok'], 200);
+        }
+        return response()->json(['status' => 'error'], 400);
+
     }
 }
