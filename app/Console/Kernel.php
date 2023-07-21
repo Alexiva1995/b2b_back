@@ -24,8 +24,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('cancel:paguelofacil:transactions')->everyFiveMinutes();
-        $schedule->command('futswap:canceled')->everyFiveMinutes();
+        //$schedule->command('cancel:paguelofacil:transactions')->everyFiveMinutes();
+        //$schedule->command('futswap:canceled')->everyFiveMinutes();
         $schedule->command('matrix:set_level')->daily();
     }
 

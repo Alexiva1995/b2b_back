@@ -74,7 +74,7 @@ class MarketController extends Controller
         $paymentResponse = $this->CoinpaymentsService->create_transaction($cyborg->amount, $cyborg, $request, $order);
 
             // Verificar si la transacción fue exitosa y actualizar el estado de la orden a 1
-    if ($paymentResponse['success']) {
+    /* if ($paymentResponse['success']) {
         $order->status = 1;
         $order->save();
 
@@ -87,7 +87,7 @@ class MarketController extends Controller
         $marketPurchased->type = 1;
         $marketPurchased->approved_at = now();
         $marketPurchased->save();
-    }
+    } */
 
     }
 
