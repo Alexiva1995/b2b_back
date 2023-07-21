@@ -10,6 +10,7 @@ use App\Models\ProfileLog;
 use App\Models\WalletComission;
 use App\Models\Order;
 use App\Models\Formulary;
+use App\Models\MarketPurchased;
 use App\Models\Inversion;
 use App\Models\ReferalLink;
 use App\Rules\ChangePassword;
@@ -32,18 +33,22 @@ use Illuminate\Support\Facades\Log;
 class UserController extends Controller
 {
 
-    public function showReferrals()
+    public function showReferrals($matrix)
     {
+        // Si $matrix es null, asignarle el valor 1 por defecto
+        $matrix = $matrix ?? 1;
+
         $user = JWTAuth::parseToken()->authenticate();
-        $referrals = $this->getReferrals($user);
+        $referrals = $this->getReferrals($user,$matrix);
 
         return response()->json($referrals, 200);
     }
 
-    public function listReferrals()
+    public function listReferrals($matrix)
 {
     $user = JWTAuth::parseToken()->authenticate();
-    $referrals = $this->getReferrals($user);
+    $referrals = $this->getReferrals($user,$matrix);
+    $matrix = $matrix ?? 1;
 
     $referralList = $referrals->map(function ($referral) {
         $buyerUser = User::find($referral['buyer_id']);
@@ -61,6 +66,7 @@ class UserController extends Controller
             'User_ID' => $referral['id'],
             'Side' => ($referral['side'] === 'L') ? 'Left' : 'Right',
             'Date' => date('Y-m-d H:i:s'),
+            'Level' => $referral['level'],
             'Plan' => $plan,
         ];
     });
@@ -74,57 +80,70 @@ class UserController extends Controller
 
 
 
-    public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide = null): Collection
-    {
-        $referrals = new Collection();
+public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide = null, $matrix = null): Collection
+{
+    $referrals = new Collection();
 
-        if ($level <= $maxLevel) {
-            // Obtener los referidos del usuario actual en el lado izquierdo (binary_side = 'L')
-            $leftReferrals = User::where('buyer_id', $user->id)
-                ->where('binary_side', 'L')
-                ->get(['id', 'name', 'profile_picture', 'buyer_id'])
-                ->map(function ($referral) use ($level, $parentSide) {
-                    return [
-                        'id' => $referral->id,
-                        'name' => $referral->name,
-                        'level' => $level,
-                        'side' => $parentSide ?: 'L',
-                        'profile_picture' => $referral->profile_picture,
-                        'buyer_id' => $referral->buyer_id,
-                    ];
-                });
+    if ($level <= $maxLevel) {
+        // Obtener las matrices compradas por el usuario autenticado
+        $purchasedMatrices = MarketPurchased::where('user_id', $user->id);
 
-            // Obtener los referidos del usuario actual en el lado derecho (binary_side = 'R')
-            $rightReferrals = User::where('buyer_id', $user->id)
-                ->where('binary_side', 'R')
-                ->get(['id', 'name', 'profile_picture', 'buyer_id'])
-                ->map(function ($referral) use ($level, $parentSide) {
-                    return [
-                        'id' => $referral->id,
-                        'name' => $referral->name,
-                        'level' => $level,
-                        'side' => $parentSide ?: 'R',
-                        'profile_picture' => $referral->profile_picture,
-                        'buyer_id' => $referral->buyer_id,
-                    ];
-                });
-
-            // Agregar los referidos a la colección
-            $referrals = $referrals->concat($leftReferrals)->concat($rightReferrals);
-
-            // Recorrer los referidos y obtener sus referidos recursivamente
-            foreach ($referrals as $referral) {
-                $subReferrals = $this->getReferrals(User::find($referral['id']), $level + 1, $maxLevel, $referral['side']);
-
-                $referrals = $referrals->concat($subReferrals);
-            }
+        // Verificar si se proporcionó un valor válido para $matrix y filtrar las matrices por ese valor
+        if ($matrix !== null) {
+            $purchasedMatrices->where('cyborg_id', $matrix);
         }
 
-        // Ordenar los referidos por nivel
-        $sortedReferrals = $referrals->sortBy('level');
+        $purchasedMatrices = $purchasedMatrices->pluck('id');
 
-        return $sortedReferrals;
+        // Filtrar los usuarios que tienen el campo 'father_cyborg_purchased_id' igual al 'cyborg_id' de las matrices compradas
+        $usersWithPurchasedMatrices = User::whereIn('father_cyborg_purchased_id', $purchasedMatrices)->get();
+
+        // Obtener los referidos del usuario actual en el lado izquierdo (binary_side = 'L')
+        $leftReferrals = $usersWithPurchasedMatrices
+            ->where('binary_side', 'L')
+            ->map(function ($referral) use ($level, $parentSide) {
+                return [
+                    'id' => $referral->id,
+                    'name' => $referral->name,
+                    'level' => $level,
+                    'side' => $parentSide ?: 'L',
+                    'profile_picture' => $referral->profile_picture,
+                    'buyer_id' => $referral->buyer_id,
+                ];
+            });
+
+        // Obtener los referidos del usuario actual en el lado derecho (binary_side = 'R')
+        $rightReferrals = $usersWithPurchasedMatrices
+            ->where('binary_side', 'R')
+            ->map(function ($referral) use ($level, $parentSide) {
+                return [
+                    'id' => $referral->id,
+                    'name' => $referral->name,
+                    'level' => $level,
+                    'side' => $parentSide ?: 'R',
+                    'profile_picture' => $referral->profile_picture,
+                    'buyer_id' => $referral->buyer_id,
+                ];
+            });
+
+        // Agregar los referidos a la colección
+        $referrals = $referrals->concat($leftReferrals)->concat($rightReferrals);
+
+        // Recorrer los referidos y obtener sus referidos recursivamente
+        foreach ($referrals as $referral) {
+            $subReferrals = $this->getReferrals(User::find($referral['id']), $level + 1, $maxLevel, $referral['side'], $matrix);
+
+            $referrals = $referrals->concat($subReferrals);
+        }
     }
+
+    // Ordenar los referidos por nivel
+    $sortedReferrals = $referrals->sortBy('level');
+
+    return $sortedReferrals;
+}
+
+
 
 
 
@@ -132,7 +151,7 @@ class UserController extends Controller
     {
         $user = JWTAuth::parseToken()->authenticate();
 
-        $withdrawals = WalletComission::select('description', 'amount', 'created_at')
+        $withdrawals = WalletComission::select('id', 'description', 'amount', 'created_at')
             ->where('user_id', $user->id)
             ->where('avaliable_withdraw', '=', 0)
             ->take(15)
@@ -145,6 +164,7 @@ class UserController extends Controller
 
         return response()->json($data, 200);
     }
+
 
 
 

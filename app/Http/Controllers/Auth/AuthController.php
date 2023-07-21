@@ -496,7 +496,7 @@ class AuthController extends Controller
                 throw new Exception("Error processing purchase", 400);
             }
             // $bonusService = new BonusService;
-            //$bonusService->generateBonus($user, $order, $buyer = $user, $level = 0, $user->id);
+            //$bonusService->generateBonus(20,$user, $order, $buyer = $user, $level = 2, $user->id);
             return response()->json($response, 200);
             //code...
         } catch (\Throwable $th) {
@@ -510,7 +510,7 @@ class AuthController extends Controller
 
         $order = Order::create([
             'user_id' => $user->id,
-            'amount' => '100',
+            'amount' => 50,
             'hash' => null,
             'status' => '1',
             'cyborg_id' => '1'
@@ -522,9 +522,18 @@ class AuthController extends Controller
             'order_id' => $order->id
         ]);
 
+        ReferalLink::create([
+            'user_id' => $user->id,
+            'link_code' => Str::random(6),
+            'cyborg_id' => 1,
+            'right' => 0,
+            'left' => 0,
+            'status' => ReferalLink::STATUS_INACTIVE,
+        ]);
+
         $bonusService = new BonusService;
 
-        $bonusService->generateBonus($user, $order, $buyer = $user, $level = 0, $user->id);
+        $bonusService->generateBonus(20, $user, $order, $buyer = $user, $level = 2, $user->id);
 
         return response()->json(':D', 200);
     }

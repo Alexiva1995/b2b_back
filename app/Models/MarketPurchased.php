@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+
+
+
 class MarketPurchased extends Model
 {
     use HasFactory;
@@ -12,7 +15,9 @@ class MarketPurchased extends Model
     const MATRIX_200 = 2;
     const MATRIX_2000 =  3;
 
-    protected $fillable = ['user_id', 'cyborg_id', 'order_id'];
+    protected $table = 'market_purchaseds';
+
+    protected $fillable = ['user_id', 'cyborg_id', 'order_id','level','type'];
 
     public function user()
     {
