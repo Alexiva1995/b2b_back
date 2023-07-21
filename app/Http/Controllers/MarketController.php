@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Market;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\Order;
+use App\Models\MarketPurchased;
 use App\Models\User;
 use App\Services\BonusService;
 // use app\Services\CoinpaymentsService;
@@ -70,7 +71,23 @@ class MarketController extends Controller
         $order->save();
 
          // Ejecutar la lógica de la pasarela de pago y obtener la respuesta
-        //  $this->CoinpaymentsService->create_transaction($cyborg->amount, $cyborg, $request, $order);
+        $paymentResponse = $this->CoinpaymentsService->create_transaction($cyborg->amount, $cyborg, $request, $order);
+
+            // Verificar si la transacción fue exitosa y actualizar el estado de la orden a 1
+    if ($paymentResponse['success']) {
+        $order->status = 1;
+        $order->save();
+
+        // Crear una entrada en la tabla market_purchaseds
+        $marketPurchased = new MarketPurchased();
+        $marketPurchased->user_id = $user->id;
+        $marketPurchased->order_id = $order->id;
+        $marketPurchased->cyborg_id = $order->cyborg_id;
+        $marketPurchased->level = 0;
+        $marketPurchased->type = 1;
+        $marketPurchased->approved_at = now();
+        $marketPurchased->save();
+    }
 
     }
 
