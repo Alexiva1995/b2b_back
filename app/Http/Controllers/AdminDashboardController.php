@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\OrderCollection;
 use App\Models\Order;
 use App\Models\Inversion;
+use App\Models\MarketPurchased;
 use App\Models\Ticket;
 use App\Models\PackageMembership;
 use App\Models\User;
@@ -182,16 +183,86 @@ class AdminDashboardController extends Controller
         return response()->json($data, 200);
     }
 
-    public function topFiveUsers()
-    {
-        $data = DB::table('users')
-            ->select('users.*', DB::raw('(SELECT COUNT(*) FROM users u WHERE u.buyer_id = users.id) as total_referidos'))
-            ->orderByDesc('total_referidos')
-            ->limit(5)
-            ->get();
+	public function getReferralCount(User $user, $level = 1, $maxLevel = 4, $parentSide = null, $matrix = null): int
+{
+    $referralCount = 0;
 
-        return response()->json($data, 200);
+    if ($level <= $maxLevel) {
+        // Obtener las matrices compradas por el usuario autenticado
+        $purchasedMatrices = MarketPurchased::where('user_id', $user->id);
+
+        // Verificar si se proporcionó un valor válido para $matrix y filtrar las matrices por ese valor
+        if ($matrix !== null) {
+            $purchasedMatrices->where('cyborg_id', $matrix);
+        }
+
+        $purchasedMatrices = $purchasedMatrices->pluck('id');
+
+        // Filtrar los usuarios que tienen el campo 'father_cyborg_purchased_id' igual al 'cyborg_id' de las matrices compradas
+        $usersWithPurchasedMatrices = User::whereIn('father_cyborg_purchased_id', $purchasedMatrices)->get();
+
+        // Contar los referidos del usuario actual en el lado izquierdo (binary_side = 'L')
+        $leftReferralCount = $usersWithPurchasedMatrices
+            ->where('binary_side', 'L')
+            ->count();
+
+        // Contar los referidos del usuario actual en el lado derecho (binary_side = 'R')
+        $rightReferralCount = $usersWithPurchasedMatrices
+            ->where('binary_side', 'R')
+            ->count();
+
+        // Sumar los referidos de ambos lados para obtener el total de referidos directos del usuario
+        $referralCount = $leftReferralCount + $rightReferralCount;
+
+        // Recorrer los referidos y obtener la cantidad de sus referidos recursivamente
+        foreach ($usersWithPurchasedMatrices as $referral) {
+            $subReferralCount = $this->getReferralCount(User::find($referral->id), $level + 1, $maxLevel, $referral->binary_side, $matrix);
+            $referralCount += $subReferralCount;
+        }
     }
+
+    return $referralCount;
+}
+
+
+public function topFiveUsers()
+{
+    // Obtener todos los usuarios de la base de datos
+    $users = User::all();
+
+    // Crear una colección para almacenar los resultados
+    $userList = collect();
+
+    // Recorrer todos los usuarios y obtener la cantidad de referidos y la matriz de cada uno
+    foreach ($users as $user) {
+        // Obtener la cantidad de referidos del usuario actual
+        $referralCount = $this->getReferralCount($user);
+
+        // Obtener el registro de MarketPurchased correspondiente al padre del usuario
+        $fatherMarketPurchased = $user->getFatherMarketPurchased();
+
+        // Obtener la matriz en la que se encuentra el usuario
+        $matrix = $fatherMarketPurchased ? $fatherMarketPurchased->type : null;
+
+        // Agregar el usuario y sus datos a la colección de resultados
+        $userList->push([
+            'name' => $user->name,
+            'referral_count' => $referralCount,
+            'matrix' => $matrix,
+        ]);
+    }
+
+    // Ordenar la colección en función del número de referidos (de mayor a menor)
+    $userList = $userList->sortByDesc('referral_count');
+
+    // Tomar los primeros cinco usuarios de la lista (los cinco con más referidos)
+    $topFiveUsers = $userList->take(5);
+
+    return $topFiveUsers;
+}
+
+
+
 
     public function mountMatrix()
     {
