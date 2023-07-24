@@ -242,10 +242,11 @@ public function topFiveUsers()
         $fatherMarketPurchased = $user->getFatherMarketPurchased();
 
         // Obtener la matriz en la que se encuentra el usuario
-        $matrix = $fatherMarketPurchased ? $fatherMarketPurchased->type : null;
+        $matrix = $fatherMarketPurchased ? $fatherMarketPurchased->type : 20;
 
         // Agregar el usuario y sus datos a la colección de resultados
         $userList->push([
+            'id' => $user->id,
             'name' => $user->name,
             'referral_count' => $referralCount,
             'matrix' => $matrix,
@@ -260,6 +261,7 @@ public function topFiveUsers()
 
     return $topFiveUsers;
 }
+
 
 
 
