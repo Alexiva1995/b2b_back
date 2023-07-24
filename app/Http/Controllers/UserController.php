@@ -33,7 +33,7 @@ use Illuminate\Support\Facades\Log;
 class UserController extends Controller
 {
 
-    public function showReferrals($matrix)
+    public function showReferrals($matrix = null)
     {
         // Si $matrix es null, asignarle el valor 1 por defecto
         $matrix = $matrix ?? 1;
@@ -80,7 +80,7 @@ class UserController extends Controller
 
 
 
-public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide = null, $matrix = null): Collection
+public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide = null, $matrix = 1): Collection
 {
     $referrals = new Collection();
 
