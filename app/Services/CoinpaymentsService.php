@@ -52,7 +52,7 @@ class CoinpaymentsService
                 'buyer_email' => $user->email,
                 'buyer_name' => $user->name . ' '. $user->last_name,
                 'item_name' => $item->product_name,
-                'ipn_url' => 'https://business2business.space/transaction/ipn'
+                'ipn_url' => 'https://back.business2business.space/transaction/ipn'
             ];
 
             $create = $this->api_call('create_transaction', $data);

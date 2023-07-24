@@ -43,6 +43,7 @@ class IPNController extends Controller
                     'message' => 'No or incorrect Merchant ID passed'
                 ]));
             }
+            Log::error('IPN No or incorrect Merchant ID passed');
             return response('No or incorrect Merchant ID passed', 401);
         }
         $request = file_get_contents('php://input');
@@ -53,6 +54,7 @@ class IPNController extends Controller
                     'message' => 'Error reading POST data'
                 ]));
             }
+            Log::error('IPN Error reading POST data');
             return response('Error reading POST data', 401);
         }
         $hmac = hash_hmac("sha512", $request, trim($cp_ipn_secret));
@@ -62,6 +64,7 @@ class IPNController extends Controller
                     'message' => 'HMAC signature does not match'
                 ]));
             }
+            Log::error('IPN HMAC signature does not match');
             return response('HMAC signature does not match', 401);
         }
         if($req->ipn_type == 'deposit' || $req->ipn_type == 'api'){
@@ -81,6 +84,7 @@ class IPNController extends Controller
                         if ($req->ipn_type == 'deposit' || $req->ipn_type == 'api') {
                             if ($info['result']['status'] >= 100) {
                                 $order->hash = $req->txn_id;
+                                $order->status = '1';
                                 $order->save();
                                 $this->OrderController->processOrderApproved($order);
                             }
@@ -98,6 +102,7 @@ class IPNController extends Controller
                         }
                         $transactions->update($info['result']);
                     } catch (\Exception $e) {
+                        Log::error('IPN'. $e->getMessage());
                         Mail::to($cp_debug_email)->send(new SendEmail([
                             'message' => date('Y-m-d H:i:s ') . $e->getMessage()
                         ]));
@@ -152,7 +157,7 @@ class IPNController extends Controller
                                     'amount_available' => $wallet->amount,
                                     'amount_retired' => 0
                                 ]);
-                            } 
+                            }
                         }
                         // if ($info['result']['status'] == 1) {
                         //     $liquidation->status = 3;
