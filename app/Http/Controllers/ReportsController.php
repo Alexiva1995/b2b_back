@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Models\User;
 
 use App\Http\Requests\FormularyStoreRequest;
 // use App\Traits\FormularyCreateTrait;
@@ -87,8 +89,8 @@ class ReportsController extends Controller
         } catch (\Throwable $th) {
             Log::info("Error finding order paguelofacil transaction");
             Log::error($th);
-        } 
-        
+        }
+
         Log::info("Actualizada PagueloFacilTransaction order");
 
         $pagueloFacilTransaction->fill($data);
@@ -123,7 +125,7 @@ class ReportsController extends Controller
             } catch (\Throwable $th) {
                 Log::info("Error creating Project");
                 Log::error($th);
-            } 
+            }
 
             Log::info("Creada nueva entrada en la tabla projects", [$project]);
 
@@ -193,7 +195,7 @@ class ReportsController extends Controller
                 'firstName' => $mtName,
                 'lastName' => $order->user->name,
                 //removing the last 3 characters of the balance to transform it to K notation
-                'company' => substr((string) (intval($package->account)), 0, -3). 'K',
+                'company' => substr((string) (intval($package->account)), 0, -3) . 'K',
                 'comment' => $mtName,
             ];
 
@@ -221,7 +223,8 @@ class ReportsController extends Controller
                     $lettersCount++;
                 }
 
-                for ($i = $numbersCount + $lettersCount;
+                for (
+                    $i = $numbersCount + $lettersCount;
                     $i < $length;
                     $i++
                 ) {
@@ -259,7 +262,7 @@ class ReportsController extends Controller
                     'user' => $order->user->fullName(),
                     'program' => $order->packageMembership->getTypeName(),
                 ];
-    
+
                 Mail::send('mails.mtAccountCreationFailed', ['data' => $adminDataMail],  function ($msj) {
                     $msj->subject('Auto account creation failed!');
                     $msj->to('admin@fyt.com');
@@ -450,6 +453,25 @@ class ReportsController extends Controller
         $liquidactions = Liquidaction::with('user')->get();
 
         return response()->json($liquidactions, 200);
+    }
+
+    public function liquidactionPending()
+    {
+        $liquidactions = Liquidaction::with('user')->where('status', 0)->get();
+
+        return response()->json($liquidactions, 200);
+    }
+
+
+    public function LiquidacionUser(Request $request)
+    {
+        $user = JWTAuth::parseToken()->authenticate();
+        if (isset($request->user_id)) {
+            $user = User::findOrFail($request->user_id);
+        }
+        $data = Liquidaction::with('user')->where('user_id', $user->id)->get();
+
+        return response()->json($data, 200);
     }
 
     public function coupons()
