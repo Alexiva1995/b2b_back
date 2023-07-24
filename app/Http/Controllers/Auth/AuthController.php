@@ -42,7 +42,7 @@ class AuthController extends Controller
      */
     public function register(UserStoreRequest $request)
     {
-
+        DB::beginTransaction();
         try {
             // En $sponsor_id esta el id del padre (el dueño del link) aplicar logica correspondiente y obtener el lado adecuado (tarea processes de auth back)
             $binary_side = 'R';
@@ -53,6 +53,7 @@ class AuthController extends Controller
             if ($request->link_code) {
                 $validation = $this->checkMatrix($request->link_code, $request->binary_side, false);
                 if (!$validation['status']) {
+                    throw new Exception('Invalid referral link');
                     $response = ['Error' => 'Invalid referral link'];
                     return response()->json($response, 400);
                 }
@@ -68,7 +69,7 @@ class AuthController extends Controller
                 $binary_id = $this->treController->getPosition(intval($sponsor_id), $binary_side);
             }
 
-            DB::beginTransaction();
+
             $data = [
                 'name' => $request->user_name,
                 'last_name' => $request->user_lastname,
@@ -129,7 +130,7 @@ class AuthController extends Controller
             Log::error($th);
             DB::rollback();
             // $response = ['Error' => 'Error registering user'];
-            $response = ['errors' => ['register' => [0 => 'Error registering users']]];;
+            $response = ['errors' => ['register' => [0 => $th->getMessage() ?? 'Error registering users']]];;
             return response()->json($response, 500);
         }
     }
