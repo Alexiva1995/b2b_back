@@ -14,7 +14,16 @@ class FiltersController extends Controller
 
         $query = Order::with('user');
 
-        $query->when(isset($filter['user_id']), function ($q) use ($filter) {
+        if(is_numeric($filter)){
+            $query->where('id', $filter);
+        }
+        if(!is_numeric($filter)){
+            $query->whereHas('user', function ($q) use ($filter) {
+                $q->whereRaw("CONCAT(`name`,' ',`last_name`) LIKE ?",['%'.$filter.'%']);
+            });
+        }
+
+        /* $query->when(isset($filter['user_id']), function ($q) use ($filter) {
             $q->where('user_id', $filter['user_id']);
         });
 
@@ -22,11 +31,33 @@ class FiltersController extends Controller
             $q->whereHas('user', function ($q) use ($filter) {
                 $q->where('name', 'like', '%' . $filter['name'] . '%');
             });
-        });
+        }); */
+        $orders = $query->get();
+        $data = array();
+        foreach ($orders as $order) {
+           
+            $object = [
+                'id' => $order->id,
+                'user_id' => $order->user->id,
+                'user_username' => $order->user->user_name,
+                'user_email' => $order->user->email,
+                'program' => $order->packagesB2B->product_name,
+               // 'phase' => $phase ?? "",
+               // 'account' => $order->packageMembership->account,
+                'status' => $order->status,
+                'hash_id' => $order->hash, // Hash::make($order->id)
+                'amount' => $order->amount,
+                'sponsor_id' => $order->user->sponsor->id,
+                'sponsor_username' => $order->user->sponsor->user_name,
+                'sponsor_email' => $order->user->sponsor->email,
+                'hashLink' => $order->coinpaymentTransaction->checkout_url ?? "",
+                'date' => $order->created_at->format('Y-m-d')
+            ];
+            array_push($data, $object);
+        }
 
-        $data = $query->get();
 
-        return response()->json($data, 200);
+        return response()->json(['status' => 'success', 'data' => $data, 200]);
     }
 
     public function filtersProductAdmin(request $request)
