@@ -140,6 +140,9 @@ Route::middleware('jwt')->group(function () {
             Route::post('filter/reports/comisions', 'filterComissionList');
             //ruta de liquidacion admin b2b
             Route::get('reports/liquidactions', 'liquidaction');
+            // ruta de liquidacion de admin pendiente b2b
+            Route::get('reports/liquidactions/pending', 'liquidactionPending');
+
             Route::get('reports/coupons', 'coupons');
         });
         Route::controller(KycController::class)->group(function ($router) {
@@ -232,6 +235,8 @@ Route::middleware('jwt')->group(function () {
         Route::get('reports/comisions', 'commision');
         Route::get('reports/liquidactions', 'liquidaction');
         Route::get('reports/coupons', 'coupons');
+        // ruta de liquidacion user 
+        Route::get('reports/liquidactions/user', 'LiquidacionUser');
     });
     Route::controller(AuthController::class)->group(function ($router) {
         Route::get('test', 'test');
