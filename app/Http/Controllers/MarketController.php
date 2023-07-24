@@ -8,99 +8,96 @@ use App\Models\Order;
 use App\Models\MarketPurchased;
 use App\Models\User;
 use App\Services\BonusService;
-// use app\Services\CoinpaymentsService;
+use App\Services\CoinpaymentsService;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class MarketController extends Controller
 {
     protected $CoinpaymentsService;
 
-    // public function __construct(CoinpaymentsService $CoinpaymentsService)
-    // {
-    //     $this->CoinpaymentsService = $CoinpaymentsService;
-    // }
-
-    public function getAllCyborgs()
-{
-    $user = JWTAuth::parseToken()->authenticate();
-
-    $lastApprovedCyborg = Order::where('user_id', $user->id)
-        ->where('status', '1')
-        ->latest('cyborg_id')
-        ->first();
-
-    $nextCyborgId = $lastApprovedCyborg ? $lastApprovedCyborg->cyborg_id + 1 : 1;
-
-    $cyborgs = Market::all();
-    $data = [];
-
-    foreach ($cyborgs as $cyborg) {
-        $available = ($cyborg->id == $nextCyborgId);
-        $isPurchased = ($cyborg->id < $nextCyborgId); // Agregar la condición para isPurchased
-
-        $item = [
-            'cyborg_id' => $cyborg->id,
-            'product_name' => $cyborg->product_name,
-            'amount' => $cyborg->amount,
-            'available' => $available,
-            'isPurchased' => $isPurchased, // Agregar isPurchased a la colección
-        ];
-
-        $data[] = $item;
+    public function __construct(CoinpaymentsService $CoinpaymentsService)
+    {
+        $this->CoinpaymentsService = $CoinpaymentsService;
     }
 
-    return response()->json($data, 200);
-}
+    public function getAllCyborgs()
+    {
+        $user = JWTAuth::parseToken()->authenticate();
+
+        $lastApprovedCyborg = Order::where('user_id', $user->id)
+            ->where('status', '1')
+            ->latest('cyborg_id')
+            ->first();
+
+        $nextCyborgId = $lastApprovedCyborg ? $lastApprovedCyborg->cyborg_id + 1 : 1;
+
+        $cyborgs = Market::all();
+        $data = [];
+
+        foreach ($cyborgs as $cyborg) {
+            $available = ($cyborg->id == $nextCyborgId);
+            $isPurchased = ($cyborg->id < $nextCyborgId); // Agregar la condición para isPurchased
+
+            $item = [
+                'cyborg_id' => $cyborg->id,
+                'product_name' => $cyborg->product_name,
+                'amount' => $cyborg->amount,
+                'available' => $available,
+                'isPurchased' => $isPurchased, // Agregar isPurchased a la colección
+            ];
+
+            $data[] = $item;
+        }
+
+        return response()->json($data, 200);
+    }
 
 
 
     public function purchaseCyborg(Request $request)
     {
-        $user = JWTAuth::parseToken()->authenticate();
-        $cyborgId = $request->input('cyborg_id', 1);
+        DB::beginTransaction();
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            $cyborgId = $request->input('cyborg_id', 1);
 
-        $cyborg = Market::find($cyborgId);
+            $cyborg = Market::find($cyborgId);
 
-         // Crear la orden en la tabla "orders"
-        $order = new Order();
-        $order->user_id = $user->id;
-        $order->cyborg_id = $cyborgId;
-        $order->status = 0;
-        $order->amount = $cyborg->amount;
-        $order->save();
 
-         // Ejecutar la lógica de la pasarela de pago y obtener la respuesta
-        $paymentResponse = $this->CoinpaymentsService->create_transaction($cyborg->amount, $cyborg, $request, $order);
+            // Crear la orden en la tabla "orders"
+            $order = new Order();
+            $order->user_id = $user->id;
+            $order->cyborg_id = $cyborgId;
+            $order->status = '0';
+            $order->amount = $cyborg->amount;
+            $order->save();
 
-            // Verificar si la transacción fue exitosa y actualizar el estado de la orden a 1
-    /* if ($paymentResponse['success']) {
-        $order->status = 1;
-        $order->save();
-
-        // Crear una entrada en la tabla market_purchaseds
-        $marketPurchased = new MarketPurchased();
-        $marketPurchased->user_id = $user->id;
-        $marketPurchased->order_id = $order->id;
-        $marketPurchased->cyborg_id = $order->cyborg_id;
-        $marketPurchased->level = 0;
-        $marketPurchased->type = 1;
-        $marketPurchased->approved_at = now();
-        $marketPurchased->save();
-    } */
-
+            // Ejecutar la lógica de la pasarela de pago y obtener la respuesta
+             $paymentResponse = $this->CoinpaymentsService->create_transaction($cyborg->amount, $cyborg, $request, $order);
+            if($paymentResponse['status'] == 'error'){
+                throw new Exception("Error processing a payment creation");
+            }
+            DB::commit();
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Log::error('Error al comprar -' . $th->getMessage());
+            Log::error($th);
+            return response()->json($th->getMessage(), 400);
+        }
     }
 
     public function checkOrder(Request $request)
     {
         $order = Order::where([['user_id', $request->user()->id], ['status', 0]])->with('coinpaymentTransaction')->first();
 
-        if(is_null($order)){
+        if (is_null($order)) {
             return response()->json(['data' => null], 200);
         }
 
         return response()->json(['data' => $order], 200);
     }
-
 }
-

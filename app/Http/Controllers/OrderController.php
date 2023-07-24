@@ -164,7 +164,7 @@ class OrderController extends Controller
         }
 
         ReferalLink::create($referal);
-        MarketPurchased::created(['user_id' => $order->user_id, 'cyborg_id' => $order->cyborg_id, 'order_id' => $order->id]);
+        MarketPurchased::create(['user_id' => $order->user_id, 'cyborg_id' => $order->cyborg_id, 'order_id' => $order->id]);
 
     }
 

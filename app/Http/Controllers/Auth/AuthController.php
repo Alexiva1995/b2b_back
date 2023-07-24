@@ -539,10 +539,18 @@ class AuthController extends Controller
     }
 
     public function getDataPayment(Request $request)
-    {
+    {   try {
         $user = User::where('email', $request->email)->first();
-        $order = $user->orders()->latest()->first()->coinpaymentTransaction()->first();
-        return $order;
+        $order = $user->orders()->latest()->where('status', '0')->first()->coinpaymentTransaction()->first();
+        if(!$order){
+            return response()->json(['status' => 'error'], 400);
+        }
+        return response()->json($order);
+        //code...
+    } catch (\Throwable $th) {
+        Log::error('Error al mostrar datos de pago -' . $th->getMessage());
+        return response()->json('Error displaying payment data', 400);
+    }
 
     }
 

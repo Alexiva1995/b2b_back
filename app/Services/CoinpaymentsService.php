@@ -128,7 +128,9 @@ class CoinpaymentsService
                  */
                 $transaction->status = $resp['result']['status'];
                 $transaction->status_text = $resp['result']['status_text'];
-                 $transaction->save();
+
+                //se comenta para verificar el funcionamiento sin esta funcion.
+               //  $transaction->save();
 
             }
 			return (Array) $resp['result'];
