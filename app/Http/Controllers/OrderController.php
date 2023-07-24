@@ -45,15 +45,16 @@ class OrderController extends Controller
                 'user_id' => $order->user->id,
                 'user_username' => $order->user->user_name,
                 'user_email' => $order->user->email,
-                'program' => $order->packageMembership->getTypeName(),
-                'phase' => $phase ?? "",
-                'account' => $order->packageMembership->account,
+                'program' => $order->packagesB2B->product_name,
+               // 'phase' => $phase ?? "",
+               // 'account' => $order->packageMembership->account,
                 'status' => $order->status,
                 'hash_id' => $order->hash, // Hash::make($order->id)
                 'amount' => $order->amount,
                 'sponsor_id' => $order->user->sponsor->id,
                 'sponsor_username' => $order->user->sponsor->user_name,
                 'sponsor_email' => $order->user->sponsor->email,
+                'hashLink' => $order->coinpaymentTransaction->checkout_url ?? "",
                 'date' => $order->created_at->format('Y-m-d')
             ];
             array_push($data, $object);
@@ -159,7 +160,7 @@ class OrderController extends Controller
             $user->save();
 
             $bonusService = new BonusService;
-            $bonusService->generateBonus($user, $order, $buyer = $user, $level = 0, $user->id);
+            $bonusService->generateBonus($order->amount, $user, $order, $buyer = $user, $level=0, $user->id);
         }
 
         ReferalLink::create($referal);
