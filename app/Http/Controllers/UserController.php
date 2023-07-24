@@ -153,7 +153,7 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
 
         $withdrawals = WalletComission::select('id', 'description', 'amount', 'created_at')
             ->where('user_id', $user->id)
-            ->where('avaliable_withdraw', '=', 0)
+            ->where('available_withdraw', '=', 0)
             ->take(15)
             ->get();
 
@@ -316,7 +316,7 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
 
         $data = WalletComission::select('amount', 'created_at')
             ->where('user_id', $user->id)
-            ->where('avaliable_withdraw', '=', 0)
+            ->where('available_withdraw', '=', 0)
             ->get();
 
         return response()->json($data, 200);
@@ -340,7 +340,7 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
 
         $data = WalletComission::where('status', 0)
             ->where('user_id', $user->id)
-            ->where('avaliable_withdraw', 1)
+            ->where('available_withdraw', 1)
             ->sum('amount');
 
         return response()->json($data, 200);
