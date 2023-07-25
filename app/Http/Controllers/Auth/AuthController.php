@@ -182,6 +182,7 @@ class AuthController extends Controller
                 'created_at' => $user->created_at,
                 'updated_at' => $user->updated_at,
                 'status' => $user->status == "0" ? false : true,
+                'type_services' => $user->type_service,
                 'message' => 'Successful login.'
             ];
 
@@ -413,6 +414,7 @@ class AuthController extends Controller
             'created_at' => $user->created_at,
             'updated_at' => $user->updated_at,
             'status' => $user->status == "0" ? false : true,
+            'type_services' => $user->type_service,
             'message' => 'Successful login.'
         ];
         return response()->json($data, 200);
