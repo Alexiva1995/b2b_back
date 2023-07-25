@@ -77,7 +77,7 @@ class BonusService
                         'amount_available' => $amount,
                         'type' => $amount == 20,
                         'status' => WalletComission::STATUS_PENDING,
-                        'father_cyborg_purchased_id' => is_null($buyer) ? null : (is_null($buyer->getFatherMarketPurchased()) ? null : $buyer->getFatherMarketPurchased()->id),
+                        'father_cyborg_purchased_id' => $user->padre->getFatherMarketPurchased()->id,
                         'level' => $level
                     ]);
 
