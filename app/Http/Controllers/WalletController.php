@@ -358,11 +358,19 @@ class WalletController extends Controller
         return response()->json($data, 200);
     }
 
-    public function getWalletsAdmin()
+    public function getWalletsAdmin(Request $request)
     {
-        $data = WalletComission::with(['user','package'])->get();
+        $filter = $request->get('wallet');
+    
+        $data = WalletComission::with(['user', 'package'])
+            ->whereHas('user', function ($query) use ($filter) {
+                $query->where('email', 'like', '%' . $filter . '%');
+            })
+            ->get();
+    
         return response()->json($data, 200);
     }
+    
 
     public function getTotalAvailable(Request $request)
     {

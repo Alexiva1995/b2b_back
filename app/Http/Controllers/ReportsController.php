@@ -448,19 +448,34 @@ class ReportsController extends Controller
         }
         return response()->json($comission, 200);
     }
-    public function liquidaction()
+    public function liquidaction(Request $request)
     {
-        $liquidactions = Liquidaction::with('user')->get();
-
+        $filter = $request->get('name');
+    
+        $liquidactions = Liquidaction::with(['user' => function ($query) use ($filter) {
+            $query->where('name', 'like', '%' . $filter . '%');
+        }])->get();
+    
         return response()->json($liquidactions, 200);
     }
+    
 
-    public function liquidactionPending()
+    public function liquidactionPending(Request $request)
     {
-        $liquidactions = Liquidaction::with('user')->where('status', 0)->get();
-
+        $query = Liquidaction::with('user')->where('status', 0);
+    
+        $nameFilter = $request->get('dataToProduct');
+        if ($nameFilter) {
+            $query->whereHas('user', function ($userQuery) use ($nameFilter) {
+                $userQuery->where('name', 'LIKE', "%{$nameFilter}%");
+            });
+        }
+    
+        $liquidactions = $query->get();
+    
         return response()->json($liquidactions, 200);
     }
+    
 
 
     public function LiquidacionUser(Request $request)
