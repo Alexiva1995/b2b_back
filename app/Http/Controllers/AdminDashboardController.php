@@ -138,200 +138,199 @@ class AdminDashboardController extends Controller
 				'hash_id' => $order->hash,
 				'amount' => round($order->amount, 2),
 				'date' => $order->created_at->format('Y-m-d'),
-				'update_date' => $order->updated_at	->format('Y-m-d')
+				'update_date' => $order->updated_at->format('Y-m-d')
 			];
 		}
 		return response()->json($data, 200);
 	}
 
-    public function sumOrderPaid()
-    {
-        $order = Order::where('status', '1')->get();
+	public function sumOrderPaid()
+	{
+		$order = Order::where('status', '1')->get();
 
-        $data = $order->sum('amount');
+		$data = $order->sum('amount');
 
-        return response()->json($data, 200);
-    }
+		return response()->json($data, 200);
+	}
 
-    public function sumComissionPaid()
-    {
-        $order = WalletComission::where('status', '2')->get();
+	public function sumComissionPaid()
+	{
+		$order = WalletComission::where('status', '2')->get();
 
-        $data = $order->sum('amount_retired');
+		$data = $order->sum('amount_retired');
 
-        return response()->json($data, 200);
-    }
+		return response()->json($data, 200);
+	}
 
-    public function gainWeekly()
-    {
-        // Obtener los datos de la tabla 'ordenes' ordenados por fecha de creación
-        $ordenes = Order::where('status', '1')->orderBy('created_at')->get();
+	public function gainWeekly()
+	{
+		// Obtener los datos de la tabla 'ordenes' ordenados por fecha de creación
+		$ordenes = Order::where('status', '1')->orderBy('created_at')->get();
 
-        // Crear un arreglo para almacenar los datos de la gráfica
-        $data = [];
+		// Crear un arreglo para almacenar los datos de la gráfica
+		$data = [];
 
-        // Iterar sobre los registros de la tabla 'ordenes'
-        foreach ($ordenes as $orden) {
-            $diaSemana = $orden->created_at->format('D');
-            $ganancias = $orden->amount;
+		// Iterar sobre los registros de la tabla 'ordenes'
+		foreach ($ordenes as $orden) {
+			$diaSemana = $orden->created_at->format('D');
+			$ganancias = $orden->amount;
 
-            // Agregar los datos al arreglo de la gráfica
-            $data[$diaSemana] = $ganancias;
-        }
+			// Agregar los datos al arreglo de la gráfica
+			$data[$diaSemana] = $ganancias;
+		}
 
-        // Devolver los datos de la gráfica como respuesta JSON
-        return response()->json($data, 200);
-    }
+		// Devolver los datos de la gráfica como respuesta JSON
+		return response()->json($data, 200);
+	}
 
 	public function getReferralCount(User $user, $level = 1, $maxLevel = 4, $parentSide = null, $matrix = null): int
-{
-    $referralCount = 0;
+	{
+		$referralCount = 0;
 
-    if ($level <= $maxLevel) {
-        // Obtener las matrices compradas por el usuario autenticado
-        $purchasedMatrices = MarketPurchased::where('user_id', $user->id);
+		if ($level <= $maxLevel) {
+			// Obtener las matrices compradas por el usuario autenticado
+			$purchasedMatrices = MarketPurchased::where('user_id', $user->id);
 
-        // Verificar si se proporcionó un valor válido para $matrix y filtrar las matrices por ese valor
-        if ($matrix !== null) {
-            $purchasedMatrices->where('cyborg_id', $matrix);
-        }
+			// Verificar si se proporcionó un valor válido para $matrix y filtrar las matrices por ese valor
+			if ($matrix !== null) {
+				$purchasedMatrices->where('cyborg_id', $matrix);
+			}
 
-        $purchasedMatrices = $purchasedMatrices->pluck('id');
+			$purchasedMatrices = $purchasedMatrices->pluck('id');
 
-        // Filtrar los usuarios que tienen el campo 'father_cyborg_purchased_id' igual al 'cyborg_id' de las matrices compradas
-        $usersWithPurchasedMatrices = User::whereIn('father_cyborg_purchased_id', $purchasedMatrices)->get();
+			// Filtrar los usuarios que tienen el campo 'father_cyborg_purchased_id' igual al 'cyborg_id' de las matrices compradas
+			$usersWithPurchasedMatrices = User::whereIn('father_cyborg_purchased_id', $purchasedMatrices)->get();
 
-        // Contar los referidos del usuario actual en el lado izquierdo (binary_side = 'L')
-        $leftReferralCount = $usersWithPurchasedMatrices
-            ->where('binary_side', 'L')
-            ->count();
+			// Contar los referidos del usuario actual en el lado izquierdo (binary_side = 'L')
+			$leftReferralCount = $usersWithPurchasedMatrices
+				->where('binary_side', 'L')
+				->count();
 
-        // Contar los referidos del usuario actual en el lado derecho (binary_side = 'R')
-        $rightReferralCount = $usersWithPurchasedMatrices
-            ->where('binary_side', 'R')
-            ->count();
+			// Contar los referidos del usuario actual en el lado derecho (binary_side = 'R')
+			$rightReferralCount = $usersWithPurchasedMatrices
+				->where('binary_side', 'R')
+				->count();
 
-        // Sumar los referidos de ambos lados para obtener el total de referidos directos del usuario
-        $referralCount = $leftReferralCount + $rightReferralCount;
+			// Sumar los referidos de ambos lados para obtener el total de referidos directos del usuario
+			$referralCount = $leftReferralCount + $rightReferralCount;
 
-        // Recorrer los referidos y obtener la cantidad de sus referidos recursivamente
-        foreach ($usersWithPurchasedMatrices as $referral) {
-            $subReferralCount = $this->getReferralCount(User::find($referral->id), $level + 1, $maxLevel, $referral->binary_side, $matrix);
-            $referralCount += $subReferralCount;
-        }
-    }
+			// Recorrer los referidos y obtener la cantidad de sus referidos recursivamente
+			foreach ($usersWithPurchasedMatrices as $referral) {
+				$subReferralCount = $this->getReferralCount(User::find($referral->id), $level + 1, $maxLevel, $referral->binary_side, $matrix);
+				$referralCount += $subReferralCount;
+			}
+		}
 
-    return $referralCount;
-}
-
-
-public function topFiveUsers()
-{
-    // Obtener todos los usuarios de la base de datos
-    $users = User::all();
-
-    // Crear una colección para almacenar los resultados
-    $userList = collect();
-
-    // Recorrer todos los usuarios y obtener la cantidad de referidos y la matriz de cada uno
-    foreach ($users as $user) {
-        // Obtener la cantidad de referidos del usuario actual
-        $referralCount = $this->getReferralCount($user);
-
-        // Obtener el registro de MarketPurchased correspondiente al padre del usuario
-        $fatherMarketPurchased = $user->getFatherMarketPurchased();
-
-        // Obtener la matriz en la que se encuentra el usuario
-        $matrix = $fatherMarketPurchased ? $fatherMarketPurchased->type : 20;
-
-        // Agregar el usuario y sus datos a la colección de resultados
-        $userList->push([
-            'id' => $user->id,
-            'name' => $user->name,
-            'referral_count' => $referralCount,
-            'matrix' => $matrix,
-        ]);
-    }
-
-    // Ordenar la colección en función del número de referidos (de mayor a menor)
-    $userList = $userList->sortByDesc('referral_count');
-
-    // Tomar los primeros cinco usuarios de la lista (los cinco con más referidos)
-    $topFiveUsers = $userList->take(5);
-
-    return $topFiveUsers;
-}
+		return $referralCount;
+	}
 
 
+	public function topFiveUsers()
+	{
+		// Obtener todos los usuarios de la base de datos
+		$users = User::all();
+
+		// Crear una colección para almacenar los resultados
+		$userList = collect();
+
+		// Recorrer todos los usuarios y obtener la cantidad de referidos y la matriz de cada uno
+		foreach ($users as $user) {
+			// Obtener la cantidad de referidos del usuario actual
+			$referralCount = $this->getReferralCount($user);
+
+			// Obtener el registro de MarketPurchased correspondiente al padre del usuario
+			$fatherMarketPurchased = $user->getFatherMarketPurchased();
+
+			// Obtener la matriz en la que se encuentra el usuario
+			$matrix = $fatherMarketPurchased ? $fatherMarketPurchased->type : 20;
+
+			// Agregar el usuario y sus datos a la colección de resultados
+			$userList->push([
+				'id' => $user->id,
+				'name' => $user->name,
+				'referral_count' => $referralCount,
+				'matrix' => $matrix,
+			]);
+		}
+
+		// Ordenar la colección en función del número de referidos (de mayor a menor)
+		$userList = $userList->sortByDesc('referral_count');
+
+		// Tomar los primeros cinco usuarios de la lista (los cinco con más referidos)
+		$topFiveUsers = $userList->take(5);
+
+		return $topFiveUsers;
+	}
 
 
 
-    public function mountMatrix()
-    {
 
-        $matrix = WalletComission::get();
-        $matrixTotalAmount = $matrix->sum('amount');
-        $totalAmountMatrix20 = $matrix->where('type', '1')->sum('amount');
-        $totalAmountMatrix200 = $matrix->where('type', '2')->sum('amount');
-        $totalAmountMatrix2000 = $matrix->where('type', '3')->sum('amount');
 
-        $data = array(
-            'matrixTotalAmount'     => $matrixTotalAmount,
-            'totalAmountMatrix20'   => $totalAmountMatrix20,
-            'totalAmountMatrix200'  => $totalAmountMatrix200,
-            'totalAmountMatrix2000' => $totalAmountMatrix2000
-        );
+	public function mountMatrix()
+	{
 
-        return response()->json($data, 200);
-    }
+		$matrix = WalletComission::get();
+		$matrixTotalAmount = $matrix->sum('amount');
+		$totalAmountMatrix20 = $matrix->where('type', '1')->sum('amount');
+		$totalAmountMatrix200 = $matrix->where('type', '2')->sum('amount');
+		$totalAmountMatrix2000 = $matrix->where('type', '3')->sum('amount');
 
-    public function totalEarnigs()
-    {
-        $inversion = PackageMembership::all();
-        $data = $inversion->sum('amount');
+		$data = array(
+			'matrixTotalAmount'     => $matrixTotalAmount,
+			'totalAmountMatrix20'   => $totalAmountMatrix20,
+			'totalAmountMatrix200'  => $totalAmountMatrix200,
+			'totalAmountMatrix2000' => $totalAmountMatrix2000
+		);
 
-        return response()->json($data, 200);
-    }
+		return response()->json($data, 200);
+	}
+
+	public function totalEarnings()
+	{
+		$inversion = PackageMembership::all();
+		$data = $inversion->sum('amount');
+
+		return response()->json($data, 200);
+	}
 
 	public function countUserForMatrix()
 	{
 		$inversions = Inversion::get();
-        $userCount = $inversions->sum('amount');
-        $userMatrix20 = $inversions->where('type', '0')->sum('amount');
-        $userMatrix200 = $inversions->where('type', '1')->sum('amount');
-        $userMatrix2000 = $inversions->where('type', '2')->sum('amount');
+		$userCount = $inversions->sum('amount');
+		$userMatrix20 = $inversions->where('type', '0')->sum('amount');
+		$userMatrix200 = $inversions->where('type', '1')->sum('amount');
+		$userMatrix2000 = $inversions->where('type', '2')->sum('amount');
 
-        $data = array(
-            'userCount'     => $userCount,
-            'userMatrix20'   => $userMatrix20,
-            'userMatrix200'  => $userMatrix200,
-            'userMatrix2000' => $userMatrix2000
-        );
+		$data = array(
+			'userCount'     => $userCount,
+			'userMatrix20'   => $userMatrix20,
+			'userMatrix200'  => $userMatrix200,
+			'userMatrix2000' => $userMatrix2000
+		);
 
-        return response()->json($data, 200);
+		return response()->json($data, 200);
 	}
 
-    public function countOrderAndCommision()
-    {
-        // Obtener el conteo de órdenes por mes
-        $orders = DB::table('orders')
-        ->select(DB::raw('YEAR(created_at) as year'), DB::raw('MONTH(created_at) as month'), DB::raw('COUNT(*) as count'))
-        ->groupBy(DB::raw('YEAR(created_at)'), DB::raw('MONTH(created_at)'))
-        ->get();
+	public function countOrderAndCommision()
+	{
+		// Obtener el conteo de órdenes por mes
+		$orders = DB::table('orders')
+			->select(DB::raw('YEAR(created_at) as year'), DB::raw('MONTH(created_at) as month'), DB::raw('COUNT(*) as count'))
+			->groupBy(DB::raw('YEAR(created_at)'), DB::raw('MONTH(created_at)'))
+			->get();
 
-        // Obtener el conteo de comisiones por mes
-        $commissions = DB::table('wallets_commissions')
-        ->select(DB::raw('YEAR(created_at) as year'), DB::raw('MONTH(created_at) as month'), DB::raw('COUNT(*) as count'))
-        ->groupBy(DB::raw('YEAR(created_at)'), DB::raw('MONTH(created_at)'))
-        ->get();
+		// Obtener el conteo de comisiones por mes
+		$commissions = DB::table('wallets_commissions')
+			->select(DB::raw('YEAR(created_at) as year'), DB::raw('MONTH(created_at) as month'), DB::raw('COUNT(*) as count'))
+			->groupBy(DB::raw('YEAR(created_at)'), DB::raw('MONTH(created_at)'))
+			->get();
 
-        // Combinar los resultados en un objeto JSON
-        $data = [
-            'orders' => $orders,
-            'commissions' => $commissions
-        ];
+		// Combinar los resultados en un objeto JSON
+		$data = [
+			'orders' => $orders,
+			'commissions' => $commissions
+		];
 
-        return response()->json($data);
-    }
-
+		return response()->json($data);
+	}
 }

@@ -42,7 +42,7 @@ class AuthController extends Controller
      */
     public function register(UserStoreRequest $request)
     {
-
+        DB::beginTransaction();
         try {
             // En $sponsor_id esta el id del padre (el dueño del link) aplicar logica correspondiente y obtener el lado adecuado (tarea processes de auth back)
             $binary_side = 'R';
@@ -53,6 +53,7 @@ class AuthController extends Controller
             if ($request->link_code) {
                 $validation = $this->checkMatrix($request->link_code, $request->binary_side, false);
                 if (!$validation['status']) {
+                    throw new Exception('Invalid referral link');
                     $response = ['Error' => 'Invalid referral link'];
                     return response()->json($response, 400);
                 }
@@ -68,7 +69,7 @@ class AuthController extends Controller
                 $binary_id = $this->treController->getPosition(intval($sponsor_id), $binary_side);
             }
 
-            DB::beginTransaction();
+
             $data = [
                 'name' => $request->user_name,
                 'last_name' => $request->user_lastname,
@@ -129,7 +130,7 @@ class AuthController extends Controller
             Log::error($th);
             DB::rollback();
             // $response = ['Error' => 'Error registering user'];
-            $response = ['errors' => ['register' => [0 => 'Error registering users']]];;
+            $response = ['errors' => ['register' => [0 => $th->getMessage() ?? 'Error registering users']]];;
             return response()->json($response, 500);
         }
     }
@@ -181,6 +182,7 @@ class AuthController extends Controller
                 'created_at' => $user->created_at,
                 'updated_at' => $user->updated_at,
                 'status' => $user->status == "0" ? false : true,
+                'type_services' => $user->type_service,
                 'message' => 'Successful login.'
             ];
 
@@ -412,6 +414,7 @@ class AuthController extends Controller
             'created_at' => $user->created_at,
             'updated_at' => $user->updated_at,
             'status' => $user->status == "0" ? false : true,
+            'type_services' => $user->type_service,
             'message' => 'Successful login.'
         ];
         return response()->json($data, 200);
@@ -495,8 +498,8 @@ class AuthController extends Controller
                 Log::debug($response);
                 throw new Exception("Error processing purchase", 400);
             }
-            // $bonusService = new BonusService;
-            //$bonusService->generateBonus(20,$user, $order, $buyer = $user, $level = 2, $user->id);
+             $bonusService = new BonusService;
+            $bonusService->generateBonus(20,$user, $order, $buyer = $user, $level = 2, $user->id);
             return response()->json($response, 200);
             //code...
         } catch (\Throwable $th) {
@@ -539,10 +542,18 @@ class AuthController extends Controller
     }
 
     public function getDataPayment(Request $request)
-    {
+    {   try {
         $user = User::where('email', $request->email)->first();
-        $order = $user->orders()->latest()->first()->coinpaymentTransaction()->first();
-        return $order;
+        $order = $user->orders()->latest()->where('status', '0')->first()->coinpaymentTransaction()->first();
+        if(!$order){
+            return response()->json(['status' => 'error'], 400);
+        }
+        return response()->json($order);
+        //code...
+    } catch (\Throwable $th) {
+        Log::error('Error al mostrar datos de pago -' . $th->getMessage());
+        return response()->json('Error displaying payment data', 400);
+    }
 
     }
 
