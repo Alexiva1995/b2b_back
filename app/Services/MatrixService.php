@@ -14,7 +14,7 @@ class MatrixService
     {
         $this->bonusService = $bonusService;
     }
-    // Reto a quien quiera intentar optimizar este codigo haciendo una funcion recursiva y dinamica, si lo logras, pide un aumento 
+    // Reto a quien quiera intentar optimizar este codigo haciendo una funcion recursiva y dinamica, si lo logras, pide un aumento
     public function levelOne()
     {
         // Obtenemos a todos los usuarios que no tengan nivel maximo y que no sean admin.
@@ -63,7 +63,7 @@ class MatrixService
                 $matrixPurchased->level = 2;
                 $matrixPurchased->save();
                 $amount = $matrixPurchased->type == MarketPurchased::MATRIX_20 ? 50 : ($matrixPurchased->type == MarketPurchased::MATRIX_200 ? 500 : 5_000);
-                $this->bonusService->subtract($amount, $matrixPurchased->user_id, $matrixPurchased->cyborg->id, $level = 2, $matrixPurchased->user, $matrixPurchased->type);
+                $this->bonusService->subtract($amount, $matrixPurchased->user_id, $matrixPurchased->id, $level = 2, $matrixPurchased->user, $matrixPurchased->type);
             }
 
             $this->levelThree($matrixPurchased, $users, $user_left_left, $user_left_right, $user_right_left, $user_right_right);
