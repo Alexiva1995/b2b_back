@@ -33,13 +33,18 @@ use Illuminate\Support\Facades\Log;
 class UserController extends Controller
 {
 
-    public function showReferrals($matrix = null)
+    public function showReferrals($matrix, $id = null)
     {
         // Si $matrix es null, asignarle el valor 1 por defecto
         $matrix = $matrix ?? 1;
 
-        $user = JWTAuth::parseToken()->authenticate();
+        if ($id == null) {
+            $user = JWTAuth::parseToken()->authenticate();
+        } else {
+            $user = User::find($id);
+        }
         $referrals = $this->getReferrals($user,$matrix);
+
 
         return response()->json($referrals, 200);
     }
@@ -80,7 +85,7 @@ class UserController extends Controller
 
 
 
-public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide = null, $matrix = 1): Collection
+public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide = null, $matrix = null): Collection
 {
     $referrals = new Collection();
 
@@ -147,13 +152,17 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
 
 
 
-    public function getLast10Withdrawals()
+    public function getLast10Withdrawals($id = null)
     {
-        $user = JWTAuth::parseToken()->authenticate();
-
+        if ($id == null) {
+            $user = JWTAuth::parseToken()->authenticate();
+        } else {
+            $user = User::find($id);
+        }
+    
         $withdrawals = WalletComission::select('id', 'description', 'amount', 'created_at')
             ->where('user_id', $user->id)
-            ->where('available_withdraw', '=', 0)
+            ->where('avaliable_withdraw', '=', 0)
             ->take(15)
             ->get();
 
@@ -168,9 +177,13 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
 
 
 
-    public function getUserOrders()
+    public function getUserOrders($id = null)
     {
-        $user = JWTAuth::parseToken()->authenticate();
+        if ($id == null) {
+            $user = JWTAuth::parseToken()->authenticate();
+        } else {
+            $user = User::find($id);
+        }
 
         $data = [];
 
@@ -182,7 +195,7 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
                 'user_id' => $order->user->id,
                 'user_name' => strtolower(explode(" ", $order->user->name)[0] . " " . explode(" ", $order->user->last_name)[0]),
                 'status' => $order->status,
-                'description' => $order->packagesB2B->product_name,
+                'description' => $order->packagesB2B->package,
                 'hash_id' => $order->hash,
                 'amount' => round($order->amount, 2),
                 'date' => $order->created_at->format('Y-m-d'),
@@ -192,9 +205,13 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
         return response()->json($data, 200);
     }
 
-    public function getMonthlyOrders()
+    public function getMonthlyOrders($id = null)
 {
-    $user = JWTAuth::parseToken()->authenticate();
+    if ($id == null) {
+        $user = JWTAuth::parseToken()->authenticate();
+    } else {
+        $user = User::find($id);
+    }
 
     $orders = Order::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount) AS total_amount')
         ->where('user_id', $user->id)
@@ -219,10 +236,14 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
 
 
 
-    public function getMonthlyEarnings()
+    public function getMonthlyEarnings($id = null)
     {
-        $user = JWTAuth::parseToken()->authenticate();
-
+        if ($id == null) {
+            $user = JWTAuth::parseToken()->authenticate();
+        } else {
+            $user = User::find($id);
+        }
+    
         $commissions = WalletComission::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount) AS total_amount')
             ->where('user_id', $user->id)
             ->groupBy('year', 'month')
@@ -244,9 +265,13 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
     }
 
 
-    public function getMonthlyCommissions()
+    public function getMonthlyCommissions($id = null)
 {
-    $user = JWTAuth::parseToken()->authenticate();
+    if ($id == null) {
+        $user = JWTAuth::parseToken()->authenticate();
+    } else {
+        $user = User::find($id);
+    }
 
     $commissions = WalletComission::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount) AS total_amount')
         ->where('user_id', $user->id)
@@ -271,9 +296,13 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
 }
 
 
-    public function myBestMatrixData()
+    public function myBestMatrixData($id = null)
     {
-        $user = JWTAuth::parseToken()->authenticate();
+        if ($id == null) {
+            $user = JWTAuth::parseToken()->authenticate();
+        } else {
+            $user = User::find($id);
+        }
 
         $lastApprovedCyborg = Order::where('user_id', $user->id)
         ->where('status', '1')
@@ -316,16 +345,20 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
 
         $data = WalletComission::select('amount', 'created_at')
             ->where('user_id', $user->id)
-            ->where('available_withdraw', '=', 0)
+            ->where('avaliable_withdraw', '=', 0)
             ->get();
 
         return response()->json($data, 200);
     }
 
-    public function getUserBalance()
-    {
-        $user = JWTAuth::parseToken()->authenticate();
-
+    public function getUserBalance($id = null)
+    { 
+        if($id == null) {
+            $user = JWTAuth::parseToken()->authenticate();
+        } else {
+            $user = User::find($id);
+        }
+    
         $data = WalletComission::where('status', 0)
             ->where('user_id', $user->id)
             ->sum('amount');
@@ -334,13 +367,17 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
     }
 
 
-    public function getUserBonus()
+    public function getUserBonus($id = null)
     {
-        $user = JWTAuth::parseToken()->authenticate();
-
+        if($id == null) {
+            $user = JWTAuth::parseToken()->authenticate();
+        } else {
+            $user = User::find($id);
+        }
+    
         $data = WalletComission::where('status', 0)
             ->where('user_id', $user->id)
-            ->where('available_withdraw', 1)
+            ->where('avaliable_withdraw', 1)
             ->sum('amount');
 
         return response()->json($data, 200);
@@ -721,17 +758,23 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
     /**
      * Obtiene la lista de los usuarios para el admin b2b
      */
-    public function getUsers()
+    public function getUsers(Request $request)
     {
-        $users = User::where('admin', '0')->withSum(['wallets as total_gain' => function ($query) {
-            $query->where('status', WalletComission::STATUS_AVAILABLE);
-        }], 'amount_available')
+        $filter = $request->get('name');
+    
+        $users = User::where('admin', '0')
+            ->where('name', 'like', '%'.$filter.'%')
+            ->withSum(['wallets as total_gain' => function ($query) {
+                $query->where('status', WalletComission::STATUS_AVAILABLE);
+            }], 'amount_available')
             ->with('inversions', function ($query) {
                 $query->where('status', Inversion::STATUS_APPROVED)->orderBy('id', 'desc');
-            })->get();
-
+            })
+            ->get();
+    
         return response()->json($users, 200);
     }
+    
 
     public function getUsersDownload()
     {
