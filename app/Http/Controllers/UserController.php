@@ -275,6 +275,31 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
     {
         $user = JWTAuth::parseToken()->authenticate();
 
+        if($user->admin == '1'){
+            $wallets = DB::table('wallets_commissions')
+                            ->select(DB::raw('user_id, SUM(amount) as gain'))
+                            ->groupBy('user_id')
+                            ->orderByDesc('gain')
+                            ->limit(5)
+                            ->get();
+                            //raw('SELECT user_id, SUM(amount) as gain  GROUP BY user_id ORDER BY `gain` DESC LIMIT 5; ')->get();
+            $users = array();
+            foreach ($wallets as $key => $comission) {
+                $user = User::find($comission->user_id);
+                $data = [
+                    'rank' => $key+1,
+                    'imageProfile' => $user->profile_picture ,
+                    'gain' => $comission->gain,
+                    'matrix' => $user->marketPurchased->count(),
+                    'level' => $user->marketPurchased->max('level'),
+                    'user_id' => $user->id,
+                ];
+
+                array_push($users, $data);
+            }
+            return $users;
+        }
+
         $lastApprovedCyborg = Order::where('user_id', $user->id)
         ->where('status', '1')
         ->latest('cyborg_id')
