@@ -29,26 +29,27 @@ class BonusService
             if ($user->id == 1) return;
 
             if ($level >= 2) {
-                DB::beginTransaction();
+                if($user->padre && $user->padre->id != 1) {
+                    DB::beginTransaction();
+                    $walletComissionRepository = new WalletComissionRepository;
 
-                $walletComissionRepository = new WalletComissionRepository;
+                    $walletComission = new WalletComission([
+                        'user_id' => $user->padre->id,
+                        'buyer_id' => is_null($buyer_id) ? null : $buyer_id,
+                        'order_id' => is_null($order) ? null : $order->id,
+                        'description' => is_null($order) ? 'Comision por upgrade de matrix' : 'Comision por primera compra',
+                        'amount' => $amount,
+                        'amount_available' => $amount,
+                        'type' => $amount == 20 ? WalletComission::TYPE_MATRIX20 : ($amount == 200 ? WalletComission::TYPE_MATRIX200 : WalletComission::TYPE_MATRIX2000),
+                        'status' => WalletComission::STATUS_PENDING,
+                        'father_cyborg_purchased_id' => is_null($buyer) ? null : (is_null($buyer->getFatherMarketPurchased()) ? null : $buyer->getFatherMarketPurchased()->id),
+                        'level' => $level
+                    ]);
 
-                $walletComission = new WalletComission([
-                    'user_id' => $user->id,
-                    'buyer_id' => is_null($buyer_id) ? null : $buyer_id,
-                    'order_id' => is_null($order) ? null : $order->id,
-                    'description' => is_null($order) ? 'Comision por upgrade de matrix' : 'Comision por primera compra',
-                    'amount' => $amount,
-                    'amount_available' => $amount,
-                    'type' => $amount == 20 ? WalletComission::TYPE_MATRIX20 : ($amount == 200 ? WalletComission::TYPE_MATRIX200 : WalletComission::TYPE_MATRIX2000),
-                    'status' => WalletComission::STATUS_PENDING,
-                    'father_cyborg_purchased_id' => is_null($buyer) ? null : (is_null($buyer->getFatherMarketPurchased()) ? null : $buyer->getFatherMarketPurchased()->id),
-                    'level' => $level
-                ]);
-
-                $walletComissionRepository->save($walletComission);
-                
-                DB::commit();
+                    $walletComissionRepository->save($walletComission);
+                    
+                    DB::commit();
+                }
             }
         } catch (\Throwable $th) {
             DB::rollback();
