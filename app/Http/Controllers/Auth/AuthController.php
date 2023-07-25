@@ -498,8 +498,8 @@ class AuthController extends Controller
                 Log::debug($response);
                 throw new Exception("Error processing purchase", 400);
             }
-            // $bonusService = new BonusService;
-            //$bonusService->generateBonus(20,$user, $order, $buyer = $user, $level = 2, $user->id);
+             $bonusService = new BonusService;
+            $bonusService->generateBonus(20,$user, $order, $buyer = $user, $level = 2, $user->id);
             return response()->json($response, 200);
             //code...
         } catch (\Throwable $th) {
