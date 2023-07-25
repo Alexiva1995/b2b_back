@@ -480,12 +480,28 @@ class ReportsController extends Controller
 
     public function LiquidacionUser(Request $request)
     {
+        // Obtener el usuario autenticado
         $user = JWTAuth::parseToken()->authenticate();
-        if (isset($request->user_id)) {
-            $user = User::findOrFail($request->user_id);
+    
+        // Si se proporciona el parámetro "user_id", buscar el usuario por ID
+        if ($request->has('user_id')) {
+            $userId = $request->input('user_id');
+            $user = User::findOrFail($userId);
         }
-        $data = Liquidaction::with('user')->where('user_id', $user->id)->get();
-
+    
+        // Aplicar el filtro por ID para auditoría (si se proporciona)
+        $auditId = $request->input('audit_id');
+    
+        // Obtener las liquidaciones con la relación "user" para el usuario actual o filtrado por ID
+        $query = Liquidaction::with('user')->where('user_id', $user->id);
+    
+        // Aplicar el filtro por ID para auditoría (si se proporciona)
+        if ($auditId) {
+            $query->where('id', $auditId);
+        }
+    
+        $data = $query->get();
+    
         return response()->json($data, 200);
     }
 

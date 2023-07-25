@@ -312,49 +312,20 @@ class WalletController extends Controller
 
     public function getWallets(Request $request)
     {
+        // Obtener el usuario autenticado
         $user = JWTAuth::parseToken()->authenticate();
-        if (isset($request->user_id)) {
-            $user = User::findOrFail($request->user_id);
+    
+        // Si se proporciona el parámetro "email", buscar el usuario por correo
+        if ($request->has('email')) {
+            $email = $request->input('email');
+            $user = User::where('email', $email)->firstOrFail();
         }
-
-        $data = WalletComission::with(['user', 'package'])->where('user_id', $user->id)->get();
-
-        // $data = new Collection();
-        // foreach ($wallets as $wallet) {
-        //     $buyer = User::find($wallet->buyer_id);
-
-        //     switch ($wallet->type) {
-        //         case '0':
-        //             $type = 'Referral I';
-        //             break;
-
-        //         case '1':
-        //             $type = 'Assigned';
-        //             break;
-
-        //         case '2':
-        //             $type = 'Referral II';
-        //             break;
-
-        //         default:
-        //             $type = 'Refund';
-        //             break;
-        //     }
-
-        //     $object = new \stdClass();
-        //     $object->id = $wallet->id;
-        //     if($wallet->order_id) {
-        //         $object->buyer = 'FYT ' . $wallet->order->packageMembership->getTypeName();
-        //     } else {
-        //         $object->buyer = ucwords(strtolower($buyer->name . " " . $buyer->last_name));
-        //     }
-        //     $object->type = $type;
-        //     $object->amount = $wallet->amount;
-        //     $object->status = $wallet->status;
-        //     $object->date = $wallet->created_at;
-        //     $object->program = $wallet->order != null ? "{$wallet->order->packageMembership->getTypeName()} {$wallet->order->packageMembership->account}" : "";
-        //     $data->push($object);
-        // }
+    
+        // Obtener las billeteras de comisiones con las relaciones "user" y "package" para el usuario actual o filtrado por correo
+        $data = WalletComission::with(['user', 'package'])
+            ->where('user_id', $user->id)
+            ->get();
+    
         return response()->json($data, 200);
     }
 

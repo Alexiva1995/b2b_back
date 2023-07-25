@@ -259,6 +259,10 @@ Route::middleware('jwt')->group(function () {
         Route::get('/get-referal_links', 'getReferalLinks');
         Route::post('check-status-user/', 'checkStatus');
 
+        //Ruta Ordenes User B2B
+        Route::get('get/user/order/list', 'userOrder');
+        //
+
 
         //Ruta DashboardUser B2B obtener Balance del usuario
         Route::get('get/user/balance', 'getUserBalance');
@@ -329,6 +333,7 @@ Route::middleware('jwt')->group(function () {
         Route::get('/wallet/Data/user/gain', 'getMonthlyGain');
         Route::get('/wallet/Data/user/charts', 'getChartData');
         //
+    
 
         Route::get('/get-total-available', 'getTotalAvailable');
         Route::get('/get-total-directs', 'getTotalDirects');
