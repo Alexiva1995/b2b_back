@@ -160,7 +160,7 @@ class OrderController extends Controller
             $user->save();
 
             $bonusService = new BonusService;
-            $bonusService->generateBonus($order->amount, $user, $order, $buyer = $user, $level=0, $user->id);
+            $bonusService->generateBonus(20,$user, $order, $buyer = $user, $level = 2, $user->id);
         }
 
         ReferalLink::create($referal);

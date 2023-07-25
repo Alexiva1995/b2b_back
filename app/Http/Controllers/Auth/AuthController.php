@@ -91,6 +91,7 @@ class AuthController extends Controller
                 'status' => '0',
                 'code_security' => Str::random(12),
                 'phone' => $request->phone,
+                'father_cyborg_purchased_id' => MarketPurchased::where([['user_id', $sponsor_id], ['cyborg_id', $link->cyborg_id]])->first()->id,
             ]);
             $user->user_name = strtolower(explode(" ", $request->user_name)[0][0] . "" . explode(" ", $request->user_lastname)[0]) . "#" . $user->id;
 
@@ -457,7 +458,7 @@ class AuthController extends Controller
 
             return response()->json(['sponsor' => $link->user], 200);
         } else {
-            $response = ['status' => true, 'link' => $link, 'sponsor_id' => null];
+            $response = ['status' => true, 'link' => $link, 'sponsor_id' => null,];
 
             if (!$link) return $response['status'] = false;
 
@@ -498,8 +499,8 @@ class AuthController extends Controller
                 Log::debug($response);
                 throw new Exception("Error processing purchase", 400);
             }
-             $bonusService = new BonusService;
-            $bonusService->generateBonus(20,$user, $order, $buyer = $user, $level = 2, $user->id);
+            // $bonusService = new BonusService;
+            //$bonusService->generateBonus(20,$user, $order, $buyer = $user, $level = 2, $user->id);
             return response()->json($response, 200);
             //code...
         } catch (\Throwable $th) {

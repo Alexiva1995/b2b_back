@@ -57,6 +57,44 @@ class BonusService
         }
     }
 
+    public function generateFirstComission(int $amount, User $user, $order = null, User $buyer = null, int $level, int $buyer_id = null)
+    {
+        try {
+            if ($user->id == 1) return;
+
+            if ($user->padre && $user->padre->id != 1) {
+                if($user->padre->padre && $user->padre->padre->id != 1) {
+                    DB::beginTransaction();
+
+                    $walletComissionRepository = new WalletComissionRepository;
+
+                    $walletComission = new WalletComission([
+                        'user_id' => $user->padre->padre->id,
+                        'buyer_id' => is_null($buyer_id) ? null : $buyer_id,
+                        'order_id' => is_null($order) ? null : $order->id,
+                        'description' => 'Comision por primera compra',
+                        'amount' => $amount,
+                        'amount_available' => $amount,
+                        'type' => $amount == 20,
+                        'status' => WalletComission::STATUS_PENDING,
+                        'father_cyborg_purchased_id' => $user->padre->getFatherMarketPurchased()->id,
+                        'level' => $level
+                    ]);
+
+                    $walletComissionRepository->save($walletComission);
+                    
+                    DB::commit();  
+                }
+            }
+        } catch (\Throwable $th) {
+            DB::rollback();
+            Log::info('Fallo al aplicar bono por compra');
+            Log::error($th);
+        }
+    }
+
+
+
     public function subtract(int $amount, int $user_id, $matrix_id = null, int $level, User $user, int $matrix_type)
     {
         $wallets = WalletComission::where('user_id', $user_id)->where('status', WalletComission::STATUS_PENDING)
