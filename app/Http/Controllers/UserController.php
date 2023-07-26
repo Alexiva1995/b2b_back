@@ -40,27 +40,27 @@ class UserController extends Controller
     
         $filter = $request->get('dataFilter');
     
-        $query = Order::with(['user', 'project', 'packageMembership'])
-            ->where('user_id', $user->id) // Filter orders by the authenticated user
-            ->when($filter, function ($q) use ($filter) {
-                return $q->where(function ($query) use ($filter) {
-                    $query->where('id', $filter)
-                        ->orWhereHas('user', function ($q) use ($filter) {
-                            $q->whereRaw("CONCAT(`name`, ' ', `last_name`) LIKE ?", ['%' . $filter . '%']);
-                        });
-                });
-            })
-            ->get();
+        $query = $user->orders()->with(['user', 'project', 'packageMembership']);
     
-        // Construir el arreglo de datos
+        $query->when($filter, function ($q) use ($filter) {
+            return $q->where(function ($query) use ($filter) {
+                $query->where('id', $filter)
+                    ->orWhereHas('user', function ($q) use ($filter) {
+                        $q->whereRaw("CONCAT(`name`, ' ', `last_name`) LIKE ?", ['%' . $filter . '%']);
+                    });
+            });
+        });
+    
+        $orders = $query->get();
+    
         $data = array();
-        foreach ($query as $order) {
+        foreach ($orders as $order) {
             if (isset($order->project)) {
                 $phase = ($order->project->phase2 == null && $order->project->phase1 == null)
                     ? ""
                     : (($order->project->phase2 != null)
-                        ? "Phase 2"
-                        : "Phase 1");
+                    ? "Phase 2"
+                    : "Phase 1");
             }
     
             $object = [
@@ -69,20 +69,21 @@ class UserController extends Controller
                 'user_username' => $order->user->user_name,
                 'user_email' => $order->user->email,
                 'program' => $order->packagesB2B->product_name,
+                // 'phase' => $phase ?? "",
+                // 'account' => $order->packageMembership->account,
                 'status' => $order->status,
-                'hash_id' => $order->hash,
+                'hash_id' => $order->hash, // Hash::make($order->id)
                 'amount' => $order->amount,
                 'sponsor_id' => $order->user->sponsor->id,
                 'sponsor_username' => $order->user->sponsor->user_name,
                 'sponsor_email' => $order->user->sponsor->email,
                 'hashLink' => $order->coinpaymentTransaction->checkout_url ?? "",
-                'created_at' => $order->created_at->format('Y-m-d H:i:s'),
-                'updated_at' => $order->updated_at->format('Y-m-d H:i:s'),
+                'date' => $order->created_at->format('Y-m-d')
             ];
             array_push($data, $object);
         }
     
-        return response()->json(['status' => 'success', 'data' => $data], 200);
+        return response()->json(['status' => 'success', 'data' => $data, 201]);
     }
     
     
