@@ -260,9 +260,8 @@ Route::middleware('jwt')->group(function () {
         Route::post('check-status-user/', 'checkStatus');
 
         //Ruta Ordenes User B2B
-        Route::get('get/user/order/list', 'userOrder');
+        Route::get('get/user/order/list/{id?}', 'userOrder');
         //
-
 
         //Ruta DashboardUser B2B obtener Balance del usuario
         Route::get('get/user/balance', 'getUserBalance');
