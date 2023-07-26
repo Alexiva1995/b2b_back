@@ -448,6 +448,7 @@ class ReportsController extends Controller
         }
         return response()->json($comission, 200);
     }
+
     public function liquidaction(Request $request)
     {
         $filterId = $request->get('id');
@@ -471,9 +472,9 @@ class ReportsController extends Controller
                 $userQuery->where('id', $idFilter);
             });
         }
-    
+
         $liquidactions = $query->get();
-    
+
         return response()->json($liquidactions, 200);
     }
     
@@ -484,26 +485,26 @@ class ReportsController extends Controller
     {
         // Obtener el usuario autenticado
         $user = JWTAuth::parseToken()->authenticate();
-    
+
         // Si se proporciona el parámetro "user_id", buscar el usuario por ID
         if ($request->has('user_id')) {
             $userId = $request->input('user_id');
             $user = User::findOrFail($userId);
         }
-    
+
         // Aplicar el filtro por ID para auditoría (si se proporciona)
         $auditId = $request->input('audit_id');
-    
+
         // Obtener las liquidaciones con la relación "user" para el usuario actual o filtrado por ID
         $query = Liquidaction::with('user')->where('user_id', $user->id);
-    
+
         // Aplicar el filtro por ID para auditoría (si se proporciona)
         if ($auditId) {
             $query->where('id', $auditId);
         }
-    
+
         $data = $query->get();
-    
+
         return response()->json($data, 200);
     }
 
