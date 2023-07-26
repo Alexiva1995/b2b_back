@@ -315,19 +315,21 @@ class WalletController extends Controller
         // Obtener el usuario autenticado
         $user = JWTAuth::parseToken()->authenticate();
     
-        // Si se proporciona el parámetro "email", buscar el usuario por correo
-        if ($request->has('email')) {
-            $email = $request->input('email');
-            $user = User::where('email', $email)->firstOrFail();
+        // Si se proporciona el parámetro "wallet_id", buscar la wallet por ID
+        if ($request->has('wallet_id')) {
+            $walletId = $request->input('wallet_id');
+            $wallet = WalletComission::findOrFail($walletId);
+            $user = $wallet->user;
         }
     
-        // Obtener las billeteras de comisiones con las relaciones "user" y "package" para el usuario actual o filtrado por correo
+        // Obtener las billeteras de comisiones con las relaciones "user" y "package" para el usuario actual o filtrado por ID de la wallet
         $data = WalletComission::with(['user', 'package'])
             ->where('user_id', $user->id)
             ->get();
     
         return response()->json($data, 200);
     }
+    
 
     public function getWalletsAdmin(Request $request)
     {
