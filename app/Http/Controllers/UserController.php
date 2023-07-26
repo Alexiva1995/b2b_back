@@ -33,34 +33,37 @@ use Illuminate\Support\Facades\Log;
 class UserController extends Controller
 {
 
-    public function userOrder(Request $request)
+    public function getOrders(Request $request)
     {
         // Obtener el usuario autenticado
         $user = JWTAuth::parseToken()->authenticate();
     
-        $filter = $request->get('dataFilter');
+        // Obtener el filtro del parámetro "dataFilter" en la solicitud
+        $filter = $request->input('dataFilter');
     
-        $query = $user->orders()->with(['user', 'project', 'packageMembership']);
+        // Obtener las órdenes con las relaciones "user", "project" y "packageMembership" para el usuario actual o filtrado por ID de orden o nombre del usuario
+        $query = Order::with(['user', 'project', 'packageMembership'])
+            ->where('user_id', $user->id);
     
-        if ($filter) {
-            $query->where(function ($q) use ($filter) {
-                $q->where('id', $filter)
-                    ->orWhereHas('user', function ($q) use ($filter) {
-                        $q->whereRaw("CONCAT(`name`, ' ', `last_name`) LIKE ?", ['%' . $filter . '%']);
-                    });
+        // Aplicar el filtro por ID de orden o nombre del usuario
+        $query->when(is_numeric($filter), function ($q) use ($filter) {
+            return $q->where('id', $filter);
+        })->when(!is_numeric($filter), function ($q) use ($filter) {
+            return $q->whereHas('user', function ($q) use ($filter) {
+                $q->whereRaw("CONCAT(`name`, ' ', `last_name`) LIKE ?", ['%' . $filter . '%']);
             });
-        }
+        });
     
-        $orders = $query->get();
+        $data = $query->get();
     
-        $data = array();
-        foreach ($orders as $order) {
+        // Construir el arreglo de datos
+        foreach ($data as $order) {
             if (isset($order->project)) {
                 $phase = ($order->project->phase2 == null && $order->project->phase1 == null)
                     ? ""
                     : (($order->project->phase2 != null)
-                    ? "Phase 2"
-                    : "Phase 1");
+                        ? "Phase 2"
+                        : "Phase 1");
             }
     
             $object = [
@@ -81,11 +84,12 @@ class UserController extends Controller
                 'created_at' => $order->created_at->format('Y-m-d H:i:s'),
                 'updated_at' => $order->updated_at->format('Y-m-d H:i:s'),
             ];
-            array_push($data, $object);
+            array_push($object);
         }
     
-        return response()->json(['status' => 'success', 'data' => $data], 201);
+        return response()->json(['status' => 'success', 'data' => $result], 200);
     }
+    
     
     
 
