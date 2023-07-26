@@ -450,20 +450,25 @@ class ReportsController extends Controller
     }
 
     public function liquidaction(Request $request)
-    {
-        $filter = $request->get('dataFilter');
-    
-        $liquidactions = Liquidaction::with(['user' => function ($query) use ($filter) {
-            $query->where(function ($q) use ($filter) {
-                $q->where('id', $filter)
-                  ->orWhere('name', 'LIKE', '%' . $filter . '%');
-            });
-        }])
+{
+    $filter = $request->get('dataFilter');
+
+    $liquidactions = Liquidaction::with('user')
+        ->where(function ($query) use ($filter) {
+            if (is_numeric($filter)) {
+                $query->where('id', $filter);
+            } else {
+                $query->whereHas('user', function ($q) use ($filter) {
+                    $q->whereRaw("CONCAT(`name`, ' ', `last_name`) LIKE ?", ['%' . $filter . '%']);
+                });
+            }
+        })
         ->where('status', '!=', 0)
         ->get();
-    
-        return response()->json($liquidactions, 200);
-    }
+
+    return response()->json($liquidactions, 200);
+}
+
     
     
     
