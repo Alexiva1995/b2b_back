@@ -69,7 +69,7 @@ class UserController extends Controller
                         ? "Phase 2"
                         : "Phase 1");
             }
-    
+
             $object = [
                 'id' => $order->id,
                 'user_id' => $order->user->id,
@@ -88,11 +88,11 @@ class UserController extends Controller
             ];
             array_push($data, $object);
         }
-    
+
         return response()->json(['status' => 'success', 'data' => $data], 200);
     }
-    
-    
+
+
 
     public function showReferrals($matrix, $id = null)
     {
@@ -220,10 +220,10 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
         } else {
             $user = User::find($id);
         }
-    
+
         $withdrawals = WalletComission::select('id', 'description', 'amount', 'created_at')
             ->where('user_id', $user->id)
-            ->where('avaliable_withdraw', '=', 0)
+            ->where('available_withdraw', '=', 0)
             ->take(15)
             ->get();
 
@@ -304,7 +304,7 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
         } else {
             $user = User::find($id);
         }
-    
+
         $commissions = WalletComission::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount) AS total_amount')
             ->where('user_id', $user->id)
             ->groupBy('year', 'month')
@@ -431,20 +431,20 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
 
         $data = WalletComission::select('amount', 'created_at')
             ->where('user_id', $user->id)
-            ->where('avaliable_withdraw', '=', 0)
+            ->where('available_withdraw', '=', 0)
             ->get();
 
         return response()->json($data, 200);
     }
 
     public function getUserBalance($id = null)
-    { 
+    {
         if($id == null) {
             $user = JWTAuth::parseToken()->authenticate();
         } else {
             $user = User::find($id);
         }
-    
+
         $data = WalletComission::where('status', 0)
             ->where('user_id', $user->id)
             ->sum('amount');
@@ -460,10 +460,10 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
         } else {
             $user = User::find($id);
         }
-    
+
         $data = WalletComission::where('status', 0)
             ->where('user_id', $user->id)
-            ->where('avaliable_withdraw', 1)
+            ->where('available_withdraw', 1)
             ->sum('amount');
 
         return response()->json($data, 200);
@@ -847,7 +847,7 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
     public function getUsers(Request $request)
     {
         $filter = $request->get('name');
-    
+
         $users = User::where('admin', '0')
             ->where('name', 'like', '%'.$filter.'%')
             ->withSum(['wallets as total_gain' => function ($query) {
@@ -857,10 +857,10 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
                 $query->where('status', Inversion::STATUS_APPROVED)->orderBy('id', 'desc');
             })
             ->get();
-    
+
         return response()->json($users, 200);
     }
-    
+
 
     public function getUsersDownload()
     {

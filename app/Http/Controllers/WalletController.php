@@ -76,7 +76,7 @@ class WalletController extends Controller
         $filter = $request->get('dataFilter');
 
         $user = JWTAuth::parseToken()->authenticate();
-        
+
 
         $walletCommissions = WalletComission::where('user_id', $user->id)
             ->select('description', 'status', 'created_at', 'amount','id')
@@ -326,10 +326,12 @@ class WalletController extends Controller
             $user = User::whereRaw("CONCAT(`name`, ' ', `last_name`) LIKE ?", ['%' . $filter . '%'])->first();
         }
 
+
         // Obtener las billeteras de comisiones con las relaciones "user" y "package" para el usuario actual o filtrado por ID de la wallet
-        $data = WalletComission::with(['user', 'package'])
+        $data = WalletComission::with(['buyer', 'matrix'])
             ->where('user_id', $user->id)
             ->get();
+
 
         return response()->json($data, 200);
     }
@@ -339,16 +341,16 @@ class WalletController extends Controller
     public function getWalletsAdmin(Request $request)
     {
         $filter = $request->get('wallet');
-    
+
         $data = WalletComission::with(['user', 'package'])
             ->whereHas('user', function ($query) use ($filter) {
                 $query->where('email', 'like', '%' . $filter . '%');
             })
             ->get();
-    
+
         return response()->json($data, 200);
     }
-    
+
 
     public function getTotalAvailable(Request $request)
     {
