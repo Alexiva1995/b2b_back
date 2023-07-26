@@ -30,10 +30,10 @@ class ReportsController extends Controller
 
     // use FormularyCreateTrait;
 
-    public function __construct(BonusService $bonusService)
-    {
-        $this->bonusService = $bonusService;
-    }
+    // public function __construct(BonusService $bonusService)
+    // {
+    //     $this->bonusService = $bonusService;
+    // }
 
     public function updateOrders(Request $request)
     {
@@ -451,16 +451,12 @@ class ReportsController extends Controller
 
     public function liquidaction(Request $request)
     {
-        $filter = $request->input('dataFilter');
-        
-        // Obtener las liquidaciones con la relación "user" filtradas por ID de liquidación del usuario o nombre del usuario
+        $filter = $request->get('dataFilter');
+    
         $liquidactions = Liquidaction::with(['user' => function ($query) use ($filter) {
-            $query->when(is_numeric($filter), function ($q) use ($filter) {
-                $q->where('id', $filter);
-            })->when(!is_numeric($filter), function ($q) use ($filter) {
-                $q->whereHas('user', function ($q) use ($filter) {
-                    $q->where('name', 'LIKE', '%' . $filter . '%');
-                });
+            $query->where(function ($q) use ($filter) {
+                $q->where('id', $filter)
+                  ->orWhere('name', 'LIKE', '%' . $filter . '%');
             });
         }])
         ->where('status', '!=', 0)
@@ -468,6 +464,7 @@ class ReportsController extends Controller
     
         return response()->json($liquidactions, 200);
     }
+    
     
     
     
