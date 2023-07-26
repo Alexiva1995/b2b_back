@@ -448,60 +448,62 @@ class ReportsController extends Controller
         }
         return response()->json($comission, 200);
     }
+
     public function liquidaction(Request $request)
     {
         $filter = $request->get('name');
-    
-        $liquidactions = Liquidaction::with(['user' => function ($query) use ($filter) {
-            $query->where('name', 'like', '%' . $filter . '%');
-        }])->get();
-    
+
+        $liquidactions = Liquidaction::where('status', '<>', 0) // Filtrar por status diferente de 0
+            ->with(['user' => function ($query) use ($filter) {
+                $query->where('name', 'like', '%' . $filter . '%');
+            }])
+            ->get();
+
         return response()->json($liquidactions, 200);
     }
-    
 
     public function liquidactionPending(Request $request)
     {
         $query = Liquidaction::with('user')->where('status', 0);
-    
+
         $nameFilter = $request->get('dataToProduct');
         if ($nameFilter) {
             $query->whereHas('user', function ($userQuery) use ($nameFilter) {
                 $userQuery->where('name', 'LIKE', "%{$nameFilter}%");
             });
         }
-    
+
         $liquidactions = $query->get();
-    
+
         return response()->json($liquidactions, 200);
     }
-    
+
 
 
     public function LiquidacionUser(Request $request)
     {
         // Obtener el usuario autenticado
         $user = JWTAuth::parseToken()->authenticate();
-    
+
         // Si se proporciona el parámetro "user_id", buscar el usuario por ID
         if ($request->has('user_id')) {
             $userId = $request->input('user_id');
             $user = User::findOrFail($userId);
         }
-    
+
         // Aplicar el filtro por ID para auditoría (si se proporciona)
         $auditId = $request->input('audit_id');
-    
+
         // Obtener las liquidaciones con la relación "user" para el usuario actual o filtrado por ID
         $query = Liquidaction::with('user')->where('user_id', $user->id);
-    
+
         // Aplicar el filtro por ID para auditoría (si se proporciona)
         if ($auditId) {
             $query->where('id', $auditId);
         }
-    
+
         $data = $query->get();
-    
+
         return response()->json($data, 200);
     }
 
