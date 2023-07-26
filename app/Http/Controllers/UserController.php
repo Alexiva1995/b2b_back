@@ -35,20 +35,24 @@ class UserController extends Controller
 
     public function userOrder(Request $request, $id = null)
     {
+        // Obtener el usuario autenticado si no se proporciona el parámetro "id"
         if ($id == null) {
             $user = JWTAuth::parseToken()->authenticate();
         } else {
             $user = User::find($id);
         }
     
-        // Obtener el filtro del parámetro "dataFilter" en la solicitud
-        $filter = $request->get('dataFilter');
+        // Obtener el filtro del parámetro "order_id" en la solicitud
+        $orderId = $request->get('dataFilter');
     
-        // Obtener las órdenes del usuario autenticado con las relaciones "user", "project" y "packageMembership"
-        $orders = $user->orders()
-            ->with(['user', 'project', 'packageMembership'])
-            ->filter($filter)
-            ->get();
+        // Obtener las órdenes del usuario autenticado o filtradas por ID de orden
+        $query = $user->orders()->with(['user', 'project', 'packageMembership']);
+    
+        if ($orderId) {
+            $query->where('id', $orderId);
+        }
+    
+        $orders = $query->get();
     
         // Construir el arreglo de datos
         $data = array();
@@ -68,7 +72,7 @@ class UserController extends Controller
                 'user_email' => $order->user->email,
                 'program' => $order->packagesB2B->product_name,
                 'status' => $order->status,
-                'hash_id' => $order->hash, 
+                'hash_id' => $order->hash,
                 'amount' => $order->amount,
                 'sponsor_id' => $order->user->sponsor->id,
                 'sponsor_username' => $order->user->sponsor->user_name,
@@ -82,6 +86,7 @@ class UserController extends Controller
     
         return response()->json(['status' => 'success', 'data' => $data], 200);
     }
+    
     
 
     public function showReferrals($matrix, $id = null)
