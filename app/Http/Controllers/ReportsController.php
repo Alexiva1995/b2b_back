@@ -451,23 +451,24 @@ class ReportsController extends Controller
 
     public function liquidaction(Request $request)
     {
-        $dataFilter = $request->get('dataFilter');
-    
+        $filter = $request->input('dataFilter');
+        
         // Obtener las liquidaciones con la relación "user" filtradas por ID de liquidación del usuario o nombre del usuario
-        $liquidactions = Liquidaction::with(['user' => function ($query) use ($dataFilter) {
-            if (is_numeric($dataFilter)) {
-                $query->where('id', $dataFilter);
-            } else {
-                $query->whereHas('user', function ($q) use ($dataFilter) {
-                    $q->where('name', 'LIKE', '%' . $dataFilter . '%');
+        $liquidactions = Liquidaction::with(['user' => function ($query) use ($filter) {
+            $query->when(is_numeric($filter), function ($q) use ($filter) {
+                $q->where('id', $filter);
+            })->when(!is_numeric($filter), function ($q) use ($filter) {
+                $q->whereHas('user', function ($q) use ($filter) {
+                    $q->where('name', 'LIKE', '%' . $filter . '%');
                 });
-            }
+            });
         }])
         ->where('status', '!=', 0)
         ->get();
     
         return response()->json($liquidactions, 200);
     }
+    
     
     
     
