@@ -87,7 +87,7 @@ class UserController extends Controller
             array_push($object);
         }
     
-        return response()->json(['status' => 'success', 'data' => $result], 200);
+        return response()->json(['status' => 'success', 'data' => $object], 200);
     }
     
     
