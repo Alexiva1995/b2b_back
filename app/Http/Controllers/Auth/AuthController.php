@@ -23,6 +23,7 @@ use App\Models\ReferalLink;
 use App\Services\CoinpaymentsService;
 use Exception;
 use App\Services\BonusService;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -179,6 +180,7 @@ class AuthController extends Controller
                 'admin' => $user->admin,
                 'profile_picture' => $user->profile_picture ?? '',
                 'email_verified_at' => $user->email_verified_at,
+                'wallet' => is_null($user->wallet) ? null : Crypt::decrypt($user->wallet),
                 'api_token' => $responseObject->token,
                 'created_at' => $user->created_at,
                 'updated_at' => $user->updated_at,
@@ -413,6 +415,7 @@ class AuthController extends Controller
             'email_verified_at' => $user->email_verified_at,
             'api_token' => $user->token_jwt,
             'created_at' => $user->created_at,
+            'wallet' => is_null($user->wallet) ? null : Crypt::decrypt($user->wallet),
             'updated_at' => $user->updated_at,
             'status' => $user->status == "0" ? false : true,
             'type_services' => $user->type_service,
