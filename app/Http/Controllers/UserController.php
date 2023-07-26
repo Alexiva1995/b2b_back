@@ -42,14 +42,14 @@ class UserController extends Controller
     
         $query = $user->orders()->with(['user', 'project', 'packageMembership']);
     
-        $query->when($filter, function ($q) use ($filter) {
-            return $q->where(function ($query) use ($filter) {
-                $query->where('id', $filter)
+        if ($filter) {
+            $query->where(function ($q) use ($filter) {
+                $q->where('id', $filter)
                     ->orWhereHas('user', function ($q) use ($filter) {
                         $q->whereRaw("CONCAT(`name`, ' ', `last_name`) LIKE ?", ['%' . $filter . '%']);
                     });
             });
-        });
+        }
     
         $orders = $query->get();
     
@@ -78,12 +78,13 @@ class UserController extends Controller
                 'sponsor_username' => $order->user->sponsor->user_name,
                 'sponsor_email' => $order->user->sponsor->email,
                 'hashLink' => $order->coinpaymentTransaction->checkout_url ?? "",
-                'date' => $order->created_at->format('Y-m-d')
+                'created_at' => $order->created_at->format('Y-m-d H:i:s'),
+                'updated_at' => $order->updated_at->format('Y-m-d H:i:s'),
             ];
             array_push($data, $object);
         }
     
-        return response()->json(['status' => 'success', 'data' => $data, 201]);
+        return response()->json(['status' => 'success', 'data' => $data], 201);
     }
     
     
