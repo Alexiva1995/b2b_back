@@ -57,6 +57,7 @@ class UserController extends Controller
         $data = $query->get();
     
         // Construir el arreglo de datos
+        $result = array();
         foreach ($data as $order) {
             if (isset($order->project)) {
                 $phase = ($order->project->phase2 == null && $order->project->phase1 == null)
@@ -84,11 +85,12 @@ class UserController extends Controller
                 'created_at' => $order->created_at->format('Y-m-d H:i:s'),
                 'updated_at' => $order->updated_at->format('Y-m-d H:i:s'),
             ];
-            array_push($object);
+            array_push($result, $object);
         }
     
-        return response()->json(['status' => 'success', 'data' => $object], 200);
+        return response()->json(['status' => 'success', 'data' => $result], 200);
     }
+    
     
     
     
