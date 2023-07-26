@@ -33,7 +33,7 @@ use Illuminate\Support\Facades\Log;
 class UserController extends Controller
 {
 
-    public function getOrders(Request $request)
+    public function userOrder(Request $request)
     {
         // Obtener el usuario autenticado
         $user = JWTAuth::parseToken()->authenticate();
