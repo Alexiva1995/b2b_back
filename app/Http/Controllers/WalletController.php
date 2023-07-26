@@ -21,7 +21,7 @@ class WalletController extends Controller
         ->where('status', 0)
         ->get();
 
-        $availableAmount = $availableCommissions->sum('amount');
+        $availableAmount = $availableCommissions->sum('amount_available');
         $availableIds = $availableCommissions->pluck('id');
 
         $withdrawalAmount = WalletComission::where('user_id', $user->id)
@@ -29,7 +29,7 @@ class WalletController extends Controller
             ->sum('amount');
 
 
-        $totalEarning = $availableAmount + $withdrawalAmount;
+        $totalEarning = WalletComission::where('user_id', $user->id)->sum('amount');
 
         $data = [
             'available' => $availableAmount,
