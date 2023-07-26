@@ -11,7 +11,7 @@ class WalletComission extends Model
 {
     use HasFactory;
     protected $table = 'wallets_commissions';
-    
+
     protected $fillable = [
         'user_id',
         'buyer_id',
@@ -82,7 +82,12 @@ class WalletComission extends Model
         return $this->belongsTo(Package::class, 'membership_id', 'id');
     }
 
-    /**
+    public function matrix()
+    {
+        return $this->belongsTo(MarketPurchased::class, 'father_cyborg_purchased_id');
+    }
+
+    /**'
      * Permite obtener al usuario de una comision
      * @return void
      */
