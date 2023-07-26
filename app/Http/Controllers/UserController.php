@@ -41,19 +41,24 @@ class UserController extends Controller
         } else {
             $user = User::find($id);
         }
-
-        // Obtener el filtro del parámetro "order_id" en la solicitud
-        $orderId = $request->get('dataFilter');
-
+    
+        // Obtener el filtro del parámetro "dataFilter" en la solicitud
+        $filter = $request->input('dataFilter');
+    
         // Obtener las órdenes del usuario autenticado o filtradas por ID de orden
         $query = $user->orders()->with(['user', 'project', 'packageMembership']);
-
-        if ($orderId) {
-            $query->where('id', $orderId);
-        }
-
+    
+        // Aplicar el filtro por ID de orden o nombre del usuario
+        $query->when(is_numeric($filter), function ($q) use ($filter) {
+            return $q->where('id', $filter);
+        })->when(!is_numeric($filter), function ($q) use ($filter) {
+            return $q->whereHas('user', function ($q) use ($filter) {
+                $q->whereRaw("CONCAT(`name`, ' ', `last_name`) LIKE ?", ['%' . $filter . '%']);
+            });
+        });
+    
         $orders = $query->get();
-
+    
         // Construir el arreglo de datos
         $data = array();
         foreach ($orders as $order) {
@@ -64,7 +69,7 @@ class UserController extends Controller
                         ? "Phase 2"
                         : "Phase 1");
             }
-
+    
             $object = [
                 'id' => $order->id,
                 'user_id' => $order->user->id,
@@ -83,9 +88,10 @@ class UserController extends Controller
             ];
             array_push($data, $object);
         }
-
+    
         return response()->json(['status' => 'success', 'data' => $data], 200);
     }
+    
 
 
 
