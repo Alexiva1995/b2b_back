@@ -451,14 +451,21 @@ class ReportsController extends Controller
 
     public function liquidaction(Request $request)
     {
-        $filterId = $request->get('id');
+        $dataFilter = $request->get('dataFilter');
     
-        $liquidactions = Liquidaction::with(['user' => function ($query) use ($filterId) {
-            $query->where('id', $filterId);
-        }])->get();
+        $liquidactions = Liquidaction::with(['user' => function ($query) use ($dataFilter) {
+            if (is_numeric($dataFilter)) {
+                $query->where('id', $dataFilter);
+            } else {
+                $query->where('name', 'LIKE', '%' . $dataFilter . '%');
+            }
+        }])
+        ->where('status', '!=', 0)
+        ->get();
     
         return response()->json($liquidactions, 200);
     }
+    
     
     
     public function liquidactionPending(Request $request)
@@ -500,7 +507,7 @@ class ReportsController extends Controller
     
         if ($filterNumeric) {
             // Filtrar por ID
-            $query->where('user_id', $filter);
+            $query->where('id', $filter);
         } else {
             // Filtrar por nombre del usuario
             $query->whereHas('user', function ($q) use ($filter) {

@@ -35,29 +35,31 @@ class UserController extends Controller
 
     public function userOrder(Request $request, $id = null)
     {
-    // Obtener el usuario autenticado si no se proporciona el parámetro "id"
-    if ($id == null) {
-        $user = JWTAuth::parseToken()->authenticate();
-    } else {
-        $user = User::find($id);
-    }
+        // Obtener el usuario autenticado si no se proporciona el parámetro "id"
+        if ($id == null) {
+            $user = JWTAuth::parseToken()->authenticate();
+        } else {
+            $user = User::find($id);
+        }
 
-    // Obtener el filtro del parámetro "dataFilter" en la solicitud
-    $filter = $request->input('dataFilter');
+        // Obtener el filtro del parámetro "dataFilter" en la solicitud
+        $filter = $request->input('dataFilter');
 
-    // Obtener las órdenes del usuario autenticado o filtradas por ID de orden
-    $query = $user->orders()->with(['user', 'project', 'packageMembership']);
+        // Obtener las órdenes del usuario autenticado o filtradas por ID de orden o descripción
+        $query = $user->orders()->with(['user', 'project', 'packageMembership']);
 
-    // Aplicar el filtro por ID de orden o nombre del usuario
-    $query->when(is_numeric($filter), function ($q) use ($filter) {
-        return $q->where('id', $filter);
-    })->when(!is_numeric($filter), function ($q) use ($filter) {
-        return $q->whereHas('user', function ($q) use ($filter) {
-            $q->whereRaw("CONCAT(`name`, ' ', `last_name`) LIKE ?", ['%' . $filter . '%']);
+        // Aplicar el filtro por ID de orden, nombre del usuario o descripción
+        $query->when(is_numeric($filter), function ($q) use ($filter) {
+            return $q->where('id', $filter);
+        })->when(!is_numeric($filter), function ($q) use ($filter) {
+            return $q->where(function ($query) use ($filter) {
+                $query->whereHas('user', function ($q) use ($filter) {
+                    $q->whereRaw("CONCAT(`name`, ' ', `last_name`) LIKE ?", ['%' . $filter . '%']);
+                })->orWhere('description', 'LIKE', '%' . $filter . '%');
+            });
         });
-    });
 
-    $orders = $query->get();
+        $orders = $query->get();
     
         // Construir el arreglo de datos
         $data = array();
