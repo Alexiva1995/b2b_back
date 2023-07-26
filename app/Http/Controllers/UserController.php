@@ -34,65 +34,55 @@ class UserController extends Controller
 {
 
     public function userOrder(Request $request, $id = null)
-    {
-        // Obtener el usuario autenticado si no se proporciona el parámetro "id"
-        if ($id == null) {
-            $user = JWTAuth::parseToken()->authenticate();
-        } else {
-            $user = User::find($id);
-        }
-
-        // Obtener el filtro del parámetro "dataFilter" en la solicitud
-        $filter = $request->input('dataFilter');
-
-        // Obtener las órdenes del usuario autenticado o filtradas por ID de orden o descripción
-        $query = $user->orders()->with(['user', 'project', 'packageMembership']);
-
-        // Aplicar el filtro por ID de orden, nombre del usuario o descripción
-        $query->when(is_numeric($filter), function ($q) use ($filter) {
-            return $q->where('id', $filter);
-        })->when(!is_numeric($filter), function ($q) use ($filter) {
-            return $q->where(function ($query) use ($filter) {
-                $query->whereHas('user', function ($q) use ($filter) {
-                    $q->whereRaw("CONCAT(`name`, ' ', `last_name`) LIKE ?", ['%' . $filter . '%']);
-                })->orWhere('description', 'LIKE', '%' . $filter . '%');
-            });
-        });
-
-        $orders = $query->get();
-    
-        // Construir el arreglo de datos
-        $data = array();
-        foreach ($orders as $order) {
-            if (isset($order->project)) {
-                $phase = ($order->project->phase2 == null && $order->project->phase1 == null)
-                    ? ""
-                    : (($order->project->phase2 != null)
-                        ? "Phase 2"
-                        : "Phase 1");
-            }
-
-            $object = [
-                'id' => $order->id,
-                'user_id' => $order->user->id,
-                'user_username' => $order->user->user_name,
-                'user_email' => $order->user->email,
-                'program' => $order->packagesB2B->product_name,
-                'status' => $order->status,
-                'hash_id' => $order->hash,
-                'amount' => $order->amount,
-                'sponsor_id' => $order->user->sponsor->id,
-                'sponsor_username' => $order->user->sponsor->user_name,
-                'sponsor_email' => $order->user->sponsor->email,
-                'hashLink' => $order->coinpaymentTransaction->checkout_url ?? "",
-                'created_at' => $order->created_at->format('Y-m-d H:i:s'),
-                'updated_at' => $order->updated_at->format('Y-m-d H:i:s'),
-            ];
-            array_push($data, $object);
-        }
-
-        return response()->json(['status' => 'success', 'data' => $data], 200);
+{
+    // Obtener el usuario autenticado si no se proporciona el parámetro "id"
+    if ($id == null) {
+        $user = JWTAuth::parseToken()->authenticate();
+    } else {
+        $user = User::find($id);
     }
+
+    // Obtener el filtro del parámetro "dataFilter" en la solicitud
+    $filter = $request->input('dataFilter');
+
+    // Obtener las órdenes del usuario autenticado o filtradas por ID de orden o nombre del usuario
+    $query = $user->orders()->with(['user', 'project', 'packageMembership']);
+
+    // Aplicar el filtro por ID de orden o nombre del usuario
+    $query->when(is_numeric($filter), function ($q) use ($filter) {
+        return $q->where('id', $filter);
+    })->when(!is_numeric($filter), function ($q) use ($filter) {
+        return $q->whereHas('user', function ($q) use ($filter) {
+            $q->whereRaw("CONCAT(`name`, ' ', `last_name`) LIKE ?", ['%' . $filter . '%']);
+        });
+    });
+
+    $orders = $query->get();
+
+    // Construir el arreglo de datos
+    $data = array();
+    foreach ($orders as $order) {
+        $object = [
+            'id' => $order->id,
+            'user_id' => $order->user->id,
+            'user_username' => $order->user->user_name,
+            'user_email' => $order->user->email,
+            'program' => $order->packagesB2B->product_name,
+            'status' => $order->status,
+            'hash_id' => $order->hash,
+            'amount' => $order->amount,
+            'sponsor_id' => $order->user->sponsor->id,
+            'sponsor_username' => $order->user->sponsor->user_name,
+            'sponsor_email' => $order->user->sponsor->email,
+            'hashLink' => $order->coinpaymentTransaction->checkout_url ?? "",
+            'created_at' => $order->created_at->format('Y-m-d H:i:s'),
+            'updated_at' => $order->updated_at->format('Y-m-d H:i:s'),
+        ];
+        array_push($data, $object);
+    }
+
+    return response()->json(['status' => 'success', 'data' => $data], 200);
+}
 
 
 
