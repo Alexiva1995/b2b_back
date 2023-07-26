@@ -461,52 +461,64 @@ class ReportsController extends Controller
     }
     
     
-
     public function liquidactionPending(Request $request)
     {
         $query = Liquidaction::with('user')->where('status', 0);
     
-        $idFilter = $request->get('id');
-        if ($idFilter) {
-            $query->whereHas('user', function ($userQuery) use ($idFilter) {
-                $userQuery->where('id', $idFilter);
+        // Obtener el filtro del parámetro "dataFilter" en la solicitud
+        $filter = $request->get('dataFilter');
+    
+        // Aplicar el filtro por ID o por nombre del usuario
+        if (is_numeric($filter)) {
+            $query->where('id', $filter);
+        } else {
+            $query->whereHas('user', function ($userQuery) use ($filter) {
+                $userQuery->whereRaw("CONCAT(`name`, ' ', `last_name`) LIKE ?", ['%' . $filter . '%']);
             });
         }
-
+    
         $liquidactions = $query->get();
-
+    
         return response()->json($liquidactions, 200);
     }
     
     
+    
 
 
-        public function LiquidacionUser(Request $request)
+    public function LiquidacionUser(Request $request)
     {
         // Obtener el usuario autenticado
         $user = JWTAuth::parseToken()->authenticate();
-
-        // Si se proporciona el parámetro "user_id" en el filtro, buscar el usuario por ID
-        if ($request->has('dataFilter')) {
-            $userId = $request->input('dataFilter');
-            $user = User::findOrFail($userId);
+    
+        // Si se proporciona el parámetro "dataFilter", intentar convertirlo a un número para buscar por ID
+        $filter = $request->input('dataFilter');
+        $filterNumeric = is_numeric($filter);
+    
+        // Obtener las liquidaciones con la relación "user" para el usuario actual o filtrado por ID o nombre
+        $query = Liquidaction::with('user');
+    
+        if ($filterNumeric) {
+            // Filtrar por ID
+            $query->where('user_id', $filter);
+        } else {
+            // Filtrar por nombre del usuario
+            $query->whereHas('user', function ($q) use ($filter) {
+                $q->whereRaw("CONCAT(`name`, ' ', `last_name`) LIKE ?", ['%' . $filter . '%']);
+            });
         }
-
-        // Aplicar el filtro por ID para auditoría (si se proporciona)
+    
+        // Aplicar el filtro por auditoría (si se proporciona)
         $auditId = $request->input('audit_id');
-
-        // Obtener las liquidaciones con la relación "user" para el usuario actual o filtrado por ID
-        $query = Liquidaction::with('user')->where('user_id', $user->id);
-
-        // Aplicar el filtro por ID para auditoría (si se proporciona)
         if ($auditId) {
             $query->where('id', $auditId);
         }
-
+    
         $data = $query->get();
-
+    
         return response()->json($data, 200);
     }
+    
 
     public function coupons()
     {

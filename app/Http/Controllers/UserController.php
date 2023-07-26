@@ -35,24 +35,29 @@ class UserController extends Controller
 
     public function userOrder(Request $request, $id = null)
     {
-        // Obtener el usuario autenticado si no se proporciona el parámetro "id"
-        if ($id == null) {
-            $user = JWTAuth::parseToken()->authenticate();
-        } else {
-            $user = User::find($id);
-        }
-    
-        // Obtener el filtro del parámetro "order_id" en la solicitud
-        $orderId = $request->get('dataFilter');
-    
-        // Obtener las órdenes del usuario autenticado o filtradas por ID de orden
-        $query = $user->orders()->with(['user', 'project', 'packageMembership']);
-    
-        if ($orderId) {
-            $query->where('id', $orderId);
-        }
-    
-        $orders = $query->get();
+    // Obtener el usuario autenticado si no se proporciona el parámetro "id"
+    if ($id == null) {
+        $user = JWTAuth::parseToken()->authenticate();
+    } else {
+        $user = User::find($id);
+    }
+
+    // Obtener el filtro del parámetro "dataFilter" en la solicitud
+    $filter = $request->input('dataFilter');
+
+    // Obtener las órdenes del usuario autenticado o filtradas por ID de orden
+    $query = $user->orders()->with(['user', 'project', 'packageMembership']);
+
+    // Aplicar el filtro por ID de orden o nombre del usuario
+    $query->when(is_numeric($filter), function ($q) use ($filter) {
+        return $q->where('id', $filter);
+    })->when(!is_numeric($filter), function ($q) use ($filter) {
+        return $q->whereHas('user', function ($q) use ($filter) {
+            $q->whereRaw("CONCAT(`name`, ' ', `last_name`) LIKE ?", ['%' . $filter . '%']);
+        });
+    });
+
+    $orders = $query->get();
     
         // Construir el arreglo de datos
         $data = array();
