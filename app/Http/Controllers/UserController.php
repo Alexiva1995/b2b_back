@@ -33,32 +33,28 @@ use Illuminate\Support\Facades\Log;
 class UserController extends Controller
 {
 
-    public function userOrder(Request $request, $id = null)
+    public function userOrder(Request $request)
     {
-        // Obtener el usuario autenticado si no se proporciona el parámetro "id"
-        if ($id == null) {
-            $user = JWTAuth::parseToken()->authenticate();
-        } else {
-            $user = User::find($id);
-        }
-
-        // Obtener el filtro del parámetro "id" en la solicitud
-        $orderId = $request->input('dataFilter');
-
-        // Obtener las órdenes del usuario autenticado o filtradas por ID de orden
-        $query = $user->orders()->with(['user', 'project', 'packageMembership']);
-
-        // Aplicar el filtro por ID de orden
-        if ($orderId) {
-            $query->where('id', $orderId);
-        }
-
-        $orders = $query->get();
-
-
+        // Obtener el usuario autenticado
+        $user = JWTAuth::parseToken()->authenticate();
+    
+        $filter = $request->get('dataFilter');
+    
+        $query = Order::with(['user', 'project', 'packageMembership'])
+            ->where('user_id', $user->id) // Filter orders by the authenticated user
+            ->when($filter, function ($q) use ($filter) {
+                return $q->where(function ($query) use ($filter) {
+                    $query->where('id', $filter)
+                        ->orWhereHas('user', function ($q) use ($filter) {
+                            $q->whereRaw("CONCAT(`name`, ' ', `last_name`) LIKE ?", ['%' . $filter . '%']);
+                        });
+                });
+            })
+            ->get();
+    
         // Construir el arreglo de datos
         $data = array();
-        foreach ($orders as $order) {
+        foreach ($query as $order) {
             if (isset($order->project)) {
                 $phase = ($order->project->phase2 == null && $order->project->phase1 == null)
                     ? ""
@@ -88,6 +84,7 @@ class UserController extends Controller
     
         return response()->json(['status' => 'success', 'data' => $data], 200);
     }
+    
     
 
 

@@ -9,10 +9,26 @@ use App\Models\Document;
 
 class LearningController extends Controller
 {
-    public function learnings () {
-        $learning = Learning::all();
+    public function learnings(Request $request)
+    {
+        $filter = $request->input('dataFilter');
+    
+        $query = Learning::query();
+    
+        $query->when(is_numeric($filter), function ($q) use ($filter) {
+            return $q->where('id', $filter);
+        })->when(!is_numeric($filter), function ($q) use ($filter) {
+            return $q->whereHas('user', function ($q) use ($filter) {
+                $q->whereRaw("CONCAT(`name`, ' ', `last_name`) LIKE ?", ['%' . $filter . '%']);
+            });
+        });
+    
+        $learning = $query->get();
+    
         return response()->json($learning, 200);
     }
+    
+
     public function deleteLearning (Request $request) {
         try {
             $learning = Learning::find($request->id);
