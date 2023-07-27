@@ -322,7 +322,7 @@ Route::middleware('jwt')->group(function () {
         Route::get('get-refunds', 'getRefunds');
         Route::get('/refunds-list/{id}', 'refundsList');
         //ruta comision user b2b
-        Route::get('/wallet/comissions/list/user', 'getWallets');
+        Route::get('/wallet/comissions/list/user/{id?}', 'getWallets');
         Route::get('/wallet/comissions/list/admin', 'getWalletsAdmin');
         //fin
 

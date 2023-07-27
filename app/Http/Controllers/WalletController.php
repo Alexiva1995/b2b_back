@@ -310,10 +310,14 @@ class WalletController extends Controller
         return response()->json($devolutions, 200);
     }
 
-    public function getWallets(Request $request)
+    public function getWallets(Request $request , $id=null)
     {
-        // Obtener el usuario autenticado
-        $user = JWTAuth::parseToken()->authenticate();
+        // Obtener el usuario autenticado si no se proporciona el parámetro "id"
+        if ($id == null) {
+            $user = JWTAuth::parseToken()->authenticate();
+        } else {
+            $user = User::find($id);
+        }
 
         // Si se proporciona el parámetro "wallet_id", buscar la wallet por ID
         if ($request->has('wallet_id')) {
