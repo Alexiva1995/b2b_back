@@ -276,7 +276,7 @@ Route::middleware('jwt')->group(function () {
         //Fin
 
         //Ruta Dashboard User B2B para obtener plan del user
-        Route::get('get/user/matrix/data', 'myBestMatrixData');
+        Route::get('get/user/matrix/data/{id?}', 'myBestMatrixData');
         //Fin
 
         //Ruta Dashboard User B2B comisiones mensuales
@@ -313,7 +313,7 @@ Route::middleware('jwt')->group(function () {
 
     //Ruta B2B para obtener datos para Cyborg y compra de Cyborg
     Route::controller(MarketController::class)->group(function ($router) {
-        Route::get('/cyborg', 'getAllCyborgs');
+        Route::get('/cyborg/{id?}', 'getAllCyborgs');
         Route::post('/cyborg/purchase', 'purchaseCyborg');
     });
     //Fin
