@@ -481,10 +481,14 @@ class ReportsController extends Controller
     
 
 
-        public function LiquidacionUser(Request $request)
+        public function LiquidacionUser(Request $request,$id=null)
     {
-        // Obtener el usuario autenticado
-        $user = JWTAuth::parseToken()->authenticate();
+            // Obtener el usuario autenticado si no se proporciona el parámetro "id"
+            if ($id == null) {
+                $user = JWTAuth::parseToken()->authenticate();
+            } else {
+                $user = User::find($id);
+            }
 
         // Si se proporciona el parámetro "user_id" en el filtro, buscar el usuario por ID
         if ($request->has('dataFilter')) {

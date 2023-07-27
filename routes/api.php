@@ -236,7 +236,7 @@ Route::middleware('jwt')->group(function () {
         Route::get('reports/liquidactions', 'liquidaction');
         Route::get('reports/coupons', 'coupons');
         // ruta de liquidacion user 
-        Route::get('reports/liquidactions/user', 'LiquidacionUser');
+        Route::get('reports/liquidactions/user/{id?}', 'LiquidacionUser');
     });
     Route::controller(AuthController::class)->group(function ($router) {
         Route::get('test', 'test');
