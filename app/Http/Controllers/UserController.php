@@ -91,14 +91,16 @@ class UserController extends Controller
 
     public function showReferrals($matrix, $id = null)
     {
-        // Si $matrix es null, asignarle el valor 1 por defecto
-        $matrix = $matrix ?? 1;
 
         if ($id == null) {
             $user = JWTAuth::parseToken()->authenticate();
         } else {
             $user = User::find($id);
         }
+
+        // Si $matrix es null, asignarle el valor 1 por defecto
+        $matrix = $matrix ?? 1;
+
         $referrals = $this->getReferrals($user,$matrix);
 
 
