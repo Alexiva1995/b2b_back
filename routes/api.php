@@ -327,9 +327,9 @@ Route::middleware('jwt')->group(function () {
         //fin
 
         //Ruta Wallet b2b
-        Route::get('/wallet/Data/list/user', 'walletUserDataList');
+        Route::get('/wallet/Data/list/user/{id?}', 'walletUserDataList');
         Route::get('/wallet/Data/list/admin', 'walletAdminDataList');
-        Route::get('/wallet/Data/user/gain', 'getMonthlyGain');
+        Route::get('/wallet/Data/user/gain/{id?}', 'getMonthlyGain');
         Route::get('/wallet/Data/user/charts', 'getChartData');
         //
     
