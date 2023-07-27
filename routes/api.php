@@ -300,7 +300,7 @@ Route::middleware('jwt')->group(function () {
         //Fin
 
         //Ruta Matrix User B2B
-        Route::get('get/user/matrix/{matrix?}', 'showReferrals');
+        Route::get('get/user/matrix/{matrix?}/{id?}', 'showReferrals');
 
         //Fin
 
