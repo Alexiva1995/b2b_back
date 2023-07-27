@@ -132,7 +132,7 @@ class AdminDashboardController extends Controller
 			$data[] = [
 				'id' => $order->id,
 				'user_id' => $order->user->id,
-				'user_name' => strtolower(explode(" ", $order->user->name)[0]),
+				'user_name' => $order->user->name,
 				'status' => $order->status,
 				'description' => $order->packagesB2B->package,
 				'hash_id' => $order->hash,
