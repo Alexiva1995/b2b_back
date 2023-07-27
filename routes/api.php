@@ -330,7 +330,7 @@ Route::middleware('jwt')->group(function () {
         Route::get('/wallet/Data/list/user/{id?}', 'walletUserDataList');
         Route::get('/wallet/Data/list/admin', 'walletAdminDataList');
         Route::get('/wallet/Data/user/gain/{id?}', 'getMonthlyGain');
-        Route::get('/wallet/Data/user/charts', 'getChartData');
+        Route::get('/wallet/Data/user/charts/{id?}', 'getChartData');
         //
     
 

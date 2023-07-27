@@ -13,9 +13,14 @@ class WalletController extends Controller
 {
 
 
-    public function getChartData()
+    public function getChartData($id=null)
     {
-        $user = JWTAuth::parseToken()->authenticate();
+         // Obtener el usuario autenticado si no se proporciona el parámetro "id"
+        if ($id == null) {
+            $user = JWTAuth::parseToken()->authenticate();
+        } else {
+            $user = User::find($id);
+        }
 
         $availableCommissions = WalletComission::where('user_id', $user->id)
         ->where('status', 0)
