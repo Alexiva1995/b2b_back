@@ -240,4 +240,15 @@ class User extends Authenticatable implements JWTSubject
     {
         return MarketPurchased::where('user_id', $this->buyer_id)->where('id', $this->father_cyborg_purchased_id)->first();
     }
+
+    public function getWalletAttribute()
+    {
+        if(is_null($this->attributes['wallet'])) return null;
+        return Crypt::decrypt($this->attributes['wallet']);
+    }
+
+    public function liquidations() {
+        return $this->hasMany(Liquidaction::class);
+    }
+
 }

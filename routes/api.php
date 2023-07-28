@@ -87,6 +87,7 @@ Route::middleware('jwt')->group(function () {
             Route::get('/amount/earnings', 'totalEarnings');
             Route::get('/count/user/matrix', 'countUserForMatrix');
             Route::get('/count/order/and/commision', 'countOrderAndCommision');
+            Route::get('/user/matrices', 'userMatrices');
             //fin
 
         });
@@ -235,7 +236,7 @@ Route::middleware('jwt')->group(function () {
         Route::get('reports/comisions', 'commision');
         Route::get('reports/liquidactions', 'liquidaction');
         Route::get('reports/coupons', 'coupons');
-        // ruta de liquidacion user 
+        // ruta de liquidacion user
         Route::get('reports/liquidactions/user/{id?}', 'LiquidacionUser');
     });
     Route::controller(AuthController::class)->group(function ($router) {
@@ -300,7 +301,7 @@ Route::middleware('jwt')->group(function () {
         //Fin
 
         //Ruta Matrix User B2B
-        Route::get('get/user/matrix/{id?}', 'showReferrals');
+        Route::get('get/user/cyborg/{cyborg_id}/matrix/{type}/{id?}', 'showReferrals');
 
         //Fin
 
@@ -332,7 +333,7 @@ Route::middleware('jwt')->group(function () {
         Route::get('/wallet/Data/user/gain/{id?}', 'getMonthlyGain');
         Route::get('/wallet/Data/user/charts/{id?}', 'getChartData');
         //
-    
+
 
         Route::get('/get-total-available', 'getTotalAvailable');
         Route::get('/get-total-directs', 'getTotalDirects');

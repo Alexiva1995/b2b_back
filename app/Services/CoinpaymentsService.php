@@ -158,7 +158,7 @@ class CoinpaymentsService
                 'currency' => config('coinpayment.default_currency'),
                 'currency2' => config('coinpayment.default_currency'),
                 'address' => $address,
-                'auto_confirm' => 1,
+               // 'auto_confirm' => 1,
                 'note' => 'Enviando $ '.$amount.' USDT a la billetera: '.$address ,
             ];
 

@@ -97,7 +97,7 @@ class ReportsController extends Controller
 
         $pagueloFacilTransaction->save();
 
-        //Inicializando las variables que deben mandarse en el email de credenciales y deben persistir el if 
+        //Inicializando las variables que deben mandarse en el email de credenciales y deben persistir el if
         // $project = null;
         // $package = null;
         // $mtCompleteUserName = null;
@@ -469,19 +469,19 @@ class ReportsController extends Controller
     return response()->json($liquidactions, 200);
 }
 
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
     public function liquidactionPending(Request $request)
     {
         $query = Liquidaction::with('user')->where('status', 0);
-    
+
         // Obtener el filtro del parámetro "dataFilter" en la solicitud
         $filter = $request->get('dataFilter');
-    
+
         // Aplicar el filtro por ID o por nombre del usuario
         if (is_numeric($filter)) {
             $query->where('id', $filter);
@@ -490,14 +490,14 @@ class ReportsController extends Controller
                 $userQuery->whereRaw("CONCAT(`name`, ' ', `last_name`) LIKE ?", ['%' . $filter . '%']);
             });
         }
-    
+
         $liquidactions = $query->get();
-    
+
         return response()->json($liquidactions, 200);
     }
-    
-    
-    
+
+
+
 
 
 
@@ -516,18 +516,18 @@ class ReportsController extends Controller
             $user = User::findOrFail($userId);
 
         }
-    
+         $query = $user->liquidations();
         // Aplicar el filtro por auditoría (si se proporciona)
         $auditId = $request->input('audit_id');
         if ($auditId) {
             $query->where('id', $auditId);
         }
-    
+
         $data = $query->get();
-    
+
         return response()->json($data, 200);
     }
-    
+
 
     public function coupons()
     {

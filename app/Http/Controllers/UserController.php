@@ -37,14 +37,14 @@ class UserController extends Controller
     {
         // Obtener el usuario autenticado
         $user = JWTAuth::parseToken()->authenticate();
-    
+
         // Obtener el filtro del parámetro "dataFilter" en la solicitud
         $filter = $request->input('dataFilter');
-    
+
         // Obtener las órdenes con las relaciones "user", "project" y "packageMembership" para el usuario actual o filtrado por ID de orden o nombre del usuario
         $query = Order::with(['user', 'project', 'packageMembership'])
             ->where('user_id', $user->id);
-    
+
         // Aplicar el filtro por ID de orden o nombre del usuario
         $query->when(is_numeric($filter), function ($q) use ($filter) {
             return $q->where('id', $filter);
@@ -53,9 +53,9 @@ class UserController extends Controller
                 $q->whereRaw("CONCAT(`name`, ' ', `last_name`) LIKE ?", ['%' . $filter . '%']);
             });
         });
-    
+
         $data = $query->get();
-    
+
         // Construir el arreglo de datos
         $result = array();
         foreach ($data as $order) {
@@ -66,7 +66,7 @@ class UserController extends Controller
                         ? "Phase 2"
                         : "Phase 1");
             }
-    
+
             $object = [
                 'id' => $order->id,
                 'user_id' => $order->user->id,
@@ -87,18 +87,18 @@ class UserController extends Controller
             ];
             array_push($result, $object);
         }
-    
+
         return response()->json(['status' => 'success', 'data' => $result], 200);
     }
-    
-    
-    
-    
 
 
 
 
-    public function showReferrals($matrix, $id = null)
+
+
+
+
+    public function showReferrals($cybog = null, $matrix_type, $id = null)
     {
 
         if ($id == null) {
@@ -108,9 +108,10 @@ class UserController extends Controller
         }
 
         // Si $matrix es null, asignarle el valor 1 por defecto
-        $matrix = $matrix ?? 1;
+        $matrix_type = $matrix_type ?? 1;
+        $cybog = $cybog ?? 1;
 
-        $referrals = $this->getReferrals($user,$matrix);
+        $referrals = $this->getReferrals($user,$cybog, $matrix_type);
 
 
         return response()->json($referrals, 200);
@@ -119,12 +120,12 @@ class UserController extends Controller
     public function listReferrals($matrix)
 {
     $user = JWTAuth::parseToken()->authenticate();
-    $referrals = $this->getReferrals($user,$matrix);
     $matrix = $matrix ?? 1;
+    $referrals = $this->getReferrals($user,$matrix);
 
     $referralList = $referrals->map(function ($referral) {
         $buyerUser = User::find($referral['buyer_id']);
-        $buyerName = $buyerUser ? $buyerUser->name : '';
+        $buyerName = $buyerUser ? $buyerUser->buyer_id : '';
 
         $user = User::find($referral['id']);
         $plan = $user ? $user->matrix_type : '';
@@ -152,7 +153,7 @@ class UserController extends Controller
 
 
 
-public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide = null, $matrix = null): Collection
+public function getReferrals(User $user, $cyborg=null ,$matrix_type = null, $level = 1, $maxLevel = 4, $parentSide = null): Collection
 {
     $referrals = new Collection();
 
@@ -160,33 +161,34 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
         // Obtener las matrices compradas por el usuario autenticado
         $purchasedMatrices = MarketPurchased::where('user_id', $user->id);
 
-        // Verificar si se proporcionó un valor válido para $matrix y filtrar las matrices por ese valor
-        if ($matrix !== null) {
-            $purchasedMatrices->where('cyborg_id', $matrix);
+        // Verificar si se proporcionó un valor válido para $matrix_type y filtrar las matrices por ese valor
+        if ($cyborg !== null) {
+            $purchasedMatrices->where('cyborg_id', $cyborg);
         }
 
-        $purchasedMatrices = $purchasedMatrices->pluck('id');
+        $purchasedMatrices = $purchasedMatrices->first()->id;
+
 
         // Filtrar los usuarios que tienen el campo 'father_cyborg_purchased_id' igual al 'cyborg_id' de las matrices compradas
-        $usersWithPurchasedMatrices = User::whereIn('father_cyborg_purchased_id', $purchasedMatrices)->get();
-
+        $usersWithPurchasedMatrices = User::where('father_cyborg_purchased_id', $purchasedMatrices)->get();
         // Obtener los referidos del usuario actual en el lado izquierdo (binary_side = 'L')
         $leftReferrals = $usersWithPurchasedMatrices
-            ->where('binary_side', 'L')
-            ->map(function ($referral) use ($level, $parentSide) {
-                return [
-                    'id' => $referral->id,
-                    'name' => $referral->name,
-                    'level' => $level,
-                    'side' => $parentSide ?: 'L',
-                    'profile_picture' => $referral->profile_picture,
-                    'buyer_id' => $referral->buyer_id,
-                ];
-            });
+        ->where('binary_side', 'L')
+        ->map(function ($referral) use ($level, $parentSide) {
+            return [
+                'id' => $referral->id,
+                'name' => $referral->name,
+                'level' => $level,
+                'side' => $parentSide ?: 'L',
+                'profile_picture' => $referral->profile_picture,
+                'buyer_id' => $referral->buyer_id,
+            ];
+        });
+        Log::debug($leftReferrals);
 
         // Obtener los referidos del usuario actual en el lado derecho (binary_side = 'R')
         $rightReferrals = $usersWithPurchasedMatrices
-            ->where('binary_side', 'R')
+        ->where('binary_side', 'R')
             ->map(function ($referral) use ($level, $parentSide) {
                 return [
                     'id' => $referral->id,
@@ -198,12 +200,13 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
                 ];
             });
 
+            Log::debug($rightReferrals);
         // Agregar los referidos a la colección
         $referrals = $referrals->concat($leftReferrals)->concat($rightReferrals);
 
         // Recorrer los referidos y obtener sus referidos recursivamente
         foreach ($referrals as $referral) {
-            $subReferrals = $this->getReferrals(User::find($referral['id']), $level + 1, $maxLevel, $referral['side'], $matrix);
+            $subReferrals = $this->getReferrals(User::find($referral['id']),$cyborg, $matrix_type, $level + 1, $maxLevel, $referral['side']);
 
             $referrals = $referrals->concat($subReferrals);
         }
@@ -395,11 +398,15 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
             }
             return $users;
         }
-
-        $lastApprovedCyborg = Order::where('user_id', $user->id)
+        $lastApprovedCyborg = DB::table('wallets_commissions')->where('user_id', $user->id)
+        ->select(DB::raw('father_cyborg_purchased_id, SUM(amount) as gain'))
+        ->groupBy('father_cyborg_purchased_id')
+        ->orderByDesc('gain')
+        ->first();
+       /*  $lastApprovedCyborg = Order::where('user_id', $user->id)
         ->where('status', '1')
         ->latest('cyborg_id')
-        ->first();
+        ->first(); */
 
         $profilePicture = $user->profile_picture ?? '';
 
@@ -417,15 +424,16 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
         $earning = WalletComission::where('user_id', $user->id)
             ->sum('amount');
 
-        $cyborg = $lastApprovedCyborg->cyborg_id;
+        $cyborg = $lastApprovedCyborg->father_cyborg_purchased_id;
 
         $data = [
             'id' => $user->id,
             'profilePhoto' =>  $profilePicture,
             'userPlan' => $userPlan,
             'userLevel' => $userLevel,
-            'Cyborg' => $cyborg ?? 1,
+            'Cyborgs' => $cyborg ?? 1,
             'earning' => $earning,
+            'cyborgsCount' =>  $user->marketPurchased()->count(),
         ];
 
         return response()->json($data, 200);
@@ -453,7 +461,7 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
 
         $data = WalletComission::where('status', 0)
             ->where('user_id', $user->id)
-            ->sum('amount');
+            ->sum('amount_available');
 
         return response()->json($data, 200);
     }
@@ -467,9 +475,7 @@ public function getReferrals(User $user, $level = 1, $maxLevel = 4, $parentSide 
             $user = User::find($id);
         }
 
-        $data = WalletComission::where('status', 0)
-            ->where('user_id', $user->id)
-            ->where('available_withdraw', 1)
+        $data = WalletComission::where('user_id', $user->id)
             ->sum('amount');
 
         return response()->json($data, 200);
