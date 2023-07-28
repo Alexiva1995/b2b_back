@@ -236,7 +236,7 @@ Route::middleware('jwt')->group(function () {
         Route::get('reports/liquidactions', 'liquidaction');
         Route::get('reports/coupons', 'coupons');
         // ruta de liquidacion user 
-        Route::get('reports/liquidactions/user', 'LiquidacionUser');
+        Route::get('reports/liquidactions/user/{id?}', 'LiquidacionUser');
     });
     Route::controller(AuthController::class)->group(function ($router) {
         Route::get('test', 'test');
@@ -276,7 +276,7 @@ Route::middleware('jwt')->group(function () {
         //Fin
 
         //Ruta Dashboard User B2B para obtener plan del user
-        Route::get('get/user/matrix/data', 'myBestMatrixData');
+        Route::get('get/user/matrix/data/{id?}', 'myBestMatrixData');
         //Fin
 
         //Ruta Dashboard User B2B comisiones mensuales
@@ -300,7 +300,7 @@ Route::middleware('jwt')->group(function () {
         //Fin
 
         //Ruta Matrix User B2B
-        Route::get('get/user/matrix/{matrix?}', 'showReferrals');
+        Route::get('get/user/matrix/{id?}', 'showReferrals');
 
         //Fin
 
@@ -313,7 +313,7 @@ Route::middleware('jwt')->group(function () {
 
     //Ruta B2B para obtener datos para Cyborg y compra de Cyborg
     Route::controller(MarketController::class)->group(function ($router) {
-        Route::get('/cyborg', 'getAllCyborgs');
+        Route::get('/cyborg/{id?}', 'getAllCyborgs');
         Route::post('/cyborg/purchase', 'purchaseCyborg');
     });
     //Fin
@@ -322,15 +322,15 @@ Route::middleware('jwt')->group(function () {
         Route::get('get-refunds', 'getRefunds');
         Route::get('/refunds-list/{id}', 'refundsList');
         //ruta comision user b2b
-        Route::get('/wallet/comissions/list/user', 'getWallets');
+        Route::get('/wallet/comissions/list/user/{id?}', 'getWallets');
         Route::get('/wallet/comissions/list/admin', 'getWalletsAdmin');
         //fin
 
         //Ruta Wallet b2b
-        Route::get('/wallet/Data/list/user', 'walletUserDataList');
+        Route::get('/wallet/Data/list/user/{id?}', 'walletUserDataList');
         Route::get('/wallet/Data/list/admin', 'walletAdminDataList');
-        Route::get('/wallet/Data/user/gain', 'getMonthlyGain');
-        Route::get('/wallet/Data/user/charts', 'getChartData');
+        Route::get('/wallet/Data/user/gain/{id?}', 'getMonthlyGain');
+        Route::get('/wallet/Data/user/charts/{id?}', 'getChartData');
         //
     
 

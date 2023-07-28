@@ -500,26 +500,21 @@ class ReportsController extends Controller
     
 
 
-    public function LiquidacionUser(Request $request)
+
+        public function LiquidacionUser(Request $request,$id=null)
     {
-        // Obtener el usuario autenticado
-        $user = JWTAuth::parseToken()->authenticate();
-    
-        // Si se proporciona el parámetro "dataFilter", intentar convertirlo a un número para buscar por ID
-        $filter = $request->input('dataFilter');
-        $filterNumeric = is_numeric($filter);
-    
-        // Obtener las liquidaciones con la relación "user" para el usuario actual o filtrado por ID o nombre
-        $query = Liquidaction::with('user');
-    
-        if ($filterNumeric) {
-            // Filtrar por ID
-            $query->where('id', $filter);
-        } else {
-            // Filtrar por nombre del usuario
-            $query->whereHas('user', function ($q) use ($filter) {
-                $q->whereRaw("CONCAT(`name`, ' ', `last_name`) LIKE ?", ['%' . $filter . '%']);
-            });
+            // Obtener el usuario autenticado si no se proporciona el parámetro "id"
+            if ($id == null) {
+                $user = JWTAuth::parseToken()->authenticate();
+            } else {
+                $user = User::find($id);
+            }
+
+        // Si se proporciona el parámetro "user_id" en el filtro, buscar el usuario por ID
+        if ($request->has('dataFilter')) {
+            $userId = $request->input('dataFilter');
+            $user = User::findOrFail($userId);
+
         }
     
         // Aplicar el filtro por auditoría (si se proporciona)

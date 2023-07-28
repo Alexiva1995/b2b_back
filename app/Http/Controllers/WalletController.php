@@ -13,9 +13,14 @@ class WalletController extends Controller
 {
 
 
-    public function getChartData()
+    public function getChartData($id=null)
     {
-        $user = JWTAuth::parseToken()->authenticate();
+         // Obtener el usuario autenticado si no se proporciona el parámetro "id"
+        if ($id == null) {
+            $user = JWTAuth::parseToken()->authenticate();
+        } else {
+            $user = User::find($id);
+        }
 
         $availableCommissions = WalletComission::where('user_id', $user->id)
         ->where('status', 0)
@@ -41,9 +46,14 @@ class WalletController extends Controller
         return response()->json($data, 200);
     }
 
-    public function getMonthlyGain()
+    public function getMonthlyGain($id=null)
 {
-    $user = JWTAuth::parseToken()->authenticate();
+    // Obtener el usuario autenticado si no se proporciona el parámetro "id"
+    if ($id == null) {
+        $user = JWTAuth::parseToken()->authenticate();
+    } else {
+        $user = User::find($id);
+    }
 
     // Obtener los datos de la tabla 'Wallet comision' ordenados por fecha de creación y usuario especificado
     $monthlyGains = WalletComission::where('user_id', $user->id)->orderBy('created_at')->get();
@@ -71,11 +81,15 @@ class WalletController extends Controller
 
 
 
-    public function walletUserDataList(Request $request)
+    public function walletUserDataList(Request $request, $id=null)
     {
         $filter = $request->get('dataFilter');
 
-        $user = JWTAuth::parseToken()->authenticate();
+        if ($id == null) {
+            $user = JWTAuth::parseToken()->authenticate();
+        } else {
+            $user = User::find($id);
+        }
 
 
         $walletCommissions = WalletComission::where('user_id', $user->id)
@@ -310,11 +324,15 @@ class WalletController extends Controller
         return response()->json($devolutions, 200);
     }
 
-    public function getWallets(Request $request)
+    public function getWallets(Request $request , $id=null)
     {
-        // Obtener el usuario autenticado
-        $user = JWTAuth::parseToken()->authenticate();
-    
+        // Obtener el usuario autenticado si no se proporciona el parámetro "id"
+        if ($id == null) {
+            $user = JWTAuth::parseToken()->authenticate();
+        } else {
+            $user = User::find($id);
+        }
+
         // Si se proporciona el parámetro "wallet_id", buscar la wallet por ID
         if ($request->has('wallet_id')) {
             $walletId = $request->input('wallet_id');

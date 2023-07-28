@@ -24,9 +24,14 @@ class MarketController extends Controller
         $this->CoinpaymentsService = $CoinpaymentsService;
     }
 
-    public function getAllCyborgs()
+    public function getAllCyborgs($id=null)
     {
-        $user = JWTAuth::parseToken()->authenticate();
+         // Obtener el usuario autenticado si no se proporciona el parámetro "id"
+         if ($id == null) {
+            $user = JWTAuth::parseToken()->authenticate();
+        } else {
+            $user = User::find($id);
+        }
 
         $lastApprovedCyborg = Order::where('user_id', $user->id)
             ->where('status', '1')
