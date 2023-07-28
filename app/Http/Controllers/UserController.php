@@ -33,30 +33,32 @@ use Illuminate\Support\Facades\Log;
 class UserController extends Controller
 {
 
-    public function userOrder(Request $request, $id = null)
+    public function userOrder(Request $request)
     {
-        // Obtener el usuario autenticado si no se proporciona el parámetro "id"
-        if ($id == null) {
-            $user = JWTAuth::parseToken()->authenticate();
-        } else {
-            $user = User::find($id);
-        }
-
-        // Obtener el filtro del parámetro "order_id" en la solicitud
-        $orderId = $request->get('dataFilter');
-
-        // Obtener las órdenes del usuario autenticado o filtradas por ID de orden
-        $query = $user->orders()->with(['user', 'project', 'packageMembership']);
-
-        if ($orderId) {
-            $query->where('id', $orderId);
-        }
-
-        $orders = $query->get();
-
+        // Obtener el usuario autenticado
+        $user = JWTAuth::parseToken()->authenticate();
+    
+        // Obtener el filtro del parámetro "dataFilter" en la solicitud
+        $filter = $request->input('dataFilter');
+    
+        // Obtener las órdenes con las relaciones "user", "project" y "packageMembership" para el usuario actual o filtrado por ID de orden o nombre del usuario
+        $query = Order::with(['user', 'project', 'packageMembership'])
+            ->where('user_id', $user->id);
+    
+        // Aplicar el filtro por ID de orden o nombre del usuario
+        $query->when(is_numeric($filter), function ($q) use ($filter) {
+            return $q->where('id', $filter);
+        })->when(!is_numeric($filter), function ($q) use ($filter) {
+            return $q->whereHas('user', function ($q) use ($filter) {
+                $q->whereRaw("CONCAT(`name`, ' ', `last_name`) LIKE ?", ['%' . $filter . '%']);
+            });
+        });
+    
+        $data = $query->get();
+    
         // Construir el arreglo de datos
-        $data = array();
-        foreach ($orders as $order) {
+        $result = array();
+        foreach ($data as $order) {
             if (isset($order->project)) {
                 $phase = ($order->project->phase2 == null && $order->project->phase1 == null)
                     ? ""
@@ -64,15 +66,17 @@ class UserController extends Controller
                         ? "Phase 2"
                         : "Phase 1");
             }
-
+    
             $object = [
                 'id' => $order->id,
                 'user_id' => $order->user->id,
                 'user_username' => $order->user->user_name,
                 'user_email' => $order->user->email,
                 'program' => $order->packagesB2B->product_name,
+                // 'phase' => $phase ?? "",
+                // 'account' => $order->packageMembership->account,
                 'status' => $order->status,
-                'hash_id' => $order->hash,
+                'hash_id' => $order->hash, // Hash::make($order->id)
                 'amount' => $order->amount,
                 'sponsor_id' => $order->user->sponsor->id,
                 'sponsor_username' => $order->user->sponsor->user_name,
@@ -81,11 +85,16 @@ class UserController extends Controller
                 'created_at' => $order->created_at->format('Y-m-d H:i:s'),
                 'updated_at' => $order->updated_at->format('Y-m-d H:i:s'),
             ];
-            array_push($data, $object);
+            array_push($result, $object);
         }
-
-        return response()->json(['status' => 'success', 'data' => $data], 200);
+    
+        return response()->json(['status' => 'success', 'data' => $result], 200);
     }
+    
+    
+    
+    
+
 
 
 

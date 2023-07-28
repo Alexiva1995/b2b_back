@@ -43,7 +43,7 @@ class OrderController extends Controller
             $object = [
                 'id' => $order->id,
                 'user_id' => $order->user->id,
-                'user_username' => $order->user->user_name,
+                'user_username' => $order->user->name,
                 'user_email' => $order->user->email,
                 'program' => $order->packagesB2B->product_name,
                // 'phase' => $phase ?? "",
