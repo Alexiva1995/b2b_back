@@ -296,10 +296,17 @@ class AdminDashboardController extends Controller
 	public function countUserForMatrix()
 	{
 		$inversions = Inversion::get();
-		$userCount = $inversions->sum('amount');
-		$userMatrix20 = $inversions->where('type', '0')->sum('amount');
-		$userMatrix200 = $inversions->where('type', '1')->sum('amount');
-		$userMatrix2000 = $inversions->where('type', '2')->sum('amount');
+		$users = User::where('status', '1')->get();
+		$userCount = MarketPurchased::count();
+        $userMatrix20 = 0;
+        $userMatrix200 = 0;
+        $userMatrix2000 = 0;
+
+        foreach ($users as $user) {
+            $userMatrix20 += $user->marketPurchased()->where('type', '1')->count();
+            $userMatrix200 += $user->marketPurchased()->where('type', '2')->count();
+            $userMatrix2000 += $user->marketPurchased()->where('type', '3')->count();
+        }
 
 		$data = array(
 			'userCount'     => $userCount,
@@ -333,4 +340,21 @@ class AdminDashboardController extends Controller
 
 		return response()->json($data);
 	}
+
+    public function userMatrices()
+    {
+        $matrixs = array();
+        $matrices = MarketPurchased::with('user')->get();
+        foreach ($matrices as $matrix) {
+            $data = [
+                'user' => $matrix->user->name,
+                'matrix_type' => $matrix->getType(),
+                'countUser' => User::where('father_cyborg_purchased_id', $matrix->id)->count(),
+                'per' => round((User::where('father_cyborg_purchased_id', $matrix->id)->count()*100)/30,2),
+            ];
+
+            array_push($matrixs, $data);
+        }
+        return $matrixs;
+    }
 }

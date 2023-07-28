@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Log;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class WithdrawalController extends Controller
@@ -116,9 +117,9 @@ class WithdrawalController extends Controller
 
             $user = JWTAuth::parseToken()->authenticate();
 
-            if(is_null($user->code_security)) throw new Exception("Code provided does not match");
+            if (is_null($user->code_security)) throw new Exception("Code provided does not match");
             $code = Crypt::decrypt($user->code_security);
-            if($code !== $request->code_security) throw new Exception("Code provided does not match");
+            if ($code !== $request->code_security) throw new Exception("Code provided does not match");
 
             $encryptedWallet = Crypt::encrypt($request->wallet);
 
@@ -127,14 +128,16 @@ class WithdrawalController extends Controller
             $walletsAmount = $wallets->sum('amount_available');
 
             $amount = $request->amount;
-            if($amount > $walletsAmount){
-                throw new Exception("Insufficient funds", );
-
+            if ($amount > $walletsAmount) {
+                throw new Exception("Insufficient funds");
+            }
+            if ($amount < 30) {
+                throw new Exception("the minimum withdrawal amount is 30 USDT");
             }
             $feed = 2 + ($amount * 0.01); // Restar 2 y el 1% del amount
 
             $fechaCode = date('Y-m-d H:i:s'); // Obtener la fecha y hora actual
-
+            $amountCal = $amount;
 
             if ($code == $request->code_security) {
                 $user->update([
@@ -142,9 +145,9 @@ class WithdrawalController extends Controller
                 ]);
                 $liquidAction = Liquidaction::create([
                     'user_id' => $user->id,
-                    'reference' => 'Pago de Comisiones Matrix',
-                    'total' => $walletsAmount,
-                    'monto_bruto' => $walletsAmount - $feed,
+                    'reference' => 'Payment of commisions',
+                    'total' => $amount,
+                    'monto_bruto' => $amountCal - $feed,
                     'feed' => $feed,
                     'wallet_used' => $encryptedWallet,
                     'fecha_code' => $fechaCode,
@@ -153,184 +156,223 @@ class WithdrawalController extends Controller
                 ]);
 
                 // Actualizar la columna liquidation_id en las filas de walletcomissions
-                foreach ($wallets as $wallet) {
-                    $wallet->update([
-                        'liquidation_id' => $liquidAction->id,
-                        'status' => 1,
-                        'amount_available' => 0,
-                        'amount_retired' => $wallet->amount
-                    ]);
-                }
+                $this->deductionFunds($wallets, $amount, $liquidAction);
                 return response()->json(['message' => 'Withdrawal registered and pending approval'], 200);
             } else {
                 throw new Exception("Code provided does not match");
-
             }
         } catch (\Throwable $th) {
             return response()->json(['message' => $th->getMessage()], 400);
         }
-
-
     }
-        public function generateCode()
-            {
-                $user = JWTAuth::parseToken()->authenticate();
+    public function generateCode()
+    {
+        $user = JWTAuth::parseToken()->authenticate();
 
-                $code = Str::random(6);
+        $code = Str::random(6);
 
-                $codeEncrypt = crypt::encrypt($code);
+        $codeEncrypt = crypt::encrypt($code);
+        Log::alert($code);
+        $user->update(['code_security' => $codeEncrypt]);
 
-                $user->update(['code_security' => $codeEncrypt]);
+        $dataMail = [
+            'code' => $code,
+        ];
+        Mail::send('mails.CodeSecurity', $dataMail,  function ($msj) use ($user) {
+            $msj->subject('Wallet creation security code');
+            $msj->to($user->email);
+        });
 
-                $dataMail = [
-                    'code' => $code,
-                ];
-                Mail::send('mails.CodeSecurity', $dataMail,  function ($msj) use ($user) {
-                    $msj->subject('Wallet creation security code');
-                    $msj->to($user->email);
-                });
+        return response()->json(['success' => 'Codigo enviado con exito']);
+    }
 
-                return response()->json(['success' => 'Codigo enviado con exito']);
-            }
+    public function saveWallet(Request $request)
+    {
 
-        public function saveWallet(Request $request)
-            {
-
-                 $rules = [
-                   'wallet' => 'required',
-                   'code_security' => 'required',
-                   'password' => 'required',
-                 ];
-
-
-                $validator = Validator::make($request->all(), $rules);
-
-                if ($validator->fails()) {
-                    return response()->json($validator->errors(), 400);
-                }
-
-                $user = JWTAuth::parseToken()->authenticate();
-
-                $codeEncryp = $user->code_security;
-                $code = Crypt::decrypt($codeEncryp);
+        $rules = [
+            'wallet' => 'required',
+            'code_security' => 'required',
+            'password' => 'required',
+        ];
 
 
-                // Obtén la contraseña del formulario
-                $password = $request->password;
+        $validator = Validator::make($request->all(), $rules);
 
-                $storedPassword = DB::connection('b2b_auth')
-                    ->table('users')
-                    ->where('id', $user->id)
-                    ->select('password')
-                    ->first();
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
 
+        $user = JWTAuth::parseToken()->authenticate();
 
-
-                if (!Hash::check($password, $storedPassword->password)) {
-                return response()->json(['error' => 'Incorrect password'], 400);
-                }
+        $codeEncryp = $user->code_security;
+        $code = Crypt::decrypt($codeEncryp);
 
 
-                if ($code === $request->code_security) {
-                $walletEncrypt = Crypt::encrypt($request->wallet);
+        // Obtén la contraseña del formulario
+        $password = $request->password;
 
-                $user->update([
-                    'wallet' => $walletEncrypt,
-                    'code_security' => null,
-                ]);
-
-                return response()->json(['Wallet successfully registered'], 200);
-                 } else {
-                return response()->json(['error' => 'The code does not match'], 400);
-                }
-            }
-
-            public function liquidationData()
-            {
-                $liquidations = Liquidaction::with('user:id,name')
-                    ->select('id', 'user_id', 'total', 'status')
-                    ->get();
-
-                $data = $liquidations->map(function ($liquidation) {
-                    return [
-                        'id' => $liquidation->id,
-                        'user_name' => $liquidation->user->name,
-                        'user_id' => $liquidation->user_id,
-                        'amount' => $liquidation->total,
-                        'status' => $liquidation->status,
-                    ];
-                });
-
-                return response()->json($data, 200);
-            }
+        $storedPassword = DB::connection('b2b_auth')
+        ->table('users')
+        ->where('id', $user->id)
+            ->select('password')
+            ->first();
 
 
 
-            public function withdrawalUpdate(Request $request)
-            {
-                $user = JWTAuth::parseToken()->authenticate();
-
-                $codeEncryp = $user->code_security;
-                $code = Crypt::decrypt($codeEncryp);
+        if (!Hash::check($password, $storedPassword->password)) {
+            return response()->json(['error' => 'Incorrect password'], 400);
+        }
 
 
-                if ($code === $request->code_security) {
+        if ($code === $request->code_security) {
+            $walletEncrypt = Crypt::encrypt($request->wallet);
 
-                $user->update([
-                    'code_security' => null,
-                ]);
+            $user->update([
+                'wallet' => $walletEncrypt,
+                'code_security' => null,
+            ]);
+
+            return response()->json(['Wallet successfully registered'], 200);
+        } else {
+            return response()->json(['error' => 'The code does not match'], 400);
+        }
+    }
+
+    public function liquidationData()
+    {
+        $liquidations = Liquidaction::with('user:id,name')
+        ->select('id', 'user_id', 'total', 'status')
+        ->get();
+
+        $data = $liquidations->map(function ($liquidation) {
+            return [
+                'id' => $liquidation->id,
+                'user_name' => $liquidation->user->name,
+                'user_id' => $liquidation->user_id,
+                'amount' => $liquidation->total,
+                'status' => $liquidation->status,
+            ];
+        });
+
+        return response()->json($data, 200);
+    }
 
 
-                $status = $request->status;
-                $liquidationId = $request->liquidation_id;
-                $liquidation = Liquidaction::findOrFail($liquidationId);
-                if ($status == 1) {
-                    // Actualizar el estado de liquidaciones a aprobado (status = 1)
+
+    public function withdrawalUpdate(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+
+            $user = JWTAuth::parseToken()->authenticate();
+
+            $status = $request->status;
+            $liquidationId = $request->liquidation_id;
+            $liquidation = Liquidaction::findOrFail($liquidationId);
+
+            if ($status == 1) {
+                $balanceConpaymentStatus = $this->CoinpaymentsService->get_balances();
+                $amount = $liquidation->monto_bruto;
+                //se valida que existan fondos suficiente para el retiro.
+                if ($balanceConpaymentStatus['USDT.TRC20']->balancef < $amount) throw new Exception("No balance available");
+
+                $decryptedWallet = Crypt::decrypt($liquidation->wallet_used);
+
+                // Lógica para enviar a la pasarela de pago (coinpayment) utilizando el método withdrawal
+                $response = $this->CoinpaymentsService->create_withdrawal($amount, $decryptedWallet, $liquidation->id);
+
+                if($response['error'] != 'ok') throw new Exception("Error Processing Coinpayment");
 
 
-                    // Buscar datos en walletcomissions con el mismo liquidation_id y actualizar los valores
-
-
-                    // Obtener los datos de la liquidación
-
-                    $amount = $liquidation->amount;
-                    $decryptedWallet = Crypt::decrypt($liquidation->wallet_used);
-
-                    // Lógica para enviar a la pasarela de pago (coinpayment) utilizando el método withdrawal
-
-                    // Ejemplo genérico para enviar a la pasarela de pago
-                    $balanceConpaymentStatus = $this->CoinpaymentsService->get_balances();
-                    if ($balanceConpaymentStatus['USDT.TRC20']->balancef > $amount) {
-                        Liquidaction::where('id', $liquidationId)
+                    Liquidaction::where('id', $liquidationId)
                         ->update(['status' => 1]);
-                        $this->CoinpaymentsService->create_withdrawal($amount, $decryptedWallet, $liquidation->id);
-                    } else {
-                        return response()->json(['message' => 'No balance available'], 422);
-                    }
-                } else {
+                DB::commit();
+            return response()->json(['message' => 'Successful, Coinpayment confirmation required ']);
 
-                     // Actualizar el estado de liquidaciones a aprobado (status = 2)
-                     $liquidation->status = 3;
-                     $liquidation->save();
+            } else {
+
+                // Actualizar el estado de liquidaciones a aprobado (status = 2)
+                $liquidation->status = 3;
+                $liquidation->save();
 
 
-                    // Buscar datos en walletcomissions con el mismo liquidation_id y actualizar los valores
-                    $wallets = WalletComission::where('liquidation_id', $liquidationId)->where('status', 1)->get();
-                    foreach ($wallets as $wallet) {
-                        $wallet->update([
-                            'status' => 0, // Actualizar el estado a 3 (Rechazado)
-                            'amount_available' => $wallet->amount,
-                            'amount_retired' => 0
-                        ]);
-                    }
+                // Buscar datos en walletcomissions con el mismo liquidation_id y actualizar los valores
+                $wallets = WalletComission::where('liquidation_id', $liquidationId)->where('status', 1)->get();
+                $amount = $liquidation->total;
+                foreach ($wallets as $wallet) {
+                    $trasaction = Transaction::where(['wallets_commissions_id', $wallet->id], ['liquidation_id', $liquidation->id])->first();
+                    $wallet->update([
+                        'status' => 0, // Actualizar el estado a 3 (Rechazado)
+                        'amount_available' => $wallet->amount_available += $trasaction->amount_retired,
+                        'amount_retired' => $wallet->amount_reired > $trasaction->amount_retired ? $wallet->amount_retired -= $trasaction->amount_retired : 0
+                    ]);
                 }
-            }else {
-                return response()->json(['error' => 'The code does not match'], 400);
+                DB::commit();
+                return response()->json(['message' => 'Successful reject']);
             }
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Log::error('Error al Procesar retiro Admin - '. $th->getMessage());
+            Log::error($th);
+            return response()->json(['message' => $th->getMessage()], 400);
+
+        }
+    }
 
 
-                return response()->json(['message' => 'Proceso de retiro actualizado'], 200);
+    private function deductionFunds($funds, $amount, $liquidacion)
+    {
+        $currentAmount = $amount;
+        Log::debug('initial amount' . $currentAmount);
+        for ($i = 0; $i < $funds->count(); $i++) {
+            if ($funds[$i]['amount_available'] <= $currentAmount) {
+                $funds[$i]['status'] = 1;
+                $funds[$i]['amount_retired'] = $funds[$i]['amount_available'];
+                //creando la transaccion
+                $data_transaction = [
+                    'liquidation_id' => $liquidacion['id'],
+                    'wallets_user_id' => $funds[$i]['user_id'],
+                    'wallets_commissions_id' =>  $funds[$i]['id'],
+                    'amount' => $funds[$i]['amount'],
+                    'amount_retired' => $funds[$i]['amount_available'],
+                    'amount_available' => 0,
+                    'status' => 0,
+                ];
+
+                $currentAmount -= $funds[$i]['amount_available'];
+
+                $funds[$i]['amount_available'] = 0;
+                $funds[$i]['liquidation_id'] = $liquidacion['id'];
+                $funds[$i]->update();
+                Transaction::create($data_transaction);
+            } else {
+                if ($currentAmount > 0) {
+                    $funds[$i]['amount_available'] -=  $currentAmount;
+                    if ($funds[$i]['amount_retired'] > 0) {
+                        $funds[$i]['amount_retired'] += $currentAmount;
+                    } else {
+                        $funds[$i]['amount_retired'] = $currentAmount;
+                    }
+                    $funds[$i]['liquidation_id'] = $liquidacion['id'];
+                    $funds[$i]->update();
+
+                    $data_transaction = [
+                        'liquidation_id' => $liquidacion['id'],
+                        'wallets_user_id' => $funds[$i]['user_id'],
+                        'wallets_commissions_id' => $funds[$i]['id'],
+                        'amount' => $funds[$i]['amount'],
+                        'amount_retired' => $currentAmount,
+                        'amount_available' => $funds[$i]['amount_available'],
+                        'status' => 0
+                    ];
+                    $currentAmount -= $funds[$i]['amount_available'];
+                    Transaction::create($data_transaction);
+                } else {
+                    $i = $funds->count();
+                }
             }
+        }
+    }
 
 
 

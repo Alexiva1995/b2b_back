@@ -34,4 +34,20 @@ class MarketPurchased extends Model
         return $this->belongsTo(Order::class);
     }
 
+    public function getType()
+    {
+        switch ($this->attributes['type']) {
+            case 1:
+                return 'Matrix Initial';
+                break;
+            case 2:
+                return 'Matrix 200';
+                break;
+            case 3:
+                return 'Matrix 2000';
+                break;
+
+        }
+    }
+
 }

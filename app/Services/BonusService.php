@@ -37,7 +37,7 @@ class BonusService
                     'user_id' => $user->id,
                     'buyer_id' => is_null($buyer_id) ? null : $buyer_id,
                     'order_id' => is_null($order) ? null : $order->id,
-                    'description' => is_null($order) ? 'Comision por upgrade de matrix' : 'Comision por primera compra',
+                    'description' => is_null($order) ? 'Upgrade Commission matrix' : 'First purchase commission',
                     'amount' => $amount,
                     'amount_available' => $amount,
                     'type' => $amount == 20 ? WalletComission::TYPE_MATRIX20 : ($amount == 200 ? WalletComission::TYPE_MATRIX200 : WalletComission::TYPE_MATRIX2000),
@@ -47,7 +47,7 @@ class BonusService
                 ]);
 
                 $walletComissionRepository->save($walletComission);
-                
+
                 DB::commit();
             }
         } catch (\Throwable $th) {
@@ -72,18 +72,18 @@ class BonusService
                         'user_id' => $user->padre->padre->id,
                         'buyer_id' => is_null($buyer_id) ? null : $buyer_id,
                         'order_id' => is_null($order) ? null : $order->id,
-                        'description' => 'Comision por primera compra',
+                        'description' => 'First purchase commission',
                         'amount' => $amount,
                         'amount_available' => $amount,
-                        'type' => $amount == 20,
+                        'type' => WalletComission::TYPE_MATRIX20,
                         'status' => WalletComission::STATUS_PENDING,
                         'father_cyborg_purchased_id' => $user->padre->getFatherMarketPurchased()->id,
                         'level' => $level
                     ]);
 
                     $walletComissionRepository->save($walletComission);
-                    
-                    DB::commit();  
+
+                    DB::commit();
                 }
             }
         } catch (\Throwable $th) {
@@ -192,7 +192,7 @@ class BonusService
             'user_id' => $sponsor->id,
             'buyer_id' => null,
             'order_id' => null,
-            'description' => "Comision por reinversion de nivel {$level_to_scale}",
+            'description' => "Commission for level reinvestment {$level_to_scale}",
             'amount' => $amount,
             'amount_available' => $amount,
             'type' => $matrix_type,
