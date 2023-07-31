@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use App\Services\BrokereeService;
+use Illuminate\Database\Eloquent\Builder;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Log;
 
@@ -98,7 +99,7 @@ class UserController extends Controller
 
 
 
-    public function showReferrals($cybog = null, $matrix_type, $id = null)
+    public function showReferrals($cyborg = null, $matrix_type = null, $id = null)
     {
 
         if ($id == null) {
@@ -108,10 +109,10 @@ class UserController extends Controller
         }
 
         // Si $matrix es null, asignarle el valor 1 por defecto
-        $matrix_type = $matrix_type ?? 1;
-        $cybog = $cybog ?? 1;
 
-        $referrals = $this->getReferrals($user,$cybog, $matrix_type);
+        $cyborg = $cyborg ?? 1;
+
+        $referrals = $this->getReferrals($user, $cyborg, $matrix_type);
 
 
         return response()->json($referrals, 200);
@@ -165,12 +166,20 @@ public function getReferrals(User $user, $cyborg=null ,$matrix_type = null, $lev
         if ($cyborg !== null) {
             $purchasedMatrices->where('cyborg_id', $cyborg);
         }
-
+        
         $purchasedMatrices = $purchasedMatrices->first()->id;
 
 
         // Filtrar los usuarios que tienen el campo 'father_cyborg_purchased_id' igual al 'cyborg_id' de las matrices compradas
-        $usersWithPurchasedMatrices = User::where('father_cyborg_purchased_id', $purchasedMatrices)->get();
+        $usersWithPurchasedMatrices = User::where('father_cyborg_purchased_id', $purchasedMatrices);
+
+        //Al enviar el tipo de matrix, filtra que la matrix del hijo cumpla con el tipo especificado.
+        if(!is_null($matrix_type)){
+            $usersWithPurchasedMatrices->whereHas('marketPurchased', function (Builder $query) use ($matrix_type){
+                $query->where('type', $matrix_type);
+            });
+        }
+        $usersWithPurchasedMatrices = $usersWithPurchasedMatrices->get();
         // Obtener los referidos del usuario actual en el lado izquierdo (binary_side = 'L')
         $leftReferrals = $usersWithPurchasedMatrices
         ->where('binary_side', 'L')
@@ -184,7 +193,6 @@ public function getReferrals(User $user, $cyborg=null ,$matrix_type = null, $lev
                 'buyer_id' => $referral->buyer_id,
             ];
         });
-        Log::debug($leftReferrals);
 
         // Obtener los referidos del usuario actual en el lado derecho (binary_side = 'R')
         $rightReferrals = $usersWithPurchasedMatrices
@@ -200,7 +208,6 @@ public function getReferrals(User $user, $cyborg=null ,$matrix_type = null, $lev
                 ];
             });
 
-            Log::debug($rightReferrals);
         // Agregar los referidos a la colección
         $referrals = $referrals->concat($leftReferrals)->concat($rightReferrals);
 
@@ -654,9 +661,9 @@ public function getReferrals(User $user, $cyborg=null ,$matrix_type = null, $lev
         return response()->json(['message' => "User Not Found"], 400);
     }
 
-    public function getUser(Request $request)
-    {
-        $user = User::with('prefix')->findOrFail($request->auth_user_id);
+    public function getUser(Request $request, $id = null)
+    {   $search = is_null($id) ? $request->auth_user_id : $id;
+        $user = User::with('prefix')->findOrFail($search);
         return response()->json($user, 200);
     }
 
@@ -749,8 +756,9 @@ public function getReferrals(User $user, $cyborg=null ,$matrix_type = null, $lev
         }
     }
 
-    public function ChangePassword(Request $request)
-    {
+    public function ChangePassword(Request $request, $id)
+    {   $user_id = is_null($id) ? $request->auth_user_id : $id;
+        return $user_id;
         $request->validate([
             'current_password' => ['required', new ChangePassword($request->auth_user_id)],
             'new_password' => [
@@ -765,8 +773,7 @@ public function getReferrals(User $user, $cyborg=null ,$matrix_type = null, $lev
         ]);
 
         $log = new ProfileLog;
-
-        $data = ['id' => $request->auth_user_id, 'password' => $request->new_password];
+        $data = ['id' => $user_id, 'password' => $request->new_password];
 
         $url = config('services.backend_auth.base_uri');
 
