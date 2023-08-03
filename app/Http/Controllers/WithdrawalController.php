@@ -300,7 +300,7 @@ class WithdrawalController extends Controller
                 $wallets = WalletComission::where('liquidation_id', $liquidationId)->where('status', 1)->get();
                 $amount = $liquidation->total;
                 foreach ($wallets as $wallet) {
-                    $trasaction = Transaction::where(['wallets_commissions_id', $wallet->id], ['liquidation_id', $liquidation->id])->first();
+                    $trasaction = Transaction::where([['wallets_commissions_id', $wallet->id], ['liquidation_id', $liquidation->id]])->first();
                     $wallet->update([
                         'status' => 0, // Actualizar el estado a 3 (Rechazado)
                         'amount_available' => $wallet->amount_available += $trasaction->amount_retired,

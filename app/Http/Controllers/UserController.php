@@ -166,7 +166,7 @@ public function getReferrals(User $user, $cyborg=null ,$matrix_type = null, $lev
         if ($cyborg !== null) {
             $purchasedMatrices->where('cyborg_id', $cyborg);
         }
-        
+
         $purchasedMatrices = $purchasedMatrices->first()->id;
 
 
@@ -872,8 +872,8 @@ public function getReferrals(User $user, $cyborg=null ,$matrix_type = null, $lev
             ->withSum(['wallets as total_gain' => function ($query) {
                 $query->where('status', WalletComission::STATUS_AVAILABLE);
             }], 'amount_available')
-            ->with('inversions', function ($query) {
-                $query->where('status', Inversion::STATUS_APPROVED)->orderBy('id', 'desc');
+            ->with('marketPurchased', function ($query) {
+                $query->max('type');
             })
             ->get();
 

@@ -34,9 +34,9 @@ class WalletComission extends Model
     const STATUS_PENDING = 4;
     const STATUS_PAID = 2;
 
-    const TYPE_MATRIX20 = 0;
-    const TYPE_MATRIX200 = 1;
-    const TYPE_MATRIX2000= 2;
+    const TYPE_MATRIX20 = 1;
+    const TYPE_MATRIX200 = 2;
+    const TYPE_MATRIX2000= 3;
 
     // protected function status(): Attribute {
     //     return new Attribute(
