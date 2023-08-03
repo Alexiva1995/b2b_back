@@ -28,13 +28,11 @@ class WalletController extends Controller
 
         $availableAmount = $availableCommissions->sum('amount_available');
         $availableIds = $availableCommissions->pluck('id');
-
-        $withdrawalAmount = WalletComission::where('user_id', $user->id)
-            ->where('status', 2)
-            ->sum('amount');
-
-
         $totalEarning = WalletComission::where('user_id', $user->id)->sum('amount');
+
+        $withdrawalAmount = $totalEarning - $availableAmount;
+
+
 
         $data = [
             'available' => $availableAmount,
@@ -339,14 +337,14 @@ class WalletController extends Controller
             $wallet = WalletComission::findOrFail($walletId);
             $user = $wallet->user;
         }
-    
+
         // Obtener el filtro del parámetro "dataFilter" en la solicitud
         $filter = $request->input('dataFilter');
-    
+
         // Obtener las billeteras de comisiones con las relaciones "user" y "package" para el usuario actual o filtrado por ID de la wallet
         $query = WalletComission::with(['buyer', 'matrix'])
             ->where('user_id', $user->id);
-    
+
         // Aplicar el filtro por ID de wallet o nombre del usuario
         $query->when(is_numeric($filter), function ($q) use ($filter) {
             return $q->where('id', $filter);
@@ -355,14 +353,14 @@ class WalletController extends Controller
                 $q->whereRaw("CONCAT(`name`, ' ', `last_name`) LIKE ?", ['%' . $filter . '%']);
             });
         });
-    
+
         $data = $query->get();
-    
+
         return response()->json($data, 200);
     }
-    
 
-    
+
+
 
     public function getWalletsAdmin(Request $request)
     {
