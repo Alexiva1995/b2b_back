@@ -35,7 +35,7 @@ class TestMatrixSeeder extends Seeder
         // admin
         $bonusService = new BonusService;
 
-        User::create([
+      $admin=  User::create([
             'name'=> 'user',
             'last_name'=> 'admin',
             'email'=> 'admin@b2b.com',
@@ -46,6 +46,14 @@ class TestMatrixSeeder extends Seeder
             'status' => '1',
             'binary_id' => 0,
             'binary_side' => 'L'
+        ]);
+        ReferalLink::create([
+            'user_id' => $admin->id,
+            'link_code' => Str::random(6),
+            'cyborg_id' => 1,
+            'right' => 0,
+            'left' => 0,
+            'status' => ReferalLink::STATUS_ACTIVE,
         ]);
 
         $user = User::create([
@@ -71,14 +79,14 @@ class TestMatrixSeeder extends Seeder
             'membership_packages_id' => 1
         ]);
 
-        Inversion::create([
+        /* Inversion::create([
             'package_id' => 1,
             'orden_id' => $order->id,
             'user_id' => $user->id,
             'status' => Inversion::STATUS_APPROVED,
             'amount' => 50,
             'type' => Inversion::TYPE_INITIAL_MATRIX
-        ]);
+        ]); */
 
         $marketPurchased = MarketPurchased::create([
             'user_id' => $user->id,
@@ -95,19 +103,19 @@ class TestMatrixSeeder extends Seeder
             'status' => ReferalLink::STATUS_INACTIVE,
         ]);
 
-        ReferalLink::create([
+        /* ReferalLink::create([
             'user_id' => $user->id,
             'link_code' => Str::random(6),
             'cyborg_id' => 2,
             'right' => 0,
             'left' => 0,
             'status' => ReferalLink::STATUS_ACTIVE,
-        ]);
+        ]); */
 
         $bonusService->generateFirstComission(20, $user, $order, $buyer = $user, $level = 2, $user->id);
 
-        for($i = 3; $i < 33; $i++) {
-            
+        for($i = 3; $i < 35503; $i++) {
+
             $father = User::where('id', round($i / 2))->with('marketPurchased')->first();
 
             $user = User::create([
@@ -137,7 +145,7 @@ class TestMatrixSeeder extends Seeder
                 'street' => '1',
                 'department' => $i
             ]);
-    
+
             $order = Order::create([
                 'user_id' => $user->id,
                 'amount' => 50,
@@ -146,7 +154,7 @@ class TestMatrixSeeder extends Seeder
                 'cyborg_id' => '1',
                 'membership_packages_id' => 1
             ]);
-    
+
             $marketPurchased = MarketPurchased::create([
                 'user_id' => $user->id,
                 'cyborg_id' => 1,
@@ -171,6 +179,7 @@ class TestMatrixSeeder extends Seeder
             ReferalLink::create($data);
 
             $bonusService->generateFirstComission(20,$user, $order, $buyer = $user, $level = 2, $user->id);
+
         }
     }
 }

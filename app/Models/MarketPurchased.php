@@ -13,7 +13,7 @@ class MarketPurchased extends Model
     use HasFactory;
     const MATRIX_20 = 1;
     const MATRIX_200 = 2;
-    const MATRIX_2000 =  3;
+    const MATRIX_2000 = 3;
 
     protected $table = 'market_purchaseds';
 

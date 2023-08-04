@@ -120,6 +120,7 @@ Route::middleware('jwt')->group(function () {
         Route::controller(UserController::class)->group(function ($router) {
             Route::get('audit-user-wallets', 'auditUserWallets');
             Route::get('audit-user-profile/{id?}', 'auditUserProfile');
+            Route::get('audit-user-wallet/{id?}', 'auditUserWallet');
             Route::get('audit-user-dashboard', 'auditUserDashboard');
         });
         Route::controller(PackageMembershipController::class)->group(

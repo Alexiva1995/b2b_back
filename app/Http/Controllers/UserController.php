@@ -964,6 +964,12 @@ public function getReferrals(User $user, $cyborg=null ,$matrix_type = null, $lev
         return response()->json($user, 200);
     }
 
+    public function auditUserWallet(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        return response()->json(['wallet'=>$user->wallet], 200);
+    }
+
     public function auditUserDashboard(Request $request)
     {
         $user = User::with('prefix')->findOrFail($request->user_id);
