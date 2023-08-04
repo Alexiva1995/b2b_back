@@ -81,7 +81,7 @@ class AuthController extends Controller
                 'email' => $request->email
             ];
 
-
+            $matrixId = $sponsor_id != 1 ? MarketPurchased::where([['user_id', $sponsor_id], ['cyborg_id', $link->cyborg_id]])->first()->id : null;
             $user = User::create([
                 'name' => $request->user_name,
                 'last_name' => $request->user_lastname,
@@ -94,7 +94,7 @@ class AuthController extends Controller
                 'status' => '0',
                 'code_security' => Str::random(12),
                 'phone' => $request->phone,
-                'father_cyborg_purchased_id' => MarketPurchased::where([['user_id', $sponsor_id], ['cyborg_id', $link->cyborg_id]])->first()->id,
+                'father_cyborg_purchased_id' => $matrixId,
             ]);
             $user->user_name = strtolower(explode(" ", $request->user_name)[0][0] . "" . explode(" ", $request->user_lastname)[0]) . "#" . $user->id;
 
@@ -453,23 +453,25 @@ class AuthController extends Controller
         if ($come_from_front) {
             if (!$link) return response()->json(['message' => 'Invalid link code'], 400);
 
-            if ($link->status == ReferalLink::STATUS_INACTIVE) {
-                return response()->json(['message' => 'This matrix is already complete'], 400);
-            }
+            if($link->user->admin == '0'){
+                if ($link->status == ReferalLink::STATUS_INACTIVE) {
+                    return response()->json(['message' => 'This matrix is already complete'], 400);
+                }
 
-            if ($side == 'R' && $link->right == '1' || $side == 'L' && $link->left == '1') {
-                return response()->json(['message' => 'Invalid link'], 400);
+                if ($side == 'R' && $link->right == '1' || $side == 'L' && $link->left == '1') {
+                    return response()->json(['message' => 'Invalid link'], 400);
+                }
             }
 
             return response()->json(['sponsor' => $link->user], 200);
         } else {
             $response = ['status' => true, 'link' => $link, 'sponsor_id' => null,];
-
             if (!$link) return $response['status'] = false;
+            if($link->user->admin == '0'){
+                if ($link->status == ReferalLink::STATUS_INACTIVE) $response['status'] = false;
 
-            if ($link->status == ReferalLink::STATUS_INACTIVE) $response['status'] = false;
-
-            if ($side == 'R' && $link->right == '1' || $side == 'L' && $link->left == '1')  $response['status'] = false;
+                if ($side == 'R' && $link->right == '1' || $side == 'L' && $link->left == '1')  $response['status'] = false;
+            }
 
             $response['status'] = true;
             $response['sponsor_id'] = $link->user->id;
