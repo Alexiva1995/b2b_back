@@ -756,9 +756,9 @@ public function getReferrals(User $user, $cyborg=null ,$matrix_type = null, $lev
         }
     }
 
-    public function ChangePassword(Request $request, $id)
+    public function ChangePassword(Request $request, $id = null)
     {   $user_id = is_null($id) ? $request->auth_user_id : $id;
-        return $user_id;
+
         $request->validate([
             'current_password' => ['required', new ChangePassword($request->auth_user_id)],
             'new_password' => [
