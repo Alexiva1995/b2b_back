@@ -114,7 +114,7 @@ class TestMatrixSeeder extends Seeder
 
         $bonusService->generateFirstComission(20, $user, $order, $buyer = $user, $level = 2, $user->id);
 
-        for($i = 3; $i < 35503; $i++) {
+        for($i = 3; $i < 33; $i++) {
 
             $father = User::where('id', round($i / 2))->with('marketPurchased')->first();
 

@@ -87,7 +87,7 @@ class AuthController extends Controller
                 'last_name' => $request->user_lastname,
                 'binary_id' => $binary_id,
                 'email' => $request->email,
-                'email_verified_at' => now(),
+               // 'email_verified_at' => now(),
                 'binary_side' => $binary_side,
                 'buyer_id' => $sponsor_id,
                 'prefix_id' => $request->prefix_id,
@@ -166,7 +166,7 @@ class AuthController extends Controller
                     $msj->to($request->email);
                 });
 
-                return response()->json(['message' => 'Unverified email', 'email' => $user->email], 200);
+                return response()->json(['message' => 'Unverified email', 'email' => $user->email], 400);
             }
 
             DB::beginTransaction();
@@ -420,6 +420,7 @@ class AuthController extends Controller
             'wallet' => is_null($user->wallet) ? null : $user->wallet,
             'updated_at' => $user->updated_at,
             'status' => $user->status == "0" ? false : true,
+            'profile_picture' => $user->profile_picture ?? '',
             'type_services' => $user->type_service,
             'message' => 'Successful login.'
         ];
@@ -553,15 +554,16 @@ class AuthController extends Controller
     public function getDataPayment(Request $request)
     {   try {
         $user = User::where('email', $request->email)->first();
-        $order = $user->orders()->latest()->where('status', '0')->first()->coinpaymentTransaction()->first();
+        $order = $user->orders()->latest()->where('status', '0')->first();
         if(!$order){
-            return response()->json(['status' => 'error'], 400);
+            throw new Exception("Error no active order");
         }
+        $order = $order->coinpaymentTransaction()->first();
         return response()->json($order);
         //code...
     } catch (\Throwable $th) {
         Log::error('Error al mostrar datos de pago -' . $th->getMessage());
-        return response()->json('Error displaying payment data', 400);
+        return response()->json(['message' => $th->getMessage()], 400);
     }
 
     }
