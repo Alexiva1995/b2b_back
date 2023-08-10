@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
         $this->call(marketSeeder::class);
-        $this->call(MembershipsPackageSeeder::class);
+        // $this->call(MembershipsPackageSeeder::class);
         $this->call(PrefixSeeder::class);
         // $this->call(UserSeeder::class);
         // $this->call(ProductsTableSeeder::class);
@@ -38,6 +38,6 @@ class DatabaseSeeder extends Seeder
         // $this->call(MarketPurchaseSeeder::class);
         // $this->call(FatherCyborgForUserSeeders::class);
         // TestMatrixSeeder incluye usuarios, MarketPurchased, Orders y Comisiones relacionados como deben estar
-        $this->call(TestMatrixSeeder::class);
+        $this->call(TestMatrixSeeder::class); //modificado para produccion
     }
 }
