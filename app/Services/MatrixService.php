@@ -31,7 +31,6 @@ class MatrixService
                 }
 
                 $referrals = $this->getReferrals($matrixPurchased, $level = 1, $maxLevel = 4, $matrixPurchased->type)->groupBy('level');
-                Log::alert($referrals);
                 if(isset($referrals['4']) && ($matrixPurchased->level < 4 && $matrixPurchased->level > 2)){
                     //Log::alert('Lvl 4');
                     $referralsLvl4 = $this->countMatrixLevel($referrals['4'], $level = 4, $matrixPurchased->type)->sum();
