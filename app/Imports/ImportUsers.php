@@ -14,32 +14,36 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Illuminate\Support\Str;
 
 
-class ImportUsers implements ToModel, WithHeadingRow
+class ImportUsers implements ToCollection
 {
     use Importable;
 
     /**
     * @param Collection $collection
     */
-    public function model(array $users)
+    public function collection(Collection $users)
     {
-        $pais = Prefix::where('pais', $users['pais'])->first();
-       $data = [
-        'user_name' => $users['nombre'],
-      'user_lastname'=> $users['apellido'],
-      'phone' => $users['telefono'],
-      'prefix_id' => $pais->id,
-      'type_service' => 2,
-      "email" => $users['correo'],
-       ];
 
-       $pass = Str::random(12);
+        foreach ($users as $key => $user) {
+            if($key > 0){
+
+                $pais = Prefix::where('pais', $user[4])->first();
+               $data = [
+                'user_name' => $user[0],
+              'user_lastname'=> $user[1],
+              'phone' => $user[3],
+              'prefix_id' => $pais->id,
+              'type_service' => 2,
+              "email" => $user[2],
+               ];
+
+               $pass = Str::random(12);
        $datas = [
            'name' => $data['user_name'],
            'last_name' => $data['user_lastname'],
@@ -109,6 +113,10 @@ class ImportUsers implements ToModel, WithHeadingRow
                $msj->to($data['email']);
            }); */
        }
+            }
+        }
+
+
     }
 
     private function generateCode()
