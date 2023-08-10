@@ -74,7 +74,7 @@ class ImportUsers implements ToModel, WithHeadingRow
 
        if ($response->successful()) {
            $res = $response->object();
-           $user->update(['id' => $res->user->id]);
+          // $user->update(['id' => $res->user->id]);
 
            ReferalLink::create([
                'user_id' => $user->id,
