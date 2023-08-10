@@ -61,6 +61,7 @@ class ProductController extends Controller
 
         $query = Product::with('user')
         ->name($filter)
+        ->orderBy('id', 'DESC')
         ->get();
 
         $data = $query;

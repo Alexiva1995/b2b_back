@@ -92,6 +92,7 @@ class WalletController extends Controller
 
         $walletCommissions = WalletComission::where('user_id', $user->id)
             ->select('description', 'status', 'created_at', 'amount','id')
+            ->orderBy('id', 'DESC')
             ->filter($filter)
             ->get();
 
@@ -354,7 +355,7 @@ class WalletController extends Controller
             });
         });
 
-        $data = $query->get();
+        $data = $query->orderBy('id','DESC')->get();
 
         return response()->json($data, 200);
     }
@@ -370,6 +371,7 @@ class WalletController extends Controller
             ->whereHas('user', function ($query) use ($filter) {
                 $query->where('email', 'like', '%' . $filter . '%');
             })
+            ->orderBy('id', 'DESC')
             ->get();
 
         return response()->json($data, 200);

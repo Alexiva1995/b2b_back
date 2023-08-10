@@ -28,6 +28,7 @@ class OrderController extends Controller
 
         $orders = Order::with(['user','project','packageMembership'])
         ->filter($filter)
+        ->orderBy('id', 'DESC')
         ->get();
 
         $data = array();

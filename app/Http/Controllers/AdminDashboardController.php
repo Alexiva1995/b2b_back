@@ -347,6 +347,7 @@ class AdminDashboardController extends Controller
         $matrices = MarketPurchased::with('user')->get();
         foreach ($matrices as $matrix) {
             $data = [
+                'id' => $matrix->user->id,
                 'user' => $matrix->user->name,
                 'matrix_type' => $matrix->getType(),
                 'countUser' => User::where('father_cyborg_purchased_id', $matrix->id)->count(),
