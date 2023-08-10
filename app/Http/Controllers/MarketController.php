@@ -105,4 +105,15 @@ class MarketController extends Controller
 
         return response()->json(['data' => $order], 200);
     }
+
+    public function checkOrderMarket(Request $request)
+    {
+        $user = User::where('email', $request->email)->first();
+        $order = $user->orders()->where('status', '0')->first();
+        if (is_null($order)) {
+            return response()->json(['data' => null], 200);
+        }
+        $datapayment = $order->coinpaymentTransaction;
+        return response()->json(['data' => $datapayment], 200);
+    }
 }

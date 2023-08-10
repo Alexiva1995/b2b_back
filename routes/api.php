@@ -319,6 +319,7 @@ Route::middleware('jwt')->group(function () {
     Route::controller(MarketController::class)->group(function ($router) {
         Route::get('/cyborg/{id?}', 'getAllCyborgs');
         Route::post('/cyborg/purchase', 'purchaseCyborg');
+        Route::post('/check-order-market', 'checkOrderMarket');
     });
     //Fin
     Route::controller(WalletController::class)->group(function ($router) {
