@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateUserRequest;
 use App\Mail\CodeSecurity;
 use App\Models\Liquidaction;
 use App\Models\User;
@@ -14,6 +15,7 @@ use App\Models\MarketPurchased;
 use App\Models\Inversion;
 use App\Models\ReferalLink;
 use App\Rules\ChangePassword;
+use App\Services\BonusService;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
@@ -30,6 +32,7 @@ use App\Services\BrokereeService;
 use Illuminate\Database\Eloquent\Builder;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Log;
+
 
 class UserController extends Controller
 {
@@ -55,7 +58,7 @@ class UserController extends Controller
             });
         });
 
-        $data = $query->get();
+        $data = $query->orderBy('id','DESC')->get();
 
         // Construir el arreglo de datos
         $result = array();
@@ -145,7 +148,7 @@ class UserController extends Controller
         ];
     });
 
-    return $referralList;
+    return $referralList->sortBy([['Date', 'desc']]);
 }
 
 
@@ -240,6 +243,7 @@ public function getReferrals(User $user, $cyborg=null ,$matrix_type = null, $lev
         $withdrawals = WalletComission::select('id', 'description', 'amount', 'created_at')
             ->where('user_id', $user->id)
             ->where('available_withdraw', '=', 0)
+            ->orderBy('id', 'DESC')
             ->take(15)
             ->get();
 
@@ -875,6 +879,7 @@ public function getReferrals(User $user, $cyborg=null ,$matrix_type = null, $lev
             ->with('marketPurchased', function ($query) {
                 $query->max('type');
             })
+            ->orderBy('id', 'DESC')
             ->get();
 
         return response()->json($users, 200);
@@ -1232,4 +1237,99 @@ public function getReferrals(User $user, $cyborg=null ,$matrix_type = null, $lev
         $user = JWTAuth::parseToken()->authenticate();
         return response()->json(['status' => $user->status == 0 ? false : true]);
     }
+
+    public function createUser(CreateUserRequest $request)
+    {
+        DB::beginTransaction();
+        try {
+
+            $pass = Str::random(12);
+            $data = [
+                'name' => $request->user_name,
+                'last_name' => $request->user_lastname,
+                'password' => $pass,
+                'password_confirmation' => $pass,
+                'email' => $request->email,
+                'verify' => true,
+            ];
+
+            $user = User::create([
+                'name' => $request->user_name,
+                'last_name' => $request->user_lastname,
+                'binary_id' => 1,
+                'email' => $request->email,
+                'email_verified_at' => now(),
+                'binary_side' => 'L',
+                'buyer_id' => 1,
+                'prefix_id' => $request->prefix_id,
+                'status' => '1',
+                'phone' => $request->phone,
+                'father_cyborg_purchased_id' => null,
+                'type_service' => $request->type_service == 'product' ? 0 : 2,
+            ]);
+            $user->user_name = strtolower(explode(" ", $request->user_name)[0][0] . "" . explode(" ", $request->user_lastname)[0]) . "#" . $user->id;
+            $user->save();
+            $url = config('services.backend_auth.base_uri');
+
+            $response = Http::withHeaders([
+                'apikey' => config('services.backend_auth.key'),
+            ])->post("{$url}register-manual", $data);
+
+            if ($response->successful()) {
+                $res = $response->object();
+                $user->update(['id' => $res->user->id]);
+
+                ReferalLink::create([
+                    'user_id' => $user->id,
+                    'link_code' => $this->generateCode(),
+                    'cyborg_id' => 1,
+                ]);
+
+               $order =  Order::create([
+                    'user_id' => $user->id,
+                    'amount' => 50,
+                    'type' => 'inicio',
+                    'status' => '1',
+                    'cyborg_id' => 1,
+                ]);
+
+                MarketPurchased::create([
+                    'user_id' => $user->id,
+                    'order_id' => $order->id,
+                    'cyborg_id' => 1,
+                ]);
+                $bonusService = new BonusService;
+                $bonusService->generateFirstComission(20,$user, $order, $buyer = $user, $level = 2, $user->id);
+
+                $dataEmail = [
+                    'email' => $user->email,
+                    'password' => $pass,
+                    'user' => $user->name. ' '. $user->last_name,
+                ];
+
+                Mail::send('mails.newUser',  ['data' => $dataEmail], function ($msj) use ($request) {
+                    $msj->subject('Welcome to B2B.');
+                    $msj->to($request->email);
+                });
+                DB::commit();
+                return response()->json(['message' => 'Register successful'], 200);
+            }
+            return response()->json(['message' => "Error creating user in authentication api"], 400);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Log::error($th);
+            return response()->json(['message' => 'Error create user'], 400);
+        }
+
+
+    }
+    private function generateCode()
+    {
+        $code = Str::random(6);
+        if(!ReferalLink::where('link_code', $code)->exists()){
+            return $code;
+        }
+        $this->generateCode();
+    }
+
 }

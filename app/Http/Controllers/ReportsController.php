@@ -464,6 +464,7 @@ class ReportsController extends Controller
             }
         })
         ->where('status', '!=', 0)
+        ->orderBy('id', 'DESC')
         ->get();
 
     return response()->json($liquidactions, 200);
@@ -491,7 +492,7 @@ class ReportsController extends Controller
             });
         }
 
-        $liquidactions = $query->get();
+        $liquidactions = $query->orderBy('id', 'DESC')->get();
 
         return response()->json($liquidactions, 200);
     }
@@ -523,7 +524,7 @@ class ReportsController extends Controller
             $query->where('id', $auditId);
         }
 
-        $data = $query->get();
+        $data = $query->orderBy('id', 'DESC')->get();
 
         return response()->json($data, 200);
     }

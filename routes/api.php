@@ -115,6 +115,7 @@ Route::middleware('jwt')->group(function () {
             Route::post('filter-users-wallet-list', 'filterUsersWalletsList');
             Route::post('filter-users-list', 'filterUsersList');
             Route::post('admin/change/password/{id?}', 'ChangePassword');
+            Route::post('create-user', 'createUser');
         });
 
         Route::controller(UserController::class)->group(function ($router) {
