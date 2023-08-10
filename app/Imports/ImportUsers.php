@@ -108,10 +108,10 @@ class ImportUsers implements ToCollection
                'user' => $user->name. ' '. $user->last_name,
            ];
 
-          /*  Mail::send('mails.newUser',  ['data' => $dataEmail], function ($msj) use ($data) {
+           Mail::send('mails.newUser',  ['data' => $dataEmail], function ($msj) use ($data) {
                $msj->subject('Welcome to B2B.');
                $msj->to($data['email']);
-           }); */
+           });
        }
             }
         }
