@@ -500,7 +500,9 @@ class AuthController extends Controller
             $order->status = '0';
             $order->amount = $cyborg->amount;
             $order->save();
-            $this->OrderController->processOrderApproved($order);
+
+            //Para uso manual de test
+           // $this->OrderController->processOrderApproved($order);
 
             // Ejecutar la lógica de la pasarela de pago y obtener la respuesta
             $response = $this->CoinpaymentsService->create_transaction($cyborg->amount, $cyborg, $request, $order, $user);
