@@ -68,7 +68,10 @@ class MarketController extends Controller
         DB::beginTransaction();
         try {
             $user = JWTAuth::parseToken()->authenticate();
-            $cyborgId = $request->input('cyborg_id', 1);
+            if(is_null($request->cyborg_id)){
+                return response()->json('cyborg_id is null', 422);
+            }
+            $cyborgId = $request->cyborg_id;
 
             $cyborg = Market::find($cyborgId);
 
