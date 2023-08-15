@@ -251,4 +251,11 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(Liquidaction::class);
     }
 
+    public function getTypeMatrix()
+    {
+       $matrix= $this->marketPurchased()->where('cyborg_id', '1')->first();
+
+       return $matrix->type;
+    }
+
 }
