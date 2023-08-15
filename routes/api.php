@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\CategoryLearningsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\CouponController;
@@ -69,6 +70,14 @@ Route::middleware('jwt')->group(function () {
 
     // ADMINvalidateCoupon
     Route::middleware([AdminRoleMiddleware::class])->group(function () {
+
+        Route::controller(CategoryLearningsController::class)->group(function ($router) {
+            Route::get('get-all-category', 'getAll');
+            Route::get('get-category/{id}', 'getAll');
+            Route::post('create-category', 'store');
+            Route::post('update-category', 'update');
+            Route::post('delete-category/{id}', 'destroy');
+        });
 
         Route::controller(AdminDashboardController::class)->group(function ($router) {
             Route::get('get-last-ten-tickets', 'getLast10SupportTickets');
@@ -177,6 +186,7 @@ Route::middleware('jwt')->group(function () {
         });
         Route::controller(LearningController::class)->group(function ($router) {
             Route::get('learnings-all', 'learnings');
+            Route::get('learnings/{type}/{category}', 'learningsType');
             Route::post('documents-store', 'documentStore');
             Route::post('video-store', 'videoStore');
             Route::post('link-store', 'linkStore');

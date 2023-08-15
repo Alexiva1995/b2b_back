@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CategoryLearning;
 use App\Models\Learning;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -9,8 +10,14 @@ use App\Models\Document;
 
 class LearningController extends Controller
 {
-    public function learnings () {
+    public function learnings() {
+
         $learning = Learning::all();
+        return response()->json($learning, 200);
+    }
+    public function learningsType($type, $category) {
+
+        $learning = CategoryLearning::where('name', $category)->first()->$type;
         return response()->json($learning, 200);
     }
     public function deleteLearning (Request $request) {
@@ -38,7 +45,7 @@ class LearningController extends Controller
     //         $learning = Learning::find($request->id);
     //         $learning->title = $request->title;
     //         $learning->description = $request->description;
-            
+
     //         return response()->json($learning, 200);
     //     } catch (\Throwable $th) {
     //         return response()->json($learning, 400);
@@ -79,16 +86,22 @@ class LearningController extends Controller
         $document->description = $request->description;
 
         $file = $request->file('document');
+        $file2 = $request->file('preview');
+        $name2 = str_replace(" ", "_", $file2->getClientOriginalName());
+        $file2->move(public_path('storage/documents/preview'), $name2);
         $name = str_replace(" ", "_", $file->getClientOriginalName());
         $file->move(public_path('storage/documents/'), $name);
         $document->file_name = $name;
         $document->path = 'storage/documents/'.$name;
+        $document->preview  = 'storage/documents/preview/'.$name2;
         $document->type = 0;
+        $document->category_learning_id = CategoryLearning::where('name', $request->category)->first()->id;
         $document->save();
 
         return response()->json(['message' => 'Document registered successfully'], 200);
     }
     public function videoStore(Request $request) {
+
         $rules = [
             'video' => 'required|mimes:mp4,mov,ogg,qt|max:20000',
             'title' => 'required',
@@ -112,11 +125,16 @@ class LearningController extends Controller
         $document->description = $request->description;
 
         $file = $request->file('video');
+        $file2 = $request->file('preview');
+        $name2 = str_replace(" ", "_", $file2->getClientOriginalName());
+        $file2->move(public_path('storage/video/preview'), $name2);
         $name = str_replace(" ", "_", $file->getClientOriginalName());
         $file->move(public_path('storage/video/'), $name);
         $document->file_name = $name;
         $document->path = 'storage/video/'.$name;
+        $document->preview  = 'storage/video/preview/'.$name2;
         $document->type = 1;
+        $document->category_learning_id = CategoryLearning::where('name', $request->category)->first()->id;
         $document->save();
 
         return response()->json(['message' => 'Video registered successfully'], 200);
@@ -145,6 +163,7 @@ class LearningController extends Controller
         $document->file_name = $request->link;
         $document->path = null;
         $document->type = 2;
+        $document->category_learning_id = CategoryLearning::where('name', $request->category)->first()->id;
         $document->save();
         return response()->json(['message' => 'Link registered successfully'], 200);
     }
