@@ -103,14 +103,13 @@ class LearningController extends Controller
     public function videoStore(Request $request) {
 
         $rules = [
-            'video' => 'required|mimes:mp4,mov,ogg,qt|max:20000',
+            'video' => 'required',
             'title' => 'required',
             'description' => 'required'
         ];
 
         $message = [
             'video.required' => 'The video is required',
-            'video.max' => 'The selected video is too heavy',
             'title.required' => 'the title is required and must be a pdf file',
             'description.required' => 'The description is required and must be a pdf file',
         ];
@@ -119,19 +118,17 @@ class LearningController extends Controller
         if( $validator->fails()){
             return response()->json($validator->errors(), 400);
         }
-
+        $link = explode('/', $request->video);
         $document = new Learning();
         $document->title = $request->title;
         $document->description = $request->description;
 
-        $file = $request->file('video');
+
         $file2 = $request->file('preview');
         $name2 = str_replace(" ", "_", $file2->getClientOriginalName());
         $file2->move(public_path('storage/video/preview'), $name2);
-        $name = str_replace(" ", "_", $file->getClientOriginalName());
-        $file->move(public_path('storage/video/'), $name);
-        $document->file_name = $name;
-        $document->path = 'storage/video/'.$name;
+        $document->file_name = $request->title;
+        $document->path = "$link[3]?h=$link[4]";
         $document->preview  = 'storage/video/preview/'.$name2;
         $document->type = 1;
         $document->category_learning_id = CategoryLearning::where('name', $request->category)->first()->id;
