@@ -72,11 +72,11 @@ Route::middleware('jwt')->group(function () {
     Route::middleware([AdminRoleMiddleware::class])->group(function () {
 
         Route::controller(CategoryLearningsController::class)->group(function ($router) {
-            Route::get('get-all-category', 'getAll');
+            Route::get('get-all-category/{type}', 'getAll');
             Route::get('get-category/{id}', 'getAll');
             Route::post('create-category', 'store');
             Route::post('update-category', 'update');
-            Route::post('delete-category/{id}', 'destroy');
+            Route::delete('delete-category/{id}', 'destroy');
         });
 
         Route::controller(AdminDashboardController::class)->group(function ($router) {

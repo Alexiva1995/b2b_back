@@ -9,9 +9,19 @@ use Illuminate\Support\Facades\DB;
 
 class CategoryLearningsController extends Controller
 {
-    public function getAll()
+    public function getAll($type)
     {
-        return CategoryLearning::where('status', 1)->get();
+        switch ($type) {
+            case 'video':
+                return CategoryLearning::where([['status', 1], ['type', CategoryLearning::VIDEO]])->get();
+                break;
+            case 'link':
+                return CategoryLearning::where([['status', 1], ['type', CategoryLearning::LINK]])->get();
+                break;
+            case 'document':
+                return CategoryLearning::where([['status', 1], ['type', CategoryLearning::DOCUMENT]])->get();
+                break;
+        }
     }
 
     public function get($id)
@@ -23,16 +33,30 @@ class CategoryLearningsController extends Controller
     {
         DB::beginTransaction();
         try {
-
-            $file = $request->file('preview');
-            $name = str_replace(" ", "_", $file->getClientOriginalName());
-            $file->move(public_path('storage/categories/'), $name);
-
+            switch ($request->type) {
+                case 'video':
+                  $type = CategoryLearning::VIDEO;
+                    break;
+                case 'link':
+                    $type = CategoryLearning::LINK;
+                    break;
+                case 'document':
+                    $type = CategoryLearning::DOCUMENT;
+                    break;
+            }
             $category = new CategoryLearning();
+
+            if(!is_null($request->preview)){
+                $file = $request->file('preview');
+                $name = str_replace(" ", "_", $file->getClientOriginalName());
+                $file->move(public_path('storage/categories/'), $name);
+                $category->preview = 'storage/categories/'.$name;
+            }
+
 
             $category->name = $request->name;
             $category->description = $request->description;
-            $category->preview = 'storage/categories/'.$name;
+            $category->type = $type;
 
             if($category->save()){
                 DB::commit();
@@ -80,7 +104,7 @@ class CategoryLearningsController extends Controller
             $category = CategoryLearning::find($id);
 
 
-            if($category->destroy()){
+            if($category->delete()){
                 DB::commit();
                 return response()->json(['message' => 'Category Delete successful']);
             }
