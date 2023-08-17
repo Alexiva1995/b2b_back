@@ -17,7 +17,7 @@ class LearningController extends Controller
     }
     public function learningsType($type, $category) {
 
-        $learning = CategoryLearning::where('name', $category)->first()->$type;
+        $learning = CategoryLearning::where('name', $category)->first()->$type()->orderBy('id', 'DESC')->get();;
         return response()->json($learning, 200);
     }
     public function deleteLearning (Request $request) {
