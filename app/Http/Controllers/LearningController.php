@@ -65,7 +65,7 @@ class LearningController extends Controller
     }
     public function documentStore(Request $request) {
         $rules = [
-            'document' => 'required|mimes:pdf|max:2048',
+            'document' => 'required|mimes:pdf|max:512000',
             'title' => 'required',
             'description' => 'required'
         ];
@@ -85,15 +85,18 @@ class LearningController extends Controller
         $document->title = $request->title;
         $document->description = $request->description;
 
+        if(!is_null($request->preview)){
+            $file2 = $request->file('preview');
+            $name2 = str_replace(" ", "_", $file2->getClientOriginalName());
+            $file2->move(public_path('storage/documents/preview'), $name2);
+            $document->preview  = 'storage/documents/preview/'.$name2;
+        }
+
         $file = $request->file('document');
-        $file2 = $request->file('preview');
-        $name2 = str_replace(" ", "_", $file2->getClientOriginalName());
-        $file2->move(public_path('storage/documents/preview'), $name2);
         $name = str_replace(" ", "_", $file->getClientOriginalName());
         $file->move(public_path('storage/documents/'), $name);
         $document->file_name = $name;
         $document->path = 'storage/documents/'.$name;
-        $document->preview  = 'storage/documents/preview/'.$name2;
         $document->type = 0;
         $document->category_learning_id = CategoryLearning::where('name', $request->category)->first()->id;
         $document->save();
@@ -123,13 +126,14 @@ class LearningController extends Controller
         $document->title = $request->title;
         $document->description = $request->description;
 
-
-        $file2 = $request->file('preview');
-        $name2 = str_replace(" ", "_", $file2->getClientOriginalName());
-        $file2->move(public_path('storage/video/preview'), $name2);
+        if(!is_null($request->preview)){
+            $file2 = $request->file('preview');
+            $name2 = str_replace(" ", "_", $file2->getClientOriginalName());
+            $file2->move(public_path('storage/video/preview'), $name2);
+            $document->preview  = 'storage/video/preview/'.$name2;
+        }
         $document->file_name = $request->title;
         $document->path = "$link[3]?h=$link[4]";
-        $document->preview  = 'storage/video/preview/'.$name2;
         $document->type = 1;
         $document->category_learning_id = CategoryLearning::where('name', $request->category)->first()->id;
         $document->save();
