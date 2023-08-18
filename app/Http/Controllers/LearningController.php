@@ -12,7 +12,7 @@ class LearningController extends Controller
 {
     public function learnings() {
 
-        $learning = Learning::all();
+        $learning = Learning::orderBy('id', 'DESC')->get();
         return response()->json($learning, 200);
     }
     public function learningsType($type, $category) {
@@ -67,7 +67,7 @@ class LearningController extends Controller
         $rules = [
             'document' => 'required|mimes:pdf|max:512000',
             'title' => 'required',
-            'description' => 'required'
+           // 'description' => 'required'
         ];
 
         $message = [

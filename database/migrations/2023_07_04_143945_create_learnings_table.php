@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('learnings', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->longText('description');
+            $table->longText('description')->nullable();
             $table->string('file_name');
             $table->string('path')->nullable();
             $table->string('preview')->nullable();
