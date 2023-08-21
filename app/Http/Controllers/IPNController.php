@@ -89,12 +89,12 @@ class IPNController extends Controller
                                 $this->OrderController->processOrderApproved($order);
                             }
                             if ($info['result']['status'] < 0) {
-                                $order->status = '2';
+                                $order->status = '3';
                                 $order->hash = $req->txn_id;
                                 $order->save();
                             }
                             if ($info['result']['status'] == 2) {
-                                $order->status = '3';
+                                $order->status = '2';
                                 $order->hash = $req->txn_id;
                                 $order->save();
                                 $this->OrderController->processOrderApproved($order);
