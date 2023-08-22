@@ -71,6 +71,13 @@ Route::middleware('jwt')->group(function () {
     // ADMINvalidateCoupon
     Route::middleware([AdminRoleMiddleware::class])->group(function () {
 
+        Route::controller(MarketController::class)->group(function ($router) {
+            Route::get('/cyborg/{id?}', 'getAllCyborgs');
+            Route::get('/get-cyborgs/{email?}', 'getAllCyborgs2');
+            Route::post('/cyborg/purchase-manual', 'purchaseManualCyborg');
+            Route::post('/check-order-market', 'checkOrderMarket');
+        });
+
         Route::controller(CategoryLearningsController::class)->group(function ($router) {
             Route::get('get-all-category/{type}', 'getAll');
             Route::get('get-category/{id}', 'getAll');
@@ -125,6 +132,7 @@ Route::middleware('jwt')->group(function () {
             Route::post('filter-users-list', 'filterUsersList');
             Route::post('admin/change/password/{id?}', 'ChangePassword');
             Route::post('create-user', 'createUser');
+            Route::get('get-cyborg/{email}', 'getCyborg');
         });
 
         Route::controller(UserController::class)->group(function ($router) {

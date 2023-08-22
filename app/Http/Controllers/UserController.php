@@ -13,6 +13,7 @@ use App\Models\Order;
 use App\Models\Formulary;
 use App\Models\MarketPurchased;
 use App\Models\Inversion;
+use App\Models\Market;
 use App\Models\ReferalLink;
 use App\Rules\ChangePassword;
 use App\Services\BonusService;
@@ -661,6 +662,41 @@ public function getReferrals(User $user, $cyborg=null ,$matrix_type = null, $lev
         $paises = Prefix::all();
         return response()->json($paises, 200);
     }
+    public function getCyborg($email)
+    {
+        $user = User::where('email', $email)->first();
+        if(is_null($user)){
+            return response()->json(['message' => 'Error user not found'], 400);
+        }
+        $lastApprovedCyborg = Order::where('user_id', $user->id)
+        ->where('status', '1')
+        ->latest('cyborg_id')
+        ->first();
+
+    $nextCyborgId = $lastApprovedCyborg ? $lastApprovedCyborg->cyborg_id + 1 : 1;
+
+    $cyborgs = Market::all();
+    $data = [];
+
+    foreach ($cyborgs as $cyborg) {
+        $available = ($cyborg->id == $nextCyborgId);
+        $isPurchased = ($cyborg->id < $nextCyborgId); // Agregar la condición para isPurchased
+        $referal_links = ReferalLink::where([['user_id',$user->id], ['cyborg_id', $cyborg->id], ['status', 1]])->first();
+
+        if(!is_null($referal_links)){
+            $item = [
+                'id' => $cyborg->id,
+                'product_name' => $cyborg->product_name,
+                'amount' => $cyborg->amount,
+                'available' => $available,
+                'isPurchased' => $isPurchased, // Agregar isPurchased a la colección
+            ];
+
+            $data[] = $item;
+        }
+    }
+    return response()->json($data, 200);
+    }
 
     public function findUser(String $id)
     {
@@ -1245,7 +1281,7 @@ public function getReferrals(User $user, $cyborg=null ,$matrix_type = null, $lev
     }
 
     public function createUser(CreateUserRequest $request)
-    {
+    {  // return response()->json($request->all(), 400);
         DB::beginTransaction();
         try {
 
@@ -1258,19 +1294,41 @@ public function getReferrals(User $user, $cyborg=null ,$matrix_type = null, $lev
                 'email' => $request->email,
                 'verify' => true,
             ];
+            $buyer = User::where('email', $request->sponsor)->first();
+            $cyborg_sponsor = is_null($buyer) ? null : $buyer->marketPurchased()->where('cyborg_id', $request->sponsor_cyborg)->first()->id;
+            if(!is_null($buyer)){
+                $referal_link_buyer = ReferalLink::where([['user_id', $buyer->id], ['cyborg_id', $request->sponsor_cyborg]])->first();
 
+                    switch ($request->sponsor_side) {
+                        case 'R':
+                            if($referal_link_buyer->right == 1) return response()->json(['message' => 'Error right side used'], 400);
+                            $referal_link_buyer->right = 1;
+                            $referal_link_buyer->save();
+                            break;
+                        case 'L':
+                            if($referal_link_buyer->left == 1) return response()->json(['message' => 'Error light side used'], 400);
+                            $referal_link_buyer->left = 1;
+                            $referal_link_buyer->save();
+                            break;
+                    }
+
+                    if($referal_link_buyer->right == 1 & $referal_link_buyer->left == 1){
+                        $referal_link_buyer->status = 0;
+                        $referal_link_buyer->save();
+                    }
+            }
             $user = User::create([
                 'name' => $request->user_name,
                 'last_name' => $request->user_lastname,
                 'binary_id' => 1,
                 'email' => $request->email,
                 'email_verified_at' => now(),
-                'binary_side' => 'L',
-                'buyer_id' => 1,
+                'binary_side' => $request->sponsor_side ?? 'L',
+                'buyer_id' => is_null($buyer) ? 1 : $buyer->id,
                 'prefix_id' => $request->prefix_id,
                 'status' => '1',
                 'phone' => $request->phone,
-                'father_cyborg_purchased_id' => null,
+                'father_cyborg_purchased_id' => $cyborg_sponsor,
                 'type_service' => $request->type_service == 'product' ? 0 : 2,
             ]);
             $user->user_name = strtolower(explode(" ", $request->user_name)[0][0] . "" . explode(" ", $request->user_lastname)[0]) . "#" . $user->id;
@@ -1304,8 +1362,11 @@ public function getReferrals(User $user, $cyborg=null ,$matrix_type = null, $lev
                     'order_id' => $order->id,
                     'cyborg_id' => 1,
                 ]);
-                $bonusService = new BonusService;
-                $bonusService->generateFirstComission(20,$user, $order, $buyer = $user, $level = 2, $user->id);
+
+                if(!is_null($buyer)){
+                    $bonusService = new BonusService;
+                    $bonusService->generateFirstComission(20,$user, $order, $buyer = $user, $level = 2, $user->id);
+                }
 
                 $dataEmail = [
                     'email' => $user->email,
