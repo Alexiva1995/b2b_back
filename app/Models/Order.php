@@ -20,6 +20,7 @@ class Order extends Model
         'membership_packages_id',
         'coupon_id',
         'cyborg_id',
+        'type_purchsed',
     ];
 
     public function user()

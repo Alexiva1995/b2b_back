@@ -1347,6 +1347,7 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
                     'amount' => 50,
                     'type' => 'inicio',
                     'status' => '1',
+                    'type_purchsed' => 0,
                     'cyborg_id' => 1,
                 ]);
 
