@@ -97,15 +97,8 @@ class UserController extends Controller
     }
 
 
-
-
-
-
-
-
     public function showReferrals($cyborg = null, $matrix_type = null, $id = null)
     {
-
         if ($id == null) {
             $user = JWTAuth::parseToken()->authenticate();
         } else {
@@ -113,11 +106,9 @@ class UserController extends Controller
         }
 
         // Si $matrix es null, asignarle el valor 1 por defecto
-
-        $cyborg = $cyborg ?? 1;
+        $cyborg = is_null($cyborg) ? 1 : $cyborg;
 
         $referrals = $this->getReferrals($user, $cyborg, $matrix_type);
-
 
         return response()->json($referrals, 200);
     }
@@ -158,8 +149,9 @@ class UserController extends Controller
 
 
 
-public function getReferrals(User $user, $cyborg=null ,$matrix_type = null, $level = 1, $maxLevel = 4, $parentSide = null): Collection
+public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $level = 1, $maxLevel = 4, $parentSide = null)
 {
+
     $referrals = new Collection();
 
     if ($level <= $maxLevel) {
@@ -167,15 +159,14 @@ public function getReferrals(User $user, $cyborg=null ,$matrix_type = null, $lev
         $purchasedMatrices = MarketPurchased::where('user_id', $user->id);
 
         // Verificar si se proporcionó un valor válido para $matrix_type y filtrar las matrices por ese valor
-        if ($cyborg !== null) {
-            $purchasedMatrices->where('cyborg_id', $cyborg);
+        if (!is_null($cyborg)) {
+            $purchasedMatrices->where('cyborg_id', (int) $cyborg);
         }
 
-        $purchasedMatrices = $purchasedMatrices->first()->id;
-
+         $idMatrix = $purchasedMatrices->first();
 
         // Filtrar los usuarios que tienen el campo 'father_cyborg_purchased_id' igual al 'cyborg_id' de las matrices compradas
-        $usersWithPurchasedMatrices = User::where('father_cyborg_purchased_id', $purchasedMatrices);
+        $usersWithPurchasedMatrices = User::where('father_cyborg_purchased_id', $idMatrix->id);
 
         //Al enviar el tipo de matrix, filtra que la matrix del hijo cumpla con el tipo especificado.
         if(!is_null($matrix_type)){
@@ -184,6 +175,7 @@ public function getReferrals(User $user, $cyborg=null ,$matrix_type = null, $lev
             });
         }
         $usersWithPurchasedMatrices = $usersWithPurchasedMatrices->get();
+
         // Obtener los referidos del usuario actual en el lado izquierdo (binary_side = 'L')
         $leftReferrals = $usersWithPurchasedMatrices
         ->where('binary_side', 'L')
@@ -223,9 +215,10 @@ public function getReferrals(User $user, $cyborg=null ,$matrix_type = null, $lev
 
         // Recorrer los referidos y obtener sus referidos recursivamente
         foreach ($referrals as $referral) {
-            $subReferrals = $this->getReferrals(User::find($referral['id']),$cyborg, $matrix_type, $level + 1, $maxLevel, $referral['side']);
-
-            $referrals = $referrals->concat($subReferrals);
+            if(!is_null ($referral)){
+                $subReferrals = $this->getReferrals(User::find($referral['id']), 1, $matrix_type, $level + 1, $maxLevel, $referral['side']);
+                $referrals = $referrals->concat($subReferrals);
+            }
         }
     }
 
