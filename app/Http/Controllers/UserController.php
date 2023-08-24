@@ -398,6 +398,9 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
                 $user = User::find($comission->user_id);
                 $data = [
                     'rank' => $key+1,
+                    'name' => $user->name,
+                    'last_name' => $user->last_name,
+                    'email' => $user->email,
                     'imageProfile' => $user->profile_picture ,
                     'gain' => $comission->gain,
                     'matrix' => $user->marketPurchased->count(),
