@@ -911,9 +911,11 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
 
         $users = User::where('admin', '0')
             ->where('name', 'like', '%'.$filter.'%')
+            ->orWhereRaw("email LIKE ?", ['%'.$filter.'%'])
             ->withSum(['wallets as total_gain' => function ($query) {
                 $query->where('status', WalletComission::STATUS_AVAILABLE);
             }], 'amount_available')
+            ->with('sponsor')
             ->with('marketPurchased', function ($query) {
                 $query->max('type');
             })

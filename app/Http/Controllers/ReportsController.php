@@ -459,7 +459,7 @@ class ReportsController extends Controller
                 $query->where('id', $filter);
             } else {
                 $query->whereHas('user', function ($q) use ($filter) {
-                    $q->whereRaw("CONCAT(`name`, ' ', `last_name`) LIKE ?", ['%' . $filter . '%']);
+                    $q->whereRaw("CONCAT(`name`,' ',`last_name`) LIKE ?",['%'.$filter.'%'])->orWhereRaw("email LIKE ?", ['%'.$filter.'%']);
                 });
             }
         })
@@ -488,7 +488,7 @@ class ReportsController extends Controller
             $query->where('id', $filter);
         } else {
             $query->whereHas('user', function ($userQuery) use ($filter) {
-                $userQuery->whereRaw("CONCAT(`name`, ' ', `last_name`) LIKE ?", ['%' . $filter . '%']);
+                $userQuery->whereRaw("CONCAT(`name`,' ',`last_name`) LIKE ?",['%'.$filter.'%'])->orWhereRaw("email LIKE ?", ['%'.$filter.'%']);
             });
         }
 

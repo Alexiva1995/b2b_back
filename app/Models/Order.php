@@ -33,7 +33,7 @@ class Order extends Model
         if($filter)
             $query->whereHas('user', function($query) use ($filter)
             {
-                return $query->where('name', 'LIKE', "%$filter%");
+                return $query->whereRaw("CONCAT(`name`,' ',`last_name`) LIKE ?",['%'.$filter.'%'])->orWhereRaw("email LIKE ?", ['%'.$filter.'%']);
             })
             ->orWhere('user_id', $filter);
     }

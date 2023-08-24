@@ -369,7 +369,7 @@ class WalletController extends Controller
 
         $data = WalletComission::with(['user', 'package'])
             ->whereHas('user', function ($query) use ($filter) {
-                $query->where('email', 'like', '%' . $filter . '%');
+                $query->whereRaw("CONCAT(`name`,' ',`last_name`) LIKE ?",['%'.$filter.'%'])->orWhereRaw("email LIKE ?", ['%'.$filter.'%']);
             })
             ->orderBy('id', 'DESC')
             ->get();
