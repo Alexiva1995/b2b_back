@@ -19,7 +19,8 @@ class WalletController extends Controller
         if ($id == null) {
             $user = JWTAuth::parseToken()->authenticate();
         } else {
-            $user = User::find($id);
+            if(is_numeric($id))  $user = User::find($id);
+            $user = User::where('email' , $id)->first();
         }
 
         $availableCommissions = WalletComission::where('user_id', $user->id)
@@ -50,7 +51,8 @@ class WalletController extends Controller
     if ($id == null) {
         $user = JWTAuth::parseToken()->authenticate();
     } else {
-        $user = User::find($id);
+        if(is_numeric($id))  $user = User::find($id);
+            $user = User::where('email' , $id)->first();
     }
 
     // Obtener los datos de la tabla 'Wallet comision' ordenados por fecha de creación y usuario especificado
@@ -86,7 +88,8 @@ class WalletController extends Controller
         if ($id == null) {
             $user = JWTAuth::parseToken()->authenticate();
         } else {
-            $user = User::find($id);
+            if(is_numeric($id))  $user = User::find($id);
+            $user = User::where('email' , $id)->first();
         }
 
 
@@ -329,7 +332,8 @@ class WalletController extends Controller
         if ($id == null) {
             $user = JWTAuth::parseToken()->authenticate();
         } else {
-            $user = User::find($id);
+            if(is_numeric($id))  $user = User::find($id);
+            $user = User::where('email' , $id)->first();
         }
 
         // Si se proporciona el parámetro "wallet_id", buscar la wallet por ID

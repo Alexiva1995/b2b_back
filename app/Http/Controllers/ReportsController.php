@@ -508,7 +508,8 @@ class ReportsController extends Controller
             if ($id == null) {
                 $user = JWTAuth::parseToken()->authenticate();
             } else {
-                $user = User::find($id);
+                if(is_numeric($id))  $user = User::find($id);
+                $user = User::where('email' , $id)->first();
             }
 
         // Si se proporciona el parámetro "user_id" en el filtro, buscar el usuario por ID
