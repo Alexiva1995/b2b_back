@@ -32,8 +32,11 @@ class MarketController extends Controller
          if ($id == null) {
             $user = JWTAuth::parseToken()->authenticate();
         } else {
-            if(is_numeric($id))  $user = User::find($id);
-            $user = User::where('email' , $id)->first();
+            if(is_numeric($id)){
+                $user = User::find($id);
+            }else{
+                $user = User::where('email' , $id)->first();
+            }
         }
 
         $lastApprovedCyborg = Order::where('user_id', $user->id)

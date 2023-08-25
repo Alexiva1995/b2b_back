@@ -107,8 +107,11 @@ class UserController extends Controller
         if ($id == null) {
             $user = JWTAuth::parseToken()->authenticate();
         } else {
-            if(is_numeric($id))  $user = User::find($id);
-            $user = User::where('email' , $id)->first();
+            if(is_numeric($id)){
+                $user = User::find($id);
+            } else {
+                $user = User::where('email' , $id)->first();
+            }
         }
 
         // Si $matrix es null, asignarle el valor 1 por defecto
@@ -243,8 +246,12 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
         if ($id == null) {
             $user = JWTAuth::parseToken()->authenticate();
         } else {
-            if(is_numeric($id))  $user = User::find($id);
-            $user = User::where('email' , $id)->first();
+            if(is_numeric($id)){
+                $user = User::find($id);
+            }
+            else {
+                $user = User::where('email' , $id)->first();
+            }
         }
 
         $withdrawals = WalletComission::select('id', 'description', 'amount', 'created_at')
@@ -270,8 +277,11 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
         if ($id == null) {
             $user = JWTAuth::parseToken()->authenticate();
         } else {
-            if(is_numeric($id))  $user = User::find($id);
-            $user = User::where('email' , $id)->first();
+            if(is_numeric($id)){
+                $user = User::find($id);
+            }else{
+                $user = User::where('email' , $id)->first();
+            }
         }
 
         $data = [];
@@ -299,8 +309,11 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
     if ($id == null) {
         $user = JWTAuth::parseToken()->authenticate();
     } else {
-        if(is_numeric($id))  $user = User::find($id);
-         $user = User::where('email' , $id)->first();
+        if(is_numeric($id)){
+            $user = User::find($id);
+        }  else {
+            $user = User::where('email' , $id)->first();
+        }
     }
 
     $orders = Order::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount) AS total_amount')
@@ -331,8 +344,11 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
         if ($id == null) {
             $user = JWTAuth::parseToken()->authenticate();
         } else {
-            if(is_numeric($id))  $user = User::find($id);
-            $user = User::where('email' , $id)->first();
+            if(is_numeric($id)){
+                $user = User::find($id);
+            }  else {
+                $user = User::where('email' , $id)->first();
+            }
         }
 
         $commissions = WalletComission::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount) AS total_amount')
@@ -361,8 +377,11 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
     if ($id == null) {
         $user = JWTAuth::parseToken()->authenticate();
     } else {
-        if(is_numeric($id))  $user = User::find($id);
-        $user = User::where('email' , $id)->first();
+        if(is_numeric($id)){
+            $user = User::find($id);
+        } else {
+            $user = User::where('email' , $id)->first();
+        }
     }
 
     $commissions = WalletComission::selectRaw('YEAR(created_at) AS year, MONTH(created_at) AS month, SUM(amount) AS total_amount')
@@ -393,8 +412,11 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
         if ($id == null) {
             $user = JWTAuth::parseToken()->authenticate();
         } else {
-            if(is_numeric($id)) $user = User::find($id);
-            $user = User::where('email', $id)->first();
+            if(is_numeric($id)){
+                $user = User::find($id);
+            } else {
+                $user = User::where('email', $id)->first();
+            }
         }
 
         if($user->admin == '1'){
@@ -482,8 +504,11 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
         if($id == null) {
             $user = JWTAuth::parseToken()->authenticate();
         } else {
-            if(is_numeric($id))  $user = User::find($id);
-            $user = User::where('email' , $id)->first();
+            if(is_numeric($id)){
+                $user = User::find($id);
+            }  else {
+                $user = User::where('email' , $id)->first();
+            }
         }
 
         $data = WalletComission::where('status', 0)
@@ -499,8 +524,11 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
         if($id == null) {
             $user = JWTAuth::parseToken()->authenticate();
         } else {
-            if(is_numeric($id))  $user = User::find($id);
-            $user = User::where('email' , $id)->first();
+            if(is_numeric($id)){
+                $user = User::find($id);
+            } else {
+                $user = User::where('email' , $id)->first();
+            }
         }
 
         $data = WalletComission::where('user_id', $user->id)
@@ -1039,8 +1067,11 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
 
     public function auditUserWallet(Request $request, $id)
     {
-        if(is_numeric($id))  $user = User::find($id);
+        if(is_numeric($id)){
+             $user = User::find($id);
+        } else {
             $user = User::where('email' , $id)->first();
+        }
         return response()->json(['wallet'=>$user->wallet], 200);
     }
 
