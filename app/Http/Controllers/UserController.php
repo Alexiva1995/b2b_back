@@ -720,8 +720,14 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
 
     public function getUser(Request $request, $id = null)
     {   $search = is_null($id) ? $request->auth_user_id : $id;
-        if(is_numeric( $search))  $user = User::with('prefix')->findOrFail($search);
+
+        if(is_numeric($search)) {
+            $user = User::where('id',$search)->with('prefix')->first();
+        }
+        else{
             $user = User::with('prefix')->where('email' , $id)->first();
+        }
+
         return response()->json($user, 200);
     }
 
