@@ -173,44 +173,28 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
         }
 
          $idMatrix = $purchasedMatrices->first();
+        if(!is_null($idMatrix)){
 
-        // Filtrar los usuarios que tienen el campo 'father_cyborg_purchased_id' igual al 'cyborg_id' de las matrices compradas
-        $usersWithPurchasedMatrices = User::where('father_cyborg_purchased_id', $idMatrix->id);
+            // Filtrar los usuarios que tienen el campo 'father_cyborg_purchased_id' igual al 'cyborg_id' de las matrices compradas
+            $usersWithPurchasedMatrices = User::where('father_cyborg_purchased_id', $idMatrix->id);
 
-        //Al enviar el tipo de matrix, filtra que la matrix del hijo cumpla con el tipo especificado.
-        if(!is_null($matrix_type)){
-            $usersWithPurchasedMatrices->whereHas('marketPurchased', function (Builder $query) use ($matrix_type){
-                $query->where('type', $matrix_type);
-            });
-        }
-        $usersWithPurchasedMatrices = $usersWithPurchasedMatrices->get();
+            //Al enviar el tipo de matrix, filtra que la matrix del hijo cumpla con el tipo especificado.
+            if(!is_null($matrix_type)){
+                $usersWithPurchasedMatrices->whereHas('marketPurchased', function (Builder $query) use ($matrix_type){
+                    $query->where('type', $matrix_type);
+                });
+            }
+            $usersWithPurchasedMatrices = $usersWithPurchasedMatrices->get();
 
-        // Obtener los referidos del usuario actual en el lado izquierdo (binary_side = 'L')
-        $leftReferrals = $usersWithPurchasedMatrices
-        ->where('binary_side', 'L')
-        ->map(function ($referral) use ($level, $parentSide) {
-            return [
-                'id' => $referral->id,
-                'name' => $referral->name .' '. $referral->last_name,
-                'level' => $level,
-                'side' => $parentSide ?: 'L',
-                'profile_picture' => $referral->profile_picture,
-                'buyer_id' => $referral->buyer_id,
-                'childrens' => $referral->referrals()->with('MarketPurchased')->get(),
-                'sponsor' => $referral->padre,
-                'type_matrix' => $referral->getTypeMatrix(),
-            ];
-        });
-
-        // Obtener los referidos del usuario actual en el lado derecho (binary_side = 'R')
-        $rightReferrals = $usersWithPurchasedMatrices
-        ->where('binary_side', 'R')
+            // Obtener los referidos del usuario actual en el lado izquierdo (binary_side = 'L')
+            $leftReferrals = $usersWithPurchasedMatrices
+            ->where('binary_side', 'L')
             ->map(function ($referral) use ($level, $parentSide) {
                 return [
                     'id' => $referral->id,
                     'name' => $referral->name .' '. $referral->last_name,
                     'level' => $level,
-                    'side' => $parentSide ?: 'R',
+                    'side' => $parentSide ?: 'L',
                     'profile_picture' => $referral->profile_picture,
                     'buyer_id' => $referral->buyer_id,
                     'childrens' => $referral->referrals()->with('MarketPurchased')->get(),
@@ -219,14 +203,32 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
                 ];
             });
 
-        // Agregar los referidos a la colección
-        $referrals = $referrals->concat($leftReferrals)->concat($rightReferrals);
+            // Obtener los referidos del usuario actual en el lado derecho (binary_side = 'R')
+            $rightReferrals = $usersWithPurchasedMatrices
+            ->where('binary_side', 'R')
+                ->map(function ($referral) use ($level, $parentSide) {
+                    return [
+                        'id' => $referral->id,
+                        'name' => $referral->name .' '. $referral->last_name,
+                        'level' => $level,
+                        'side' => $parentSide ?: 'R',
+                        'profile_picture' => $referral->profile_picture,
+                        'buyer_id' => $referral->buyer_id,
+                        'childrens' => $referral->referrals()->with('MarketPurchased')->get(),
+                        'sponsor' => $referral->padre,
+                        'type_matrix' => $referral->getTypeMatrix(),
+                    ];
+                });
 
-        // Recorrer los referidos y obtener sus referidos recursivamente
-        foreach ($referrals as $referral) {
-            if(!is_null ($referral)){
-                $subReferrals = $this->getReferrals(User::find($referral['id']), 1, $matrix_type, $level + 1, $maxLevel, $referral['side']);
-                $referrals = $referrals->concat($subReferrals);
+            // Agregar los referidos a la colección
+            $referrals = $referrals->concat($leftReferrals)->concat($rightReferrals);
+
+            // Recorrer los referidos y obtener sus referidos recursivamente
+            foreach ($referrals as $referral) {
+                if(!is_null ($referral)){
+                    $subReferrals = $this->getReferrals(User::find($referral['id']), 1, $matrix_type, $level + 1, $maxLevel, $referral['side']);
+                    $referrals = $referrals->concat($subReferrals);
+                }
             }
         }
     }

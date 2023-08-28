@@ -254,8 +254,8 @@ class User extends Authenticatable implements JWTSubject
     public function getTypeMatrix()
     {
        $matrix= $this->marketPurchased()->where('cyborg_id', '1')->first();
+        if(!is_null($matrix)) return $matrix->type;
 
-       return $matrix->type;
     }
 
 }
