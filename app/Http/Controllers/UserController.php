@@ -748,6 +748,22 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
         return response()->json(['message' => "User Not Found"], 400);
     }
 
+    public function findUserMatrix(String $id)
+    {
+        if(is_numeric($id))  $user = User::find($id);
+        $user = User::where('email' , $id)->with(['sponsor', 'children.marketPurchased'])->first();
+        $user = [
+            'id' => $user->id,
+            'name' => "$user->name $user->last_name",
+            'sponsor' => $user->sponsor,
+            'childrens' => $user->children,
+            'profile_picture' => $user->profile_picture,
+        ];
+        if ($user) return response()->json($user, 200);
+
+        return response()->json(['message' => "User Not Found"], 400);
+    }
+
     public function getUser(Request $request, $id = null)
     {   $search = is_null($id) ? $request->auth_user_id : $id;
 

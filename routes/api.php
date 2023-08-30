@@ -123,6 +123,7 @@ Route::middleware('jwt')->group(function () {
         Route::controller(UserController::class)->group(function ($router) {
             Route::get('get-users', 'getUsers');
             Route::get('find-user/{user_id}', 'findUser');
+            Route::get('find-user-matrix/{user_id}', 'findUserMatrix');
             Route::get('get-users-download', 'getUsersDownload');
             Route::post('update-user-affiliate', 'updateUserAffiliate');
             Route::post('toggle-user-can-buy-fast', 'toggleUserCanBuyFast');
