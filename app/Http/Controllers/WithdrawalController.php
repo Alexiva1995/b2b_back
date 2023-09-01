@@ -274,7 +274,7 @@ class WithdrawalController extends Controller
                 $balanceConpaymentStatus = $this->CoinpaymentsService->get_balances();
                 $amount = $liquidation->monto_bruto;
                 //se valida que existan fondos suficiente para el retiro.
-               // if ($balanceConpaymentStatus['USDT.TRC20']->balancef < $amount) throw new Exception("No balance available");
+                if ($balanceConpaymentStatus['USDT.TRC20']->balancef < $amount) throw new Exception("No balance available");
 
                 $decryptedWallet = Crypt::decrypt($liquidation->wallet_used);
 
