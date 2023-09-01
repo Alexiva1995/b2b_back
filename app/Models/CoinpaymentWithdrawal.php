@@ -20,7 +20,7 @@ class CoinpaymentWithdrawal extends Model
         'send_txid',
         'status',
         'status_text',
-        'liquidation_id',
+        'liquidaction_id',
         'tx_id',
     ];
 

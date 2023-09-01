@@ -157,7 +157,7 @@ class CoinpaymentsService
                 'amount' => $amount,
                 'currency' => config('coinpayment.default_currency'),
                 'currency2' => config('coinpayment.default_currency'),
-                'address' => $address,
+                'address' =>  $address,
                // 'auto_confirm' => 1,
                 'note' => 'Enviando $ '.$amount.' USDT a la billetera: '.$address ,
             ];
@@ -168,19 +168,18 @@ class CoinpaymentsService
             }
 
             $info = $this->api_call('get_withdrawal_info', ['id' => $create['result']['id']]);
-
             if ($info['error'] != 'ok') {
                 throw new Exception($info['error']);
             }
             $result = array_merge($create['result'], $info['result'],[
                 'tx_id' => $create['result']['id'],
-                'liquidation_id' => $liquidationID,
+                'liquidaction_id' => $liquidationID,
             ]);
 
             /**
              * Save to database
              */
-            $transaction = $this->withdrawal->whereNull('tx_id')->where('liquidation_id', $liquidationID)->first();
+            $transaction = $this->withdrawal->whereNull('tx_id')->where('liquidaction_id', $liquidationID)->first();
             if ($transaction) {
                 /**
                  * Update existing transaction

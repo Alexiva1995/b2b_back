@@ -274,17 +274,15 @@ class WithdrawalController extends Controller
                 $balanceConpaymentStatus = $this->CoinpaymentsService->get_balances();
                 $amount = $liquidation->monto_bruto;
                 //se valida que existan fondos suficiente para el retiro.
-                if ($balanceConpaymentStatus['USDT.TRC20']->balancef < $amount) throw new Exception("No balance available");
+               // if ($balanceConpaymentStatus['USDT.TRC20']->balancef < $amount) throw new Exception("No balance available");
 
                 $decryptedWallet = Crypt::decrypt($liquidation->wallet_used);
 
                 // Lógica para enviar a la pasarela de pago (coinpayment) utilizando el método withdrawal
                 $response = $this->CoinpaymentsService->create_withdrawal($amount, $decryptedWallet, $liquidation->id);
+                if($response->original['status'] == 'error') throw new Exception("Error Processing Coinpayment ". $response->original['msj']);
 
-                if($response['error'] != 'ok') throw new Exception("Error Processing Coinpayment");
-
-
-                    Liquidaction::where('id', $liquidationId)
+                Liquidaction::where('id', $liquidationId)
                         ->update(['status' => 1]);
                 DB::commit();
             return response()->json(['message' => 'Successful, Coinpayment confirmation required ']);
