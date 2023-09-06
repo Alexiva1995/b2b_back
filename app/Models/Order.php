@@ -21,6 +21,7 @@ class Order extends Model
         'coupon_id',
         'cyborg_id',
         'type_purchsed',
+        'is_manual',
     ];
 
     public function user()

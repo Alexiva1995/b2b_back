@@ -123,7 +123,7 @@ Route::middleware('jwt')->group(function () {
         Route::controller(UserController::class)->group(function ($router) {
             Route::get('get-users', 'getUsers');
             Route::get('find-user/{user_id}', 'findUser');
-            Route::get('find-user-matrix/{user_id}', 'findUserMatrix');
+            Route::get('find-user-matrix/{cyborg}/{user_id}', 'findUserMatrix');
             Route::get('get-users-download', 'getUsersDownload');
             Route::post('update-user-affiliate', 'updateUserAffiliate');
             Route::post('toggle-user-can-buy-fast', 'toggleUserCanBuyFast');
@@ -134,6 +134,8 @@ Route::middleware('jwt')->group(function () {
             Route::post('admin/change/password/{id?}', 'ChangePassword');
             Route::post('create-user', 'createUser');
             Route::get('get-cyborg/{email}', 'getCyborg');
+            Route::post('activate-user', 'activateUser');
+            Route::post('delete-user', 'userDelete');
         });
 
         Route::controller(UserController::class)->group(function ($router) {

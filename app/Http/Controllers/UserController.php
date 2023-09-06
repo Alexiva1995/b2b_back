@@ -30,6 +30,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use App\Services\BrokereeService;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Log;
@@ -748,15 +749,17 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
         return response()->json(['message' => "User Not Found"], 400);
     }
 
-    public function findUserMatrix(String $id)
+    public function findUserMatrix($cyborg, $id)
     {
         if(is_numeric($id))  $user = User::find($id);
         $user = User::where('email' , $id)->with(['sponsor', 'children.marketPurchased'])->first();
+        $matrix = MarketPurchased::where([['user_id', $user->id], ['cyborg_id',$cyborg]])->first();
+        $children = $user->children()->where('father_cyborg_purchased_id', $matrix->id)->with('marketPurchased')->get();
         $user = [
             'id' => $user->id,
             'name' => "$user->name $user->last_name",
             'sponsor' => $user->sponsor,
-            'childrens' => $user->children,
+            'childrens' => $children,
             'profile_picture' => $user->profile_picture,
         ];
         if ($user) return response()->json($user, 200);
@@ -1432,6 +1435,7 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
                     'status' => '1',
                     'type_purchsed' => 0,
                     'cyborg_id' => 1,
+                    'is_manual' => 1,
                 ]);
 
                 MarketPurchased::create([
@@ -1474,6 +1478,87 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
             return $code;
         }
         $this->generateCode();
+    }
+
+    public function activateUser(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+
+            $user = User::find($request->id);
+
+            if (!is_null($user)) {
+
+                $user->update(['status' => '1']);
+                $buyer = $user->padre;
+
+                ReferalLink::create([
+                    'user_id' => $user->id,
+                    'link_code' => $this->generateCode(),
+                    'cyborg_id' => 1,
+                ]);
+
+               $order =  Order::create([
+                    'user_id' => $user->id,
+                    'amount' => 50,
+                    'type' => 'inicio',
+                    'status' => '1',
+                    'type_purchsed' => 0,
+                    'cyborg_id' => 1,
+                    'is_manual' => 1,
+                ]);
+
+                MarketPurchased::create([
+                    'user_id' => $user->id,
+                    'order_id' => $order->id,
+                    'cyborg_id' => 1,
+                ]);
+
+                if(!is_null($buyer)){
+                    $bonusService = new BonusService;
+                    $bonusService->generateFirstComission(20,$user, $order, $buyer = $user, $level = 2, $user->id);
+                }
+
+                DB::commit();
+                return response()->json(['message' => 'Activation successful'], 200);
+            }
+            return response()->json(['message' => "Error user not found"], 400);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Log::error($th);
+            return response()->json(['message' => 'Error activate user'], 400);
+        }
+
+    }
+
+    public function userDelete(Request $request)
+    {   DB::beginTransaction();
+        try {
+            $user = User::find($request->id);
+            if(is_null($user)) throw new Exception('Error User not found');
+            $url = config('services.backend_auth.base_uri');
+            $data = ['email' => $user->email];
+            $response = Http::withHeaders([
+                'apikey' => config('services.backend_auth.key'),
+            ])->post("{$url}delete-user", $data);
+
+            if ($response->successful()) {
+                $link = ReferalLink::where('user_id', $user->id)->first();
+                $order =  Order::where('user_id', $user->id)->first();
+
+                $link->delete();
+                $order->delete();
+                $user->delete();
+                DB::commit();
+                return response()->json('User Delete Successful', 200);
+            }
+            return response()->json('Error To delete user', 400);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Log::error('Error al eliminar usuairo');
+            Log::error($th);
+            return response()->json('Error To delete user'. 400);
+        }
     }
 
 }
