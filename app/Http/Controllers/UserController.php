@@ -1538,11 +1538,18 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
             if(is_null($user)) throw new Exception('Error User not found');
             $url = config('services.backend_auth.base_uri');
             $data = ['email' => $user->email];
+            $buyer = User::find($user->buyer_id);
+            $side = $user->binary_side;
+            $matrixBuyer = MarketPurchased::find($user->father_cyborg_purchased_id);
             $response = Http::withHeaders([
                 'apikey' => config('services.backend_auth.key'),
             ])->post("{$url}delete-user", $data);
 
             if ($response->successful()) {
+
+                $linkBuyer = ReferalLink::where([['user_id', $buyer->id], ['cyborg_id', $matrixBuyer->cyborg_id]])->first();
+                if($side == 'L') $linkBuyer->update(['left' => 0]);
+                if($side == 'R') $linkBuyer->update(['right' => 0]);
                 $link = ReferalLink::where('user_id', $user->id)->first();
                 $order =  Order::where('user_id', $user->id)->first();
 
