@@ -13,6 +13,7 @@ use App\Models\WalletComission;
 use Illuminate\Support\Facades\Mail;
 // use app\Services\CoinpaymentsService;
 use App\Mail\CodeSecurity;
+use App\Models\Profitability;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Hash;
@@ -25,6 +26,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 class WithdrawalController extends Controller
 {
     protected $CoinpaymentsService;
+    public $amount = 0;
     public function __construct(CoinpaymentsService $CoinpaymentsService)
     {
         $this->CoinpaymentsService = $CoinpaymentsService;
@@ -123,21 +125,22 @@ class WithdrawalController extends Controller
 
             $encryptedWallet = Crypt::encrypt($request->wallet);
 
-            $wallets = WalletComission::where('user_id', $user->id)->where('status', 0)->get();
+            $wallets = WalletComission::where('user_id', $user->id)->where('status', 0)->latest()->get();
+            $profit = Profitability::where('user_id', $user->id)->where('status', 0)->latest()->get();
 
-            $walletsAmount = $wallets->sum('amount_available');
+            $walletsAmount = $wallets->sum('amount_available') + $profit->sum('amount_available');
 
-            $amount = $request->amount;
-            if ($amount > $walletsAmount) {
+            $this->amount = $request->amount;
+            if ($this->amount > $walletsAmount) {
                 throw new Exception("Insufficient funds");
             }
-            if ($amount < 30) {
+            if ($this->amount < 30) {
                 throw new Exception("the minimum withdrawal amount is 30 USDT");
             }
-            $feed = 2 + ($amount * 0.01); // Restar 2 y el 1% del amount
+            $feed = 2 + ($this->amount * 0.01); // Restar 2 y el 1% del amount
 
             $fechaCode = date('Y-m-d H:i:s'); // Obtener la fecha y hora actual
-            $amountCal = $amount;
+            $amountCal = $this->amount;
 
             if ($code == $request->code_security) {
                 $user->update([
@@ -146,7 +149,7 @@ class WithdrawalController extends Controller
                 $liquidAction = Liquidaction::create([
                     'user_id' => $user->id,
                     'reference' => 'Payment of commisions',
-                    'total' => $amount,
+                    'total' => $this->amount,
                     'monto_bruto' => $amountCal - $feed,
                     'feed' => $feed,
                     'wallet_used' => $encryptedWallet,
@@ -156,12 +159,18 @@ class WithdrawalController extends Controller
                 ]);
 
                 // Actualizar la columna liquidation_id en las filas de walletcomissions
-                $this->deductionFunds($wallets, $amount, $liquidAction);
+                if($wallets->sum('amount_available') > 0 && $this->amount > 0){
+                    $this->deductionFunds($wallets, $this->amount, $liquidAction, 'commission');
+                }
+                if($profit->sum('amount_available') > 0 && $this->amount > 0){
+                    $this->deductionFunds($profit, $this->amount, $liquidAction, 'profit');
+                }
                 return response()->json(['message' => 'Withdrawal registered and pending approval'], 200);
             } else {
                 throw new Exception("Code provided does not match");
             }
         } catch (\Throwable $th) {
+            Log::error($th);
             return response()->json(['message' => $th->getMessage()], 400);
         }
     }
@@ -292,19 +301,42 @@ class WithdrawalController extends Controller
                 // Actualizar el estado de liquidaciones a aprobado (status = 2)
                 $liquidation->status = 3;
                 $liquidation->save();
+                $transaction = Transaction::where([['liquidation_id', $liquidation->id], ['status', '0']])->get();
 
+                for ($i = 0; $i < count($transaction); $i++) {
+                    if (isset($transaction[$i])) {
+                            $transaction[$i]['status'] = 2;
+                            $transaction[$i]->save();
+                            if($transaction[$i]['wallets_commissions_id'] != null){
+                                $funds = WalletComission::where('id', $transaction[$i]['wallets_commissions_id'])->first();
+                            }
 
-                // Buscar datos en walletcomissions con el mismo liquidation_id y actualizar los valores
+                            if($transaction[$i]['profitability_id'] != null){
+                                $funds = Profitability::where('id', $transaction[$i]['profitability_id'])->first();
+                            }
+                          //  Log::alert($funds);
+                        if(!empty($funds)){
+                            $funds->amount_available += $transaction[$i]['amount_retired'] ;
+                            $funds->amount_retired = $funds->amount_retired > 0 ? $funds->amount_retired - $transaction[$i]['amount_retired'] : 0 ;
+
+                            if($transaction[$i]['investment_id'] == null){
+                                $funds->status = 0;
+                            }
+                            $funds->save();
+                        }
+
+                    }
+                }
+               /*  // Buscar datos en walletcomissions con el mismo liquidation_id y actualizar los valores
                 $wallets = WalletComission::where('liquidation_id', $liquidationId)->where('status', 1)->get();
                 $amount = $liquidation->total;
                 foreach ($wallets as $wallet) {
-                    $trasaction = Transaction::where([['wallets_commissions_id', $wallet->id], ['liquidation_id', $liquidation->id]])->first();
                     $wallet->update([
                         'status' => 0, // Actualizar el estado a 3 (Rechazado)
                         'amount_available' => $wallet->amount_available += $trasaction->amount_retired,
                         'amount_retired' => $wallet->amount_reired > $trasaction->amount_retired ? $wallet->amount_retired -= $trasaction->amount_retired : 0
                     ]);
-                }
+                } */
                 DB::commit();
                 return response()->json(['message' => 'Successful reject']);
             }
@@ -318,10 +350,9 @@ class WithdrawalController extends Controller
     }
 
 
-    private function deductionFunds($funds, $amount, $liquidacion)
+    private function deductionFunds($funds, $amount, $liquidacion, $type)
     {
         $currentAmount = $amount;
-        Log::debug('initial amount' . $currentAmount);
         for ($i = 0; $i < $funds->count(); $i++) {
             if ($funds[$i]['amount_available'] <= $currentAmount) {
                 $funds[$i]['status'] = 1;
@@ -330,7 +361,8 @@ class WithdrawalController extends Controller
                 $data_transaction = [
                     'liquidation_id' => $liquidacion['id'],
                     'wallets_user_id' => $funds[$i]['user_id'],
-                    'wallets_commissions_id' =>  $funds[$i]['id'],
+                    'wallets_commissions_id' => $type == 'commission' ? $funds[$i]['id'] : null,
+                    'profitability_id' => $type == 'profit' ? $funds[$i]['id']  : null,
                     'amount' => $funds[$i]['amount'],
                     'amount_retired' => $funds[$i]['amount_available'],
                     'amount_available' => 0,
@@ -338,10 +370,10 @@ class WithdrawalController extends Controller
                 ];
 
                 $currentAmount -= $funds[$i]['amount_available'];
-
+                $this->amount = $currentAmount;
                 $funds[$i]['amount_available'] = 0;
                 $funds[$i]['liquidation_id'] = $liquidacion['id'];
-                $funds[$i]->update();
+                $funds[$i]->save();
                 Transaction::create($data_transaction);
             } else {
                 if ($currentAmount > 0) {
@@ -352,18 +384,20 @@ class WithdrawalController extends Controller
                         $funds[$i]['amount_retired'] = $currentAmount;
                     }
                     $funds[$i]['liquidation_id'] = $liquidacion['id'];
-                    $funds[$i]->update();
+                    $funds[$i]->save();
 
                     $data_transaction = [
                         'liquidation_id' => $liquidacion['id'],
                         'wallets_user_id' => $funds[$i]['user_id'],
-                        'wallets_commissions_id' => $funds[$i]['id'],
+                        'wallets_commissions_id' => $type == 'commission' ? $funds[$i]['id'] : null,
+                        'profitability_id' => $type == 'profit' ? $funds[$i]['id']  : null,
                         'amount' => $funds[$i]['amount'],
                         'amount_retired' => $currentAmount,
                         'amount_available' => $funds[$i]['amount_available'],
                         'status' => 0
                     ];
                     $currentAmount -= $funds[$i]['amount_available'];
+                    $this->amount = $currentAmount;
                     Transaction::create($data_transaction);
                 } else {
                     $i = $funds->count();

@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Invesment;
 use App\Models\MarketPurchased;
 use App\Models\Order;
+use App\Models\Package;
 use App\Models\Project;
 use App\Models\ReferalLink;
 use App\Models\User;
 use App\Repositories\OrderRepository;
 use App\Services\BonusService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -146,6 +149,32 @@ class OrderController extends Controller
 
     public function processOrderApproved($order)
     {
+        if(!is_null($order->cyborg_id)) $this->matrixApproved($order);
+        if(!is_null($order->package_id)) $this->investmentApproved($order);
+    }
+    public function processOrderCanceled($order)
+    {
+        if(!is_null($order->package_id)) $this->investmentCanceled($order);
+    }
+
+    public function investmentCanceled($order)
+    {
+        $investment = Invesment::where([['order_id', $order->id]])->first();
+        $investment-> status = 3;
+        $investment->save();
+    }
+
+
+    public function investmentApproved($order)
+    {
+       $investment = Invesment::where('order_id', $order->id)->first();
+       $investment->status = 1;
+       $investment->expiration_date = Carbon::now()->format('Y-m-d');
+       $investment->save();
+    }
+
+    private function matrixApproved($order)
+    {
         $code = $this->generateCode();
 
         $referal = [
@@ -168,7 +197,6 @@ class OrderController extends Controller
         MarketPurchased::create(['user_id' => $order->user_id, 'cyborg_id' => $order->cyborg_id, 'order_id' => $order->id]);
 
     }
-
     private function generateCode()
     {
         $code = Str::random(6);

@@ -17,5 +17,6 @@ class Transaction extends Model
         'amount_retired',
         'amount_available',
         'utilies_id',
+        'profitability_id',
     ];
 }

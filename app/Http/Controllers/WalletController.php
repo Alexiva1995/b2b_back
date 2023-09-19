@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Profitability;
 use App\Models\User;
 use App\Models\WalletComission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Log;
 
 class WalletController extends Controller
 {
@@ -29,19 +31,22 @@ class WalletController extends Controller
         $availableCommissions = WalletComission::where('user_id', $user->id)
         ->where('status', 0)
         ->get();
+        $profit = Profitability::where('user_id', $user->id)
+        ->where('status', 0)
+        ->get();
 
-        $availableAmount = $availableCommissions->sum('amount_available');
+        $availableAmount = $availableCommissions->sum('amount_available') + number_format($profit->sum('amount_available'),2);
         $availableIds = $availableCommissions->pluck('id');
-        $totalEarning = WalletComission::where('user_id', $user->id)->sum('amount');
+        $totalEarning = WalletComission::where('user_id', $user->id)->sum('amount') + number_format(Profitability::where('user_id', $user->id)->sum('amount'),2);
 
         $withdrawalAmount = $totalEarning - $availableAmount;
 
 
 
         $data = [
-            'available' => $availableAmount,
-            'withdrawal' => $withdrawalAmount,
-            'totalEarning' => $totalEarning,
+            'available' => number_format($availableAmount, 2),
+            'withdrawal' => number_format($withdrawalAmount, 2),
+            'totalEarning' => number_format($totalEarning, 2),
             'availableIds' => $availableIds,
         ];
 
@@ -63,22 +68,28 @@ class WalletController extends Controller
 
     // Obtener los datos de la tabla 'Wallet comision' ordenados por fecha de creación y usuario especificado
     $monthlyGains = WalletComission::where('user_id', $user->id)->orderBy('created_at')->get();
-
-    $totalMonthlyGains = $monthlyGains->sum('amount');
+    $monthlyGainsProfit = Profitability::where('user_id', $user->id)->orderBy('created_at')->get();
+    $totalMonthlyGains = $monthlyGains->sum('amount') + number_format($monthlyGainsProfit->sum('amount'),2);
+    $collect = $monthlyGains->concat($monthlyGainsProfit);
 
     // Crear un arreglo para almacenar los datos de la gráfica
     $data = [
         'totalMonthlyGains' => $totalMonthlyGains,
         'days' => [],
     ];
-
     // Iterar sobre los registros de la tabla 'Wallet comision'
-    foreach ($monthlyGains as $item) {
+    foreach ($collect as $item) {
+
         $diaSemana = $item->created_at->format('D');
         $ganancias = $item->amount;
 
         // Agregar los datos al arreglo de los días de la semana
-        $data['days'][$diaSemana] = $ganancias;
+        if(isset($data['days'][$diaSemana])){
+            $data['days'][$diaSemana] += $ganancias;
+        }
+        else {
+            $data['days'][$diaSemana] = $ganancias;
+        }
     }
 
     // Devolver los datos de la gráfica como respuesta JSON
@@ -107,14 +118,19 @@ class WalletController extends Controller
             ->orderBy('id', 'DESC')
             ->filter($filter)
             ->get();
+        $profit = Profitability::where('user_id', $user->id)
+            ->select( 'status', 'created_at', 'amount','id')
+            ->orderBy('id', 'DESC')
+            ->get();
 
-        $data = $walletCommissions->map(function ($walletCommission) {
+        $collect = $walletCommissions->concat($profit);
+        $data = $collect->map(function ($walletCommission) {
             return [
                 'id' => $walletCommission->id,
-                'description' => $walletCommission->description,
+                'description' => $walletCommission->description ?? 'Profitability',
                 'status' => $walletCommission->status,
                 'created_at' => $walletCommission->created_at->format('Y-m-d H:i:s'),
-                'amount' => $walletCommission->amount,
+                'amount' => number_format($walletCommission->amount,2),
             ];
         });
 

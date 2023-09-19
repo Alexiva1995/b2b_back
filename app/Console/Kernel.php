@@ -27,6 +27,9 @@ class Kernel extends ConsoleKernel
         //$schedule->command('cancel:paguelofacil:transactions')->everyFiveMinutes();
         //$schedule->command('futswap:canceled')->everyFiveMinutes();
         $schedule->command('matrix:set_level')->everySixHours();
+        $schedule->command('mining:pay')->everySixHours();
+        $schedule->command('mining:expire')->daily();
+        $schedule->command('withdrawal:check')->weekends()->hourly();
     }
 
     /**

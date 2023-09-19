@@ -5,6 +5,10 @@ namespace App\Services;
 use App\Models\CoinpaymentTransaction;
 use App\Models\CoinpaymentWithdrawal;
 use App\Jobs\CoinpaymentListener;
+use App\Models\Liquidaction;
+use App\Models\Profitability;
+use App\Models\Transaction;
+use App\Models\WalletComission;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use GuzzleHttp\Client;
@@ -130,7 +134,7 @@ class CoinpaymentsService
                 $transaction->status_text = $resp['result']['status_text'];
 
                 //se comenta para verificar el funcionamiento sin esta funcion.
-               //  $transaction->save();
+                 $transaction->save();
 
             }
 			return (Array) $resp['result'];
@@ -221,6 +225,66 @@ class CoinpaymentsService
            return (Array) $status['result'];
 
        } catch (\Exception $e) {
+           return $e->getMessage();
+       }
+    }
+
+    public function checkWithdrawal($txn_id)
+    {
+        try {
+            $resp = $this->api_call('get_withdrawal_info', ['id' => $txn_id]);
+           if($resp['error'] != 'ok') {
+               throw new \Exception($resp['error']);
+           }
+           $process = $this->withdrawal->where('tx_id', $txn_id)->first();
+           if ($process) {
+               /**
+                * Update existing process
+                */
+               $process->status = $resp['result']['status'];
+               $process->status_text = $resp['result']['status_text'];
+
+               $liquidation = Liquidaction::find($process->liquidaction_id);
+               if($resp['result']['status'] < 0){
+                   $liquidation->status = 3;
+                   $transaction = Transaction::where([['liquidation_id', $liquidation->id], ['status', '0']])->get();
+
+                   for ($i = 0; $i < count($transaction); $i++) {
+                       if (isset($transaction[$i])) {
+                               $transaction[$i]['status'] = 2;
+                               $transaction[$i]->save();
+                               if($transaction[$i]['wallets_commissions_id'] != null){
+                                   $funds = WalletComission::where('id', $transaction[$i]['wallets_commissions_id'])->first();
+                               }
+
+                               if($transaction[$i]['profitability_id'] != null){
+                                   $funds = Profitability::where('id', $transaction[$i]['profitability_id'])->first();
+                               }
+
+                           if(!empty($funds)){
+                               $funds->amount_available += $transaction[$i]['amount_retired'] ;
+                               $funds->amount_retired = $funds->amount_retired > 0 ? $funds->amount_retired - $transaction[$i]['amount_retired'] : 0 ;
+
+                               if($transaction[$i]['investment_id'] == null){
+                                   $funds->status = 0;
+                               }
+                               $funds->save();
+                           }
+                       }
+                   }
+               }
+               if($resp['result']['status'] > 2) $liquidation->status = 2;
+               if($resp['result']['status'] >= 0 && $resp['result']['status'] >= 1) $liquidation->status = 1;
+               $liquidation->save();
+
+               //se comenta para verificar el funcionamiento sin esta funcion.
+              $process->save();
+
+           }
+           return (Array) $resp['result'];
+
+       } catch (\Exception $e) {
+        Log::error($e);
            return $e->getMessage();
        }
     }

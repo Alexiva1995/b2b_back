@@ -23,6 +23,7 @@ use App\Http\Controllers\FiltersController;
 use App\Http\Controllers\MarketController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\LearningController;
+use App\Http\Controllers\PackageController;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\BonusService;
@@ -70,6 +71,12 @@ Route::middleware('jwt')->group(function () {
 
     // ADMINvalidateCoupon
     Route::middleware([AdminRoleMiddleware::class])->group(function () {
+
+        Route::controller(PackageController::class)->group(function ($router) {
+            Route::get('get-packages', 'getPackages');
+            Route::get('packages/actives', 'getActiveInvestments');
+            Route::get('packages/complete', 'getCompleteInvestments');
+        });
 
         Route::controller(MarketController::class)->group(function ($router) {
             Route::get('/cyborg/{id?}', 'getAllCyborgs');
@@ -214,6 +221,12 @@ Route::middleware('jwt')->group(function () {
     });
 
     // USER
+    Route::controller(PackageController::class)->group(function ($router) {
+        Route::get('get-packages', 'getPackages');
+        Route::post('purchased', 'purchasedInvestment');
+        Route::post('mining/check-order', 'checkOrder');
+    });
+
     Route::controller(CategoryLearningsController::class)->group(function ($router) {
         Route::get('get-all-category/{type}', 'getAll');
         Route::get('get-category/{id}', 'getAll');

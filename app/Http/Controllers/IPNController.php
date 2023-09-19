@@ -11,6 +11,8 @@ use App\Models\CoinpaymentWithdrawal;
 use App\Models\Liquidaction;
 use App\Models\Order;
 use App\Models\Package;
+use App\Models\Profitability;
+use App\Models\Transaction;
 use App\Models\User;
 use Hexters\CoinPayment\Emails\IPNErrorMail as SendEmail;
 use Illuminate\Support\Facades\Log;
@@ -91,6 +93,7 @@ class IPNController extends Controller
                             if ($info['result']['status'] < 0) {
                                 $order->status = '3';
                                 $order->hash = $req->txn_id;
+                                $this->OrderController->processOrderCanceled($order);
                                 $order->save();
                             }
                             if ($info['result']['status'] == 2) {
@@ -150,13 +153,31 @@ class IPNController extends Controller
                             $liquidation->status = 3;
                             $liquidation->hash = $req->id;
                             $liquidation->save();
-                            $wallets =  WalletComission::where('status', 1)->where('liquidation_id', $liquidation->id)->get();
-                            foreach ($wallets as $wallet) {
-                                $wallet->update([
-                                    'status' => 0, // Actualizar el estado a 3 (Rechazado)
-                                    'amount_available' => $wallet->amount,
-                                    'amount_retired' => 0
-                                ]);
+                            $transaction = Transaction::where([['liquidation_id', $liquidation->id], ['status', '0']])->get();
+
+                            for ($i = 0; $i < count($transaction); $i++) {
+                                if (isset($transaction[$i])) {
+                                        $transaction[$i]['status'] = 2;
+                                        $transaction[$i]->save();
+                                        if($transaction[$i]['wallets_commissions_id'] != null){
+                                            $funds = WalletComission::where('id', $transaction[$i]['wallets_commissions_id'])->first();
+                                        }
+
+                                        if($transaction[$i]['profitability_id'] != null){
+                                            $funds = Profitability::where('id', $transaction[$i]['profitability_id'])->first();
+                                        }
+                                      //  Log::alert($funds);
+                                    if(!empty($funds)){
+                                        $funds->amount_available += $transaction[$i]['amount_retired'] ;
+                                        $funds->amount_retired = $funds->amount_retired > 0 ? $funds->amount_retired - $transaction[$i]['amount_retired'] : 0 ;
+
+                                        if($transaction[$i]['investment_id'] == null){
+                                            $funds->status = 0;
+                                        }
+                                        $funds->save();
+                                    }
+
+                                }
                             }
                         }
                         // if ($info['result']['status'] == 1) {

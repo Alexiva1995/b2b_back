@@ -16,6 +16,8 @@ class Package extends Model
         'gain',
         'amount',
         'type',
-        'level'
+        'level',
+        'investment_time',
+        'max_amount',
     ];
 }
