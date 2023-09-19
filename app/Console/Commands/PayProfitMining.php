@@ -39,9 +39,9 @@ class PayProfitMining extends Command
             $package = Package::find($investment->package_id);
             $days = $package->investment_time == 12 ? ($package->investment_time * 30) + 5 : $package->investment_time * 30;
             $gain = ($investment->invested * (($package->gain / $days) / 100)) + ($investment->invested / $days);
-            $investment->gain += $gain;
-            $investment->save();
             if (!Profitability::where('invest_id', $investment->id)->whereBetween('created_at', [$today, $today->now()])->exists()) {
+                $investment->gain += $gain;
+                $investment->save();
                 Profitability::create([
                     'user_id' => $investment->user_id,
                     'invest_id' => $investment->id,
