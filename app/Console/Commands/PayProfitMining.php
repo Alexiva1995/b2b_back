@@ -37,21 +37,18 @@ class PayProfitMining extends Command
 
         foreach ($investments as $investment) {
             $package = Package::find($investment->package_id);
-            $days = $package->investment_time == 12 ? ($package->investment_time*30)+5 : $package->investment_time * 30;
-            $gain = ($investment->invested * (($package->gain/$days)/100)) + ($investment->invested/$days);
+            $days = $package->investment_time == 12 ? ($package->investment_time * 30) + 5 : $package->investment_time * 30;
+            $gain = ($investment->invested * (($package->gain / $days) / 100)) + ($investment->invested / $days);
             $investment->gain += $gain;
             $investment->save();
-            if(!Profitability::where('invest_id', $investment->id)->whereBetween('created_at', [$today, $today->now()])->exists()){
-for ($i=0; $i < 181; $i++) {
-    Profitability::create([
-        'user_id' => $investment->user_id,
-        'invest_id' => $investment->id,
-        'amount' => $gain ,
-        'amount_available' => $gain,
-        'status' => 4
-    ]);
-    # code...
-}
+            if (!Profitability::where('invest_id', $investment->id)->whereBetween('created_at', [$today, $today->now()])->exists()) {
+                Profitability::create([
+                    'user_id' => $investment->user_id,
+                    'invest_id' => $investment->id,
+                    'amount' => $gain,
+                    'amount_available' => $gain,
+                    'status' => 4
+                ]);
             }
         }
     }
