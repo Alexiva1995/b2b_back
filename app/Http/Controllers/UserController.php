@@ -198,7 +198,9 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
                     'side' => $parentSide ?: 'L',
                     'profile_picture' => $referral->profile_picture,
                     'buyer_id' => $referral->buyer_id,
-                    'childrens' => $referral->referrals()->with('MarketPurchased')->get(),
+                    'childrens' => $referral->referrals()->with('MarketPurchased')->whereHas('marketPurchased', function (Builder $query)  {
+                        $query->where('cyborg_id', 1);
+                    })->get(),
                     'sponsor' => $referral->padre,
                     'type_matrix' => $referral->getTypeMatrix(),
                 ];
@@ -215,7 +217,9 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
                         'side' => $parentSide ?: 'R',
                         'profile_picture' => $referral->profile_picture,
                         'buyer_id' => $referral->buyer_id,
-                        'childrens' => $referral->referrals()->with('MarketPurchased')->get(),
+                        'childrens' => $referral->referrals()->with('MarketPurchased')->whereHas('marketPurchased', function (Builder $query)  {
+                            $query->where('cyborg_id', 1);
+                        })->get(),
                         'sponsor' => $referral->padre,
                         'type_matrix' => $referral->getTypeMatrix(),
                     ];
