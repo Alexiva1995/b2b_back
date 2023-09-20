@@ -1554,11 +1554,15 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
                 $linkBuyer = ReferalLink::where([['user_id', $buyer->id], ['cyborg_id', $matrixBuyer->cyborg_id]])->first();
                 if($side == 'L') $linkBuyer->update(['left' => 0]);
                 if($side == 'R') $linkBuyer->update(['right' => 0]);
-                $link = ReferalLink::where('user_id', $user->id)->first();
-                $order =  Order::where('user_id', $user->id)->first();
+                if(ReferalLink::where('user_id', $user->id)->exists()){
+                    $link = ReferalLink::where('user_id', $user->id)->first();
+                    $link->delete();
+                }
+                if(Order::where('user_id', $user->id)->exists()){
+                    $order =  Order::where('user_id', $user->id)->first();
+                    $order->delete();
+                }
 
-                $link->delete();
-                $order->delete();
                 $user->delete();
                 DB::commit();
                 return response()->json('User Delete Successful', 200);
