@@ -167,9 +167,11 @@ class OrderController extends Controller
 
     public function investmentApproved($order)
     {
+       $date = Carbon::now();
        $investment = Invesment::where('order_id', $order->id)->first();
        $investment->status = 1;
-       $investment->expiration_date = Carbon::now()->format('Y-m-d');
+       $package = Package::find($investment->package_id);
+       $investment->expiration_date = $date->addMonths($package->investment_time)->format('Y-m-d');
        $investment->save();
     }
 
