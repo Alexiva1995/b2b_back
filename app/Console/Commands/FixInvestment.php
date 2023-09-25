@@ -6,6 +6,7 @@ use App\Models\Invesment;
 use App\Models\Package;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class FixInvestment extends Command
 {
@@ -33,7 +34,8 @@ class FixInvestment extends Command
        $investments = Invesment::where('status', 1)->get();
 
        foreach ($investments as  $investment) {
-        if($investment->expiration_date == $investment->created_at->format('Y-m-d')){
+           if($investment->expiration_date == $investment->created_at->format('Y-m-d')){
+            Log::debug($investment->id);
             $package = Package::find($investment->package_id);
             $date = CarbonImmutable::parse($investment->created_at);
             $investment->expiration_date = $date->addMonths($package->investment_time)->format('Y-m-d');
