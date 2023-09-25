@@ -150,7 +150,7 @@ class PackageController extends Controller
                 $total += $package[3];
             }
 
-            Log::alert($investments);
+           // Log::alert($investments);
         return response()->json($data =[
             'investments' => $investments ,
             'basic' => $package[1] ?? 0,

@@ -34,7 +34,7 @@ class FixInvestment extends Command
        $investments = Invesment::where('status', 1)->get();
 
        foreach ($investments as  $investment) {
-           if($investment->expiration_date == $investment->created_at->format('Y-m-d')){
+           if($investment->id == 15){
             Log::debug($investment->id);
             $package = Package::find($investment->package_id);
             $date = CarbonImmutable::parse($investment->created_at);
