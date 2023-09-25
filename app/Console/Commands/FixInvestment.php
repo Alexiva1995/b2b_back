@@ -37,7 +37,7 @@ class FixInvestment extends Command
             $package = Package::find($investment->package_id);
             $date = CarbonImmutable::parse($investment->created_at);
             $investment->expiration_date = $date->addMonths($package->investment_time)->format('Y-m-d');
-     
+            $investment->save();
         }
        }
     }
