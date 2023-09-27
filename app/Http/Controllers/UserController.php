@@ -755,8 +755,11 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
 
     public function findUserMatrix($cyborg, $id)
     {
-        if(is_numeric($id))  $user = User::find($id);
-        $user = User::where('email' , $id)->with(['sponsor', 'children.marketPurchased'])->first();
+        if(is_numeric($id)){
+            $user = User::find($id);
+        } else {
+            $user = User::where('email' , $id)->with(['sponsor', 'children.marketPurchased'])->first();
+        }
         $matrix = MarketPurchased::where([['user_id', $user->id], ['cyborg_id',$cyborg]])->first();
         $children = $user->children()->where('father_cyborg_purchased_id', $matrix->id)->with('marketPurchased')->get();
         $user = [
