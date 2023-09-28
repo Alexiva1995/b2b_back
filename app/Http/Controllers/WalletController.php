@@ -38,8 +38,8 @@ class WalletController extends Controller
         $availableAmount = $availableCommissions->sum('amount_available') + number_format($profit->sum('amount_available'),2);
         $availableIds = $availableCommissions->pluck('id');
         $totalEarning = WalletComission::where('user_id', $user->id)->sum('amount') + number_format(Profitability::where('user_id', $user->id)->sum('amount'),2);
-
-        $withdrawalAmount = $totalEarning - $availableAmount;
+        $totalHold =  WalletComission::where([['user_id', $user->id], ['status', 4]])->sum('amount') + Profitability::where([['user_id', $user->id],['status', 4]])->sum('amount');
+        $withdrawalAmount = $totalEarning - ($availableAmount + $totalHold)  ;
 
 
 
@@ -47,6 +47,7 @@ class WalletController extends Controller
             'available' => number_format($availableAmount, 2),
             'withdrawal' => number_format($withdrawalAmount, 2),
             'totalEarning' => number_format($totalEarning, 2),
+            'totalHold' => number_format($totalHold, 2),
             'availableIds' => $availableIds,
         ];
 
