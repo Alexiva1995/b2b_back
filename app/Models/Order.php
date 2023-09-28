@@ -22,6 +22,7 @@ class Order extends Model
         'cyborg_id',
         'type_purchsed',
         'is_manual',
+        'package_id',
     ];
 
     public function user()
@@ -65,6 +66,11 @@ class Order extends Model
        return  $this->belongsTo(Market::class, 'cyborg_id');
     }
     //Fin
+
+    public function package()
+    {
+        return $this->belongsTo(Package::class, 'package_id');
+    }
 
     public function packageMembership()
     {
