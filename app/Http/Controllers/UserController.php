@@ -1553,10 +1553,11 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
             ])->post("{$url}delete-user", $data);
 
             if ($response->successful()) {
-
-                $linkBuyer = ReferalLink::where([['user_id', $buyer->id], ['cyborg_id', $matrixBuyer->cyborg_id]])->first();
-                if($side == 'L') $linkBuyer->update(['left' => 0, 'status' => 1]);
-                if($side == 'R') $linkBuyer->update(['right' => 0, 'status' => 1]);
+                if($buyer->id != 1){
+                    $linkBuyer = ReferalLink::where([['user_id', $buyer->id], ['cyborg_id', $matrixBuyer->cyborg_id]])->first();
+                    if($side == 'L') $linkBuyer->update(['left' => 0, 'status' => 1]);
+                    if($side == 'R') $linkBuyer->update(['right' => 0, 'status' => 1]);
+                }
                 if(ReferalLink::where('user_id', $user->id)->exists()){
                     $link = ReferalLink::where('user_id', $user->id)->first();
                     $link->delete();
