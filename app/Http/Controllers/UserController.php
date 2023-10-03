@@ -1576,7 +1576,7 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
             DB::rollBack();
             Log::error('Error al eliminar usuairo');
             Log::error($th);
-            return response()->json('Error To delete user'. 400);
+            return response()->json('Error To delete user', 400);
         }
     }
 
