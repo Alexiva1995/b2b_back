@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\CoinpaymentsService;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -127,12 +128,16 @@ class PackageController extends Controller
                 $q->WhereRaw("email LIKE ?", ['%'.$filter.'%']);
             });
         }
-
+        $investors = User::whereHas('investments', function (Builder $query) {
+            $query->where('status', 1);
+        })
+        ->count();
         $investments = $query->get();
-
+        $i = 1;
         foreach ($investments as $investment) {
             $investment->time_remaining = Carbon::parse($investment->created_at)->diffInDays($investment->expiration_date);
-
+            $investment->count = $i;
+            $i++;
             if(isset($package[$investment->package_id])){
                 $package[$investment->package_id] += $investment->gain;
             } else {
@@ -143,20 +148,22 @@ class PackageController extends Controller
             if(isset($package[1])){
                 $total += $package[1];
             }
-            elseif(isset($package[2])){
+            if(isset($package[2])){
                 $total += $package[2];
             }
-            elseif(isset($package[3])){
+            if(isset($package[3])){
                 $total += $package[3];
             }
 
            // Log::alert($investments);
         return response()->json($data =[
             'investments' => $investments ,
-            'basic' => $package[1] ?? 0,
-            'advanced' => $package[2] ?? 0,
-            'expert' => $package[3] ?? 0,
-            'total' => $total,
+            'basic' => number_format($package[1], 2) ?? 0,
+            'advanced' => number_format($package[2], 2) ?? 0,
+            'expert' => number_format($package[3], 2) ?? 0,
+            'total' => number_format($total, 2),
+            'countInverstors' => $investors,
+            'countInvestments' => $investments->count(),
         ]);
     }
 
@@ -171,12 +178,16 @@ class PackageController extends Controller
                 $q->WhereRaw("email LIKE ?", ['%'.$filter.'%']);
             });
         }
-
+        $investors = User::whereHas('investments', function (Builder $query) {
+            $query->where('status', 1);
+        })
+        ->count();
         $investments = $query->get();
-
+        $i=0;
         foreach ($investments as $investment) {
             $investment->time_remaining = Carbon::parse($investment->created_at)->diffInDays($investment->expiration_date);
-
+            $investment->count = $i;
+            $i++;
             if(isset($package[$investment->package_id])){
                 $package[$investment->package_id] += $investment->gain;
             } else {
@@ -193,12 +204,14 @@ class PackageController extends Controller
             elseif(isset($package[3])){
                 $total += $package[3];
             }
-        return response()->json($data =[
-            'investments' => $investments,
-            'basic' => $package[1] ?? 0,
-            'advanced' => $package[2] ?? 0,
-            'expert' => $package[3] ?? 0,
-            'total' => $total,
-        ]);
+            return response()->json($data =[
+                'investments' => $investments ,
+                'basic' => number_format($package[1], 2) ?? 0,
+                'advanced' => number_format($package[2], 2) ?? 0,
+                'expert' => number_format($package[3], 2) ?? 0,
+                'total' => number_format($total, 2),
+                'countInverstors' => $investors,
+                'countInvestments' => $investments->count(),
+            ]);
     }
 }

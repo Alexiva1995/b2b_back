@@ -99,24 +99,24 @@ class BonusService
 
     public function subtract(int $amount, int $user_id, $matrix_id = null, int $level, User $user, int $matrix_type)
     {
-        $wallets = WalletComission::where('user_id', $user_id)->where('status', WalletComission::STATUS_PENDING)
-            ->where('father_cyborg_purchased_id', $matrix_id)->where('level', $level)->get();
-                /* Log::alert('user: '.$user_id. ' matrix: '.$matrix_id. ' level: '.$level);
-                Log::alert($wallets); */
-        $amountCal = $amount;
-        foreach ($wallets as $wallet) {
-            $wallet->status = WalletComission::STATUS_AVAILABLE;
-            if ($amountCal > $wallet->amount_available) {
-                $amountCal = $amountCal - $wallet->amount_available;
-                $wallet->amount_available = 0;
-                $wallet->status = WalletComission::STATUS_PAID;
-            } else {
-                $wallet->amount_available = $wallet->amount_available - $amountCal;
-                $amountCal = 0;
-            }
 
-            $wallet->save();
-        }
+            $wallets = WalletComission::where('user_id', $user_id)->where('status', WalletComission::STATUS_PENDING)
+                ->where('father_cyborg_purchased_id', $matrix_id)->where('level', $level)->get();
+
+            $amountCal = $amount;
+            foreach ($wallets as $wallet) {
+                $wallet->status = WalletComission::STATUS_AVAILABLE;
+                if ($amountCal >= $wallet->amount_available) {
+                    $amountCal = $amountCal - $wallet->amount_available;
+                    $wallet->amount_available = 0;
+                    $wallet->status = WalletComission::STATUS_PAID;
+                } else {
+                    $wallet->amount_available = $wallet->amount_available - $amountCal;
+                    $amountCal = 0;
+                }
+
+                $wallet->save();
+            }
 
         $this->paytoUp($amount, $level, $user, $matrix_type);
 
@@ -203,7 +203,12 @@ class BonusService
     }
 
     private function makeComission(User $sponsor, int $level_to_scale, $amount, int  $matrix_type, int $buyerId, $father_cyborg_purchased_id)
-    {
+    {   $walletCount = WalletComission::where([
+        ['user_id', $sponsor->id],
+        ['type', $matrix_type],
+        ['level', $level_to_scale],
+        ['father_cyborg_purchased_id', $father_cyborg_purchased_id]
+    ])->count();
         return new WalletComission([
             'user_id' => $sponsor->id,
             'buyer_id' => $buyerId,
@@ -212,7 +217,7 @@ class BonusService
             'amount' => $amount,
             'amount_available' => $amount,
             'type' => $matrix_type,
-            'status' => WalletComission::STATUS_PENDING,
+            'status' => $walletCount >= 2 ? WalletComission::STATUS_AVAILABLE : WalletComission::STATUS_PENDING,
             'father_cyborg_purchased_id' => $father_cyborg_purchased_id ?? null,
             'level' => $level_to_scale
         ]);
