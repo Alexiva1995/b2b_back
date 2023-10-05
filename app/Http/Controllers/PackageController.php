@@ -135,7 +135,7 @@ class PackageController extends Controller
         $investments = $query->get();
         $i = 1;
         foreach ($investments as $investment) {
-            $investment->time_remaining = Carbon::parse($investment->created_at)->diffInDays($investment->expiration_date);
+            $investment->time_remaining = Carbon::now()->diffInDays($investment->expiration_date);
             $investment->count = $i;
             $i++;
             if(isset($package[$investment->package_id])){
@@ -185,7 +185,7 @@ class PackageController extends Controller
         $investments = $query->get();
         $i=0;
         foreach ($investments as $investment) {
-            $investment->time_remaining = Carbon::parse($investment->created_at)->diffInDays($investment->expiration_date);
+            $investment->time_remaining = Carbon::now()->diffInDays($investment->expiration_date);
             $investment->count = $i;
             $i++;
             if(isset($package[$investment->package_id])){
