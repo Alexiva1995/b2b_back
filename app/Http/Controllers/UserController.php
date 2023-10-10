@@ -1559,12 +1559,16 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
                     if($side == 'R') $linkBuyer->update(['right' => 0, 'status' => 1]);
                 }
                 if(ReferalLink::where('user_id', $user->id)->exists()){
-                    $link = ReferalLink::where('user_id', $user->id)->first();
-                    $link->delete();
+                    $links = ReferalLink::where('user_id', $user->id)->get();
+                    foreach ($links as $link) {
+                        $link->delete();
+                    }
                 }
                 if(Order::where('user_id', $user->id)->exists()){
-                    $order =  Order::where('user_id', $user->id)->first();
-                    $order->delete();
+                    $orders =  Order::where('user_id', $user->id)->get();
+                    foreach ($orders as $order) {
+                        $order->delete();
+                    }
                 }
 
                 $user->delete();
