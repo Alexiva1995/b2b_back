@@ -6,7 +6,7 @@
             <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse;">
                 <tr>
                 <div style="margin-bottom: 10px; text-align: start;">
-                    <h1 style="font-size: 18px">WELCOME TO BUSINESS TO BUSINESS (B2B)</h1>
+                    <h1 style="font-size: 18px">WELCOME TO BBUSINESS RFC</h1>
                     <p style="font-size: 14px;">
                         Hello Dear {{ $data['user'] ?? 'user' }}, receive a warm greeting.
                     </p>

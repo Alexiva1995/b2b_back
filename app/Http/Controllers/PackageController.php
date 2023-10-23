@@ -134,9 +134,11 @@ class PackageController extends Controller
         ->count();
         $investments = $query->get();
         $i = 1;
+        $total_invested = 0;
         foreach ($investments as $investment) {
             $investment->time_remaining = Carbon::now()->diffInDays($investment->expiration_date);
             $investment->count = $i;
+            $total_invested += $investment->invested;
             $i++;
             if(isset($package[$investment->package_id])){
                 $package[$investment->package_id] += $investment->gain;
@@ -162,6 +164,7 @@ class PackageController extends Controller
             'advanced' => number_format($package[2], 2) ?? 0,
             'expert' => number_format($package[3], 2) ?? 0,
             'total' => number_format($total, 2),
+            'total_invested' => number_format($total_invested, 2),
             'countInverstors' => $investors,
             'countInvestments' => $investments->count(),
         ]);
@@ -184,9 +187,11 @@ class PackageController extends Controller
         ->count();
         $investments = $query->get();
         $i=0;
+        $total_invested = 0;
         foreach ($investments as $investment) {
             $investment->time_remaining = Carbon::now()->diffInDays($investment->expiration_date);
             $investment->count = $i;
+            $total_invested += $investment->invested;
             $i++;
             if(isset($package[$investment->package_id])){
                 $package[$investment->package_id] += $investment->gain;
@@ -210,6 +215,7 @@ class PackageController extends Controller
                 'advanced' => number_format($package[2], 2) ?? 0,
                 'expert' => number_format($package[3], 2) ?? 0,
                 'total' => number_format($total, 2),
+                'total_invested' => number_format($total_invested, 2),
                 'countInverstors' => $investors,
                 'countInvestments' => $investments->count(),
             ]);
