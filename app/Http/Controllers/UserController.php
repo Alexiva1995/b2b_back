@@ -1584,4 +1584,33 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
         }
     }
 
+    function userDeleteMatrix(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $user = User::find($request->id);
+            if (is_null($user)) throw new Exception('Error User not found');
+            $matrixBuyer = MarketPurchased::find($user->father_cyborg_purchased_id);
+            $side = $user->binary_side;
+            $buyer = User::find($user->buyer_id);
+
+            if ($buyer->id != 1) {
+                $linkBuyer = ReferalLink::where([['user_id', $buyer->id], ['cyborg_id', $matrixBuyer->cyborg_id]])->first();
+                if ($side == 'L') $linkBuyer->update(['left' => 0, 'status' => 1]);
+                if ($side == 'R') $linkBuyer->update(['right' => 0, 'status' => 1]);
+            }
+
+            $user->buyer_id = 1;
+            $user->father_cyborg_purchased_id = null;
+            $user->save();
+            
+            DB::commit();
+            return response()->json('Matrix User Delete Successful', 200);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Log::error('Error al eliminar usuairo');
+            Log::error($th);
+            return response()->json('Error To delete matrix user', 400);
+        }
+    }
 }

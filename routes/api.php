@@ -143,6 +143,7 @@ Route::middleware('jwt')->group(function () {
             Route::get('get-cyborg/{email}', 'getCyborg');
             Route::post('activate-user', 'activateUser');
             Route::post('delete-user', 'userDelete');
+            Route::post('delete-matrix', 'userDeleteMatrix');
         });
 
         Route::controller(UserController::class)->group(function ($router) {
