@@ -160,11 +160,11 @@ class PackageController extends Controller
            // Log::alert($investments);
         return response()->json($data =[
             'investments' => $investments ,
-            'basic' => number_format($package[1], 2) ?? 0,
-            'advanced' => number_format($package[2], 2) ?? 0,
-            'expert' => number_format($package[3], 2) ?? 0,
-            'total' => number_format($total, 2),
-            'total_invested' => number_format($total_invested, 2),
+            'basic' => number_format($package[1], 2, ',', '.') ?? 0,
+            'advanced' => number_format($package[2], 2, ',', '.') ?? 0,
+            'expert' => number_format($package[3], 2, ',', '.') ?? 0,
+            'total' => number_format($total, 2, ',', '.'),
+            'total_invested' => number_format($total_invested, 2, ',', '.'),
             'countInverstors' => $investors,
             'countInvestments' => $investments->count(),
         ]);
