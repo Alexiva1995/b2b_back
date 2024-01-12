@@ -12,13 +12,14 @@ class MassMessageController extends Controller
 {
     public function index(Request $request)
     {
-        $messages = MassMessage::select('title', 'id')->with('userRead')->orderBy('id', 'DESC')->paginate(8);
+        $messages = MassMessage::select('title', 'id', 'message')->with('userRead')->orderBy('id', 'DESC')->paginate(8);
         $user = User::find($request->auth_user_id);
         $listMessages = [];
         foreach ($messages as $message) {
             array_push($listMessages, [
                 'id' => $message->id,
                 'title' => $message->title,
+                'message' => $message->message,
                 'is_read' => $user->admin == 0 ? $user->messagesRead->map(function ($read) {return $read->pivot->is_read;}) ?? 0 : 1,
             ]);
         }
@@ -38,14 +39,19 @@ class MassMessageController extends Controller
     public function store(Request $request)
     {   DB::beginTransaction();
         try {
-            MassMessage::create([
+          $message =  MassMessage::create([
                 'title' => $request->title,
                 'message' => $request->message,
             ]);
+            $message = [
+                'id' => $message->id,
+                'title' => $message->title,
+                'is_read' => 1,
+            ];
 
             DB::commit();
 
-            return response()->json('Successful', 200);
+            return response()->json(['message' =>$message ], 200);
         } catch (\Throwable $th) {
             Log::error($th);
             DB::rollBack();
@@ -57,21 +63,6 @@ class MassMessageController extends Controller
     {
         $message = MassMessage::find($request->messageId);
         $message->userRead()->attach($request->messageId,['user_id' => $request->auth_user_id,'is_read' => 1]);
-
-       /*  $messages = MassMessage::select('title', 'id')->with('userRead')->paginate(8);
-        $listMessages = [];
-        foreach ($messages as $message) {
-            array_push($listMessages, [
-                'id' => $message->id,
-                'title' => $message->title,
-                'is_read' => $message->userRead->map(function ($read) {return $read->pivot->is_read;}) ?? 0,
-            ]);
-        }
-        return response()->json(['messages'  => [
-            'data' => $listMessages,
-            'current_page' => $messages->currentPage(),
-            'last_page' => $messages->lastPage()
-        ]], 200); */
 
         return response()->json('successfull', 200);
     }
