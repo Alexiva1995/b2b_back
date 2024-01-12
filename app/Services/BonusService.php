@@ -203,24 +203,25 @@ class BonusService
     }
 
     private function makeComission(User $sponsor, int $level_to_scale, $amount, int  $matrix_type, int $buyerId, $father_cyborg_purchased_id)
-    {   $walletCount = WalletComission::where([
-        ['user_id', $sponsor->id],
-        ['type', $matrix_type],
-        ['level', $level_to_scale],
-        ['father_cyborg_purchased_id', $father_cyborg_purchased_id]
-    ])->count();
-        return new WalletComission([
-            'user_id' => $sponsor->id,
-            'buyer_id' => $buyerId,
-            'order_id' => null,
-            'description' => "Commission for level reinvestment {$level_to_scale}",
-            'amount' => $amount,
-            'amount_available' => $amount,
-            'type' => $matrix_type,
-            'status' => $walletCount >= 2 ? WalletComission::STATUS_AVAILABLE : WalletComission::STATUS_PENDING,
-            'father_cyborg_purchased_id' => $father_cyborg_purchased_id ?? null,
-            'level' => $level_to_scale
-        ]);
+    {
+        $walletCount = WalletComission::where([
+                ['user_id', $sponsor->id],
+                ['type', $matrix_type],
+                ['level', $level_to_scale],
+                ['father_cyborg_purchased_id', $father_cyborg_purchased_id]
+            ])->count();
+            return new WalletComission([
+                'user_id' => $sponsor->id,
+                'buyer_id' => $buyerId,
+                'order_id' => null,
+                'description' => "Commission for level reinvestment {$level_to_scale}",
+                'amount' => $amount,
+                'amount_available' => $amount,
+                'type' => $matrix_type,
+                'status' => $walletCount >= 2 ? WalletComission::STATUS_AVAILABLE : WalletComission::STATUS_PENDING,
+                'father_cyborg_purchased_id' => $father_cyborg_purchased_id ?? null,
+                'level' => $level_to_scale
+            ]);
     }
 
     private function getAmountToSubtractOnLevel2($total_amount, $matrix_type)
@@ -247,5 +248,21 @@ class BonusService
         } else {
             return false;
         }
+    }
+
+    public function generateBonusDirect($amount, $user, $level, $order)
+    {
+        WalletComission::create([
+            'user_id' => $user->id,
+            'buyer_id' => $user->buyer_id,
+            'order_id' => $order->id,
+            'level' => $level,
+            'description' => 'Bonus Direct',
+            'amount' => $amount,
+            'amount_available' => $amount,
+            'status' => 0,
+            'type' => 1,
+            'father_cyborg_purchased_id' => $user->father_cyborg_purchased_id,
+        ]);
     }
 }

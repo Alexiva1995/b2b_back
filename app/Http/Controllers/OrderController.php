@@ -177,7 +177,7 @@ class OrderController extends Controller
     }
 
     private function matrixApproved($order)
-    {
+    {   Log::info('check');
         $code = $this->generateCode();
 
         $referal = [
@@ -194,6 +194,9 @@ class OrderController extends Controller
 
             $bonusService = new BonusService;
             $bonusService->generateFirstComission(20,$user, $order, $buyer = $user, $level = 2, $user->id);
+            if($order->cyborg_id == 1) {
+                $bonusService->generateBonusDirect($amount = 50, $user, $level = 1, $order);
+            }
         }
 
         ReferalLink::create($referal);

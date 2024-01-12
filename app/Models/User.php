@@ -263,4 +263,14 @@ class User extends Authenticatable implements JWTSubject
 
     }
 
+    public function messagesRead()
+    {
+        return $this->belongsToMany(MassMessage::class, 'message_read_user', 'user_id', 'mass_message_id')->withPivot('is_read');
+    }
+   
+
+    public function getMessagesUnread()
+    {
+        return $this->attributes['id'];
+    }
 }

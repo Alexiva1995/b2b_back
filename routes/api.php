@@ -23,6 +23,7 @@ use App\Http\Controllers\FiltersController;
 use App\Http\Controllers\MarketController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\LearningController;
+use App\Http\Controllers\MassMessageController;
 use App\Http\Controllers\PackageController;
 use App\Models\Order;
 use App\Models\User;
@@ -71,6 +72,15 @@ Route::middleware('jwt')->group(function () {
 
     // ADMINvalidateCoupon
     Route::middleware([AdminRoleMiddleware::class])->group(function () {
+
+        Route::controller(MassMessageController::class)->group(function ($router) {
+            Route::get('massMessages', 'index');
+            Route::get('massMessage/{id}', 'getMessage');
+            Route::post('massMessage/create', 'store');
+            Route::post('massMessage/read', 'readMessage');
+            Route::put('massMessage/{id}', 'updateMessage');
+            Route::delete('massMessage/{id}', 'destroyMessage');
+        });
 
         Route::controller(PackageController::class)->group(function ($router) {
             Route::get('get-packages', 'getPackages');
@@ -222,6 +232,11 @@ Route::middleware('jwt')->group(function () {
     });
 
     // USER
+    Route::controller(MassMessageController::class)->group(function ($router) {
+        Route::get('massMessages', 'index');
+        Route::get('massMessage/{id}', 'getMessage');
+        Route::post('massMessage/read', 'readMessage');
+    });
     Route::controller(PackageController::class)->group(function ($router) {
         Route::get('get-packages', 'getPackages');
         Route::post('purchased', 'purchasedInvestment');

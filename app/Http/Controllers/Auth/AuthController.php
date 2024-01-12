@@ -24,6 +24,7 @@ use App\Models\ReferalLink;
 use App\Services\CoinpaymentsService;
 use Exception;
 use App\Services\BonusService;
+use App\Services\MassMessageService;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -188,6 +189,7 @@ class AuthController extends Controller
                 'updated_at' => $user->updated_at,
                 'status' => $user->status == "0" ? false : true,
                 'type_services' => $user->type_service,
+                'messages_unread' => $user->admin == 0 ? resolve(MassMessageService::class)->getMessageUnread($user) : 0,
                 'message' => 'Successful login.'
             ];
 
@@ -384,7 +386,7 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
         $user->update(['code_security' => Str::random(12)]);
-
+          
         $dataEmail = ['code' => $user->code_security];
 
         Mail::send('mails.CodeSecurity',  $dataEmail, function ($msj) use ($request) {
@@ -422,6 +424,7 @@ class AuthController extends Controller
             'status' => $user->status == "0" ? false : true,
             'profile_picture' => $user->profile_picture ?? '',
             'type_services' => $user->type_service,
+            'messages_unread' => $user->admin == 0 ? resolve(MassMessageService::class)->getMessageUnread($user) : 0,
             'message' => 'Successful login.'
         ];
         return response()->json($data, 200);
