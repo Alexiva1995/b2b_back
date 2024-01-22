@@ -22,7 +22,8 @@ use Illuminate\Support\Facades\Log;
      */
     public function getMessageUnread($user)
     {
-
+       if(MassMessage::count() <= 0) return 0;
+       
        $data = DB::table('mass_messages')->select(
         DB::raw('count(*) as messages_count')
        )->whereNotExists(function ($query) use ($user){
