@@ -47,6 +47,7 @@ class MassMessageController extends Controller
                 'id' => $message->id,
                 'title' => $message->title,
                 'is_read' => 1,
+                'message' => $message->message,
             ];
 
             DB::commit();
