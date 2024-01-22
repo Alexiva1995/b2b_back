@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\AmazonController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CategoryLearningsController;
 use App\Http\Controllers\DashboardController;
@@ -72,6 +73,15 @@ Route::middleware('jwt')->group(function () {
 
     // ADMINvalidateCoupon
     Route::middleware([AdminRoleMiddleware::class])->group(function () {
+
+        Route::controller(AmazonController::class)->group(function ($router) {
+            Route::get('amazon/all-active-invest', 'getAllActiveInvestment');
+            Route::post('amazon/category', 'storeCategory');
+            Route::post('amazon/lot/{category}', 'storeLot');
+            Route::post('amazon/pay', 'payYield');
+            Route::delete('amazon/lot/{lot}/delete', 'deleteLot');
+            Route::delete('amazon/category/{category}/delete', 'deleteCategory');
+        });
 
         Route::controller(MassMessageController::class)->group(function ($router) {
             Route::get('massMessages', 'index');
@@ -232,6 +242,16 @@ Route::middleware('jwt')->group(function () {
     });
 
     // USER
+    Route::controller(AmazonController::class)->group(function ($router) {
+        Route::get('amazon/userInvests', 'getInvestUser');
+        Route::get('amazon', 'getCategories');
+        Route::get('amazon/category/{type}', 'getLotsType');
+        Route::get('amazon/lot/{lot}/products', 'getProducts');
+        Route::post('amazon/invest', 'purchasedInvestment');
+        Route::post('amazon/check-order', 'checkOrder');
+        Route::post('amazon/invest/cancel', 'canceleInvestment');
+    });
+
     Route::controller(MassMessageController::class)->group(function ($router) {
         Route::get('massMessages', 'index');
         Route::get('massMessage/{id}', 'getMessage');

@@ -39,7 +39,7 @@ class IPNController extends Controller
         $cp_ipn_secret    = config('coinpayment.ipn.config.coinpayment_ipn_secret');
         $cp_debug_email   = config('coinpayment.ipn.config.coinpayment_ipn_debug_email');
         /* Filtering */
-        if(!empty($req->merchant) && $req->merchant != trim($cp_merchant_id)){
+        /* if(!empty($req->merchant) && $req->merchant != trim($cp_merchant_id)){
             if(!empty($cp_debug_email)) {
                 Mail::to($cp_debug_email)->send(new SendEmail([
                     'message' => 'No or incorrect Merchant ID passed'
@@ -68,7 +68,7 @@ class IPNController extends Controller
             }
             Log::error('IPN HMAC signature does not match');
             return response('HMAC signature does not match', 401);
-        }
+        } */
         if($req->ipn_type == 'deposit' || $req->ipn_type == 'api'){
             $transactions = CoinpaymentTransaction::where('txn_id', $req->txn_id)->first();
 

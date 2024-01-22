@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AmazonInvestment;
 use App\Models\Invesment;
 use App\Models\MarketPurchased;
 use App\Models\Order;
@@ -152,16 +153,25 @@ class OrderController extends Controller
     {
         if(!is_null($order->cyborg_id)) $this->matrixApproved($order);
         if(!is_null($order->package_id)) $this->investmentApproved($order);
+        if(!is_null($order->amazon_category_id)) $this->amazonApproved($order);
     }
     public function processOrderCanceled($order)
     {
         if(!is_null($order->package_id)) $this->investmentCanceled($order);
+        if(!is_null($order->amazon_category_id)) $this->amazonCanceled($order);
     }
 
     public function investmentCanceled($order)
     {
         $investment = Invesment::where([['order_id', $order->id]])->first();
         $investment-> status = 3;
+        $investment->save();
+    }
+
+    public function amazonCanceled($order)
+    {
+        $investment = AmazonInvestment::where('order_id', $order->id)->first();
+        $investment-> status = 4;
         $investment->save();
     }
 
@@ -173,6 +183,15 @@ class OrderController extends Controller
        $investment->status = 1;
        $package = Package::find($investment->package_id);
        $investment->expiration_date = $date->addMonths($package->investment_time)->format('Y-m-d');
+       $investment->save();
+    }
+
+    public function amazonApproved($order)
+    {
+       $date = Carbon::now();
+       $investment = AmazonInvestment::where('order_id', $order->id)->first();
+       $investment->status = 1;
+       $investment->date_start= $date->today()->format('Y-m-d');
        $investment->save();
     }
 
