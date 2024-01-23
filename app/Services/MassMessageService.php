@@ -23,15 +23,13 @@ use Illuminate\Support\Facades\Log;
     public function getMessageUnread($user)
     {
        if(MassMessage::count() <= 0) return 0;
-       
-       $data = DB::table('mass_messages')->select(
-        DB::raw('count(*) as messages_count')
-       )->whereNotExists(function ($query) use ($user){
-        $query->select(DB::raw(1))
-        ->from('users')->join('message_read_user','mass_messages.id', '=', 'message_read_user.mass_message_id')
-        ->where('message_read_user.user_id', $user->id);
-       })->get('messages_count')->first();
 
-        return $data->messages_count;
+        $data = MassMessage::query()->whereNotExists(function($query) use ($user){
+            $query->select(DB::raw(0))->from('message_read_user')
+            ->whereRaw('message_read_user.mass_message_id = mass_messages.id')
+            ->whereRaw("message_read_user.user_id = $user->id");
+        })->count();
+
+        return $data;
     }
 }
