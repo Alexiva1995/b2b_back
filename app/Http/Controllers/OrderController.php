@@ -51,7 +51,7 @@ class OrderController extends Controller
                 'user_id' => $order->user->id,
                 'user_username' => $order->user->name,
                 'user_email' => $order->user->email,
-                'program' => $order->cyborg_id ? $order->packagesB2B->product_name : "Mining ".$order->package->package,
+                'program' => $order->getNamePackage(),
                // 'phase' => $phase ?? "",
                // 'account' => $order->packageMembership->account,
                 'status' => $order->status,

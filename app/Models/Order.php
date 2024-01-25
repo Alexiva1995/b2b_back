@@ -107,4 +107,17 @@ class Order extends Model
     {
         return $this->hasOne(MarketPurchased::class);
     }
+
+    public function amazonInvested()
+    {
+        return $this->belongsTo(AmazonCategories::class, 'amazon_category_id');
+    }
+
+    public function getNamePackage()
+    {
+
+        if($this->cyborg_id) return $this->packagesB2B->product_name;
+        if($this->amazon_category_id)  return "Amazon Category: ". $this->amazonInvested->name;
+        if($this->package_id)  return "Mining ". $this->package->package;
+    }
 }

@@ -83,7 +83,7 @@ class UserController extends Controller
                 'user_id' => $order->user->id,
                 'user_username' => $order->user->user_name,
                 'user_email' => $order->user->email,
-                'program' => $order->packagesB2B->product_name,
+                'program' => $order->getNamePackage(),
                 // 'phase' => $phase ?? "",
                 // 'account' => $order->packageMembership->account,
                 'status' => $order->status,
@@ -1603,7 +1603,7 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
             $user->buyer_id = 1;
             $user->father_cyborg_purchased_id = null;
             $user->save();
-            
+
             DB::commit();
             return response()->json('Matrix User Delete Successful', 200);
         } catch (\Throwable $th) {
