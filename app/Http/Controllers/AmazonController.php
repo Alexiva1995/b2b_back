@@ -143,7 +143,7 @@ class AmazonController extends Controller
     private function addProductsToLot($lot, $products)
     {
         foreach ($products as $product) {
-            ;
+            if(isset($product->id)) continue;
             $product = new AmazonProducts([
                 'name' => $product->name,
                 'url' => $product->url,
@@ -305,6 +305,58 @@ class AmazonController extends Controller
             DB::rollBack();
             Log::error($th);
             return response()->json(['message' => 'Error delete lot']);
+        }
+    }
+
+    public function updateLot(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $productsReq = json_decode($request->products);
+            $lotReq = json_decode($request->lot);
+
+            $lot = AmazonLots::find($lotReq->id);
+            $lot->name = $lotReq->name;
+
+            if (!is_null($request->preview)) {
+                $file2 = $request->file('preview');
+                $name = str_replace(" ", "_", $file2->getClientOriginalName());
+                $file2->move(public_path('storage/amazon/lots/'), $name);
+                $lot->image  = 'storage/amazon/lots/' . $name;
+            }
+
+            $lot->price = $lotReq->price;
+
+            if (is_null($productsReq)) throw new Exception("Error create Lot, must add at least one product");
+            if (count($productsReq) > 0) $this->addProductsToLot($lot, $productsReq);
+
+            if ($lot->save()) {
+                DB::commit();
+                return response()->json(['message' => 'Lot update successfull'], 200);
+            }
+
+            throw new Exception("Error update Lot");
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Log::error($th);
+            return response()->json(['message' => $th->getMessage()], 400);
+        }
+    }
+
+    public function deleteProduct($id)
+    {
+        DB::beginTransaction();
+        try {
+            $product = AmazonProducts::find($id);
+            if ($product->delete()) {
+                DB::commit();
+                return response()->json(['message' => 'Product delete successfull'], 200);
+            }
+            throw new Exception("Error delete product");
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Log::error($th);
+            return response()->json(['message' => $th->getMessage()], 400);
         }
     }
 }

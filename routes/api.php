@@ -81,6 +81,9 @@ Route::middleware('jwt')->group(function () {
             Route::post('amazon/pay', 'payYield');
             Route::delete('amazon/lot/{lot}/delete', 'deleteLot');
             Route::delete('amazon/category/{category}/delete', 'deleteCategory');
+            Route::delete('amazon/lot/product/{id}', 'deleteProduct');
+            Route::post('amazon/lot/{id}/update', 'updateLot');
+
         });
 
         Route::controller(MassMessageController::class)->group(function ($router) {
