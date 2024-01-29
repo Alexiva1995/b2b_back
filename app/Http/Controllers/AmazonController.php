@@ -359,4 +359,35 @@ class AmazonController extends Controller
             return response()->json(['message' => $th->getMessage()], 400);
         }
     }
+
+    public function updateCategory(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $categoryReq = json_decode($request->category);
+
+            $category = AmazonCategories::find($categoryReq->id);
+            $category->name = $categoryReq->name;
+
+            if (!is_null($request->preview)) {
+                $file2 = $request->file('preview');
+                $name = str_replace(" ", "_", $file2->getClientOriginalName());
+                $file2->move(public_path('storage/amazon/lots/'), $name);
+                $category->image  = 'storage/amazon/lots/' . $name;
+            }
+
+            $category->description = $categoryReq->description;
+
+            if ($category->save()) {
+                DB::commit();
+                return response()->json(['message' => 'Category update successfull'], 200);
+            }
+
+            throw new Exception("Error update Category");
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Log::error($th);
+            return response()->json(['message' => $th->getMessage()], 400);
+        }
+    }
 }

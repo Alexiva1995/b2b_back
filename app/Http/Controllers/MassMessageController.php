@@ -19,8 +19,7 @@ class MassMessageController extends Controller
             array_push($listMessages, [
                 'id' => $message->id,
                 'title' => $message->title,
-                'message' => $message->message,
-                'is_read' => $user->admin == 0 ? $user->messagesRead->map(function ($read) {return $read->pivot->is_read;}) ?? 0 : 1,
+                'is_read' => $user->admin == 0 ? $this->isRead($message, $user) : 1,
             ]);
         }
         return response()->json(['messages'  => [
@@ -28,6 +27,13 @@ class MassMessageController extends Controller
             'current_page' => $messages->currentPage(),
             'last_page' => $messages->lastPage()
         ]], 200);
+    }
+
+    private function isRead($message, $user)
+    {
+       $read = DB::table('message_read_user')->where([['mass_message_id', $message->id], ['user_id', $user->id]])->first();
+        if($read) return 1;
+        return 0;
     }
 
     public function getMessage($id)
