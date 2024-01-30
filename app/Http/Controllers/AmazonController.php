@@ -142,15 +142,23 @@ class AmazonController extends Controller
 
     private function addProductsToLot($lot, $products)
     {
-        foreach ($products as $product) {
-            if(isset($product->id)) continue;
-            $product = new AmazonProducts([
-                'name' => $product->name,
-                'url' => $product->url,
-                'pvp' => $product->pvp,
-                'price' => $product->price,
-            ]);
-            $lot->products()->save($product);
+        foreach ($products as $producto) {
+            if(isset($producto->id)) {
+                $product = AmazonProducts::find($producto->id);
+                $product->name = $producto->name;
+                $product->url = $producto->url;
+                $product->pvp = $producto->pvp;
+                $product->price = $producto->price;
+                $product->save();
+            }else{
+                $product = new AmazonProducts([
+                    'name' => $producto->name,
+                    'url' => $producto->url,
+                    'pvp' => $producto->pvp,
+                    'price' => $producto->price,
+                ]);
+                $lot->products()->save($product);
+            }
         }
     }
 
