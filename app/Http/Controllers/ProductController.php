@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
+
+use App\Models\Prefix;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -65,6 +67,10 @@ class ProductController extends Controller
         ->get();
 
         $data = $query;
+
+        foreach($data as $item){
+            $item->country = Prefix::find($item->country)->pais;
+        }
 
         return response()->json($data, 200);
     }
