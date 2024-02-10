@@ -15,11 +15,11 @@ return new class extends Migration
     {
         Schema::table('category_learnings', function (Blueprint $table) {
             $table->tinyInteger('is_top')->default(0);
-            $table->date('date_top')->default(null);
+            $table->date('date_top')->nullable();
         });
         Schema::table('learnings', function (Blueprint $table) {
             $table->tinyInteger('is_top')->default(0);
-            $table->date('date_top')->default(null);
+            $table->date('date_top')->nullable();
         });
     }
 
