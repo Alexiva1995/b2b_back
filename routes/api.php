@@ -115,6 +115,8 @@ Route::middleware('jwt')->group(function () {
             Route::post('create-category', 'store');
             Route::post('update-category', 'update');
             Route::delete('delete-category/{id}', 'destroy');
+            Route::post('top-category/{id}', 'changeTop');
+            Route::post('update-category', 'editCategory');
         });
 
         Route::controller(AdminDashboardController::class)->group(function ($router) {
@@ -176,6 +178,7 @@ Route::middleware('jwt')->group(function () {
             Route::get('audit-user-wallet/{id?}', 'auditUserWallet');
             Route::get('audit-user-dashboard', 'auditUserDashboard');
         });
+
         Route::controller(PackageMembershipController::class)->group(
             function ($router) {
                 Route::get('/projects-admin', 'GetProjectsAdmin');
@@ -189,7 +192,6 @@ Route::middleware('jwt')->group(function () {
             }
         );
 
-
         Route::controller(ReportsController::class)->group(function ($router) {
             Route::get('reports/comisions', 'commision');
             Route::get('reports/refund', 'refund');
@@ -201,6 +203,7 @@ Route::middleware('jwt')->group(function () {
 
             Route::get('reports/coupons', 'coupons');
         });
+
         Route::controller(KycController::class)->group(function ($router) {
             Route::get('kyc-list', 'admin');
             Route::post('kyc-filter-list', 'filterKycList');
@@ -227,6 +230,7 @@ Route::middleware('jwt')->group(function () {
             Route::post('documents-delete', 'destroy');
             Route::post('documents-download', 'download');
         });
+
         Route::controller(LearningController::class)->group(function ($router) {
             Route::get('learnings-all', 'learnings');
             Route::get('learnings/{type}/{category}', 'learningsType');
@@ -234,12 +238,16 @@ Route::middleware('jwt')->group(function () {
             Route::post('video-store', 'videoStore');
             Route::post('link-store', 'linkStore');
             Route::post('delete-learning', 'deleteLearning');
+            Route::post('edit-learning', 'updateLearning');
+            Route::post('top-learning/{id}', 'changeTop');
         });
+
         Route::controller(FutswapTransactionController::class)->group(
             function ($router) {
                 Route::post('/token-auth', 'saveTokenAuth');
             }
         );
+
         Route::controller(WithdrawalController::class)->group(function () {
             Route::post('withdrawal-update', 'withdrawalUpdate');
         });
@@ -461,6 +469,7 @@ Route::middleware('jwt')->group(function () {
         Route::get('learnings-links', 'links');
         Route::get('learnings-documents', 'documents');
         Route::post('download-learning', 'download');
+        Route::get('learnings/top', 'getTopBest');
     });
 });
 
