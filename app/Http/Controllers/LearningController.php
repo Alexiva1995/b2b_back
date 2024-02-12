@@ -170,6 +170,14 @@ class LearningController extends Controller
         $document->path =  $request->link;
         $document->type = 2;
         $document->category_learning_id = CategoryLearning::where('name', $request->category)->first()->id;
+
+        if (!is_null($request->preview)) {
+            $file2 = $request->file('preview');
+            $name2 = str_replace(" ", "_", $file2->getClientOriginalName());
+            $file2->move(public_path('storage/video/preview'), $name2);
+            $document->preview  = 'storage/video/preview/' . $name2;
+        }
+
         $document->save();
         return response()->json(['message' => 'Link registered successfully'], 200);
     }
