@@ -263,7 +263,7 @@ class AmazonController extends Controller
             $investment = AmazonInvestment::where([['id', $request->data['investmentId']], ['status', 1]])->first();
             if(is_null($investment)) throw new Exception("Error investment does not exist");
             $amountGain = number_format($investment->invested * ($request->data['percent'] / 100), 2);
-            $investment->gain = $amountGain;
+            $investment->gain += $amountGain;
             if($investment->save()){
                 WalletComission::create([
                     'user_id' => $investment->user_id,
