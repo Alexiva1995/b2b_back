@@ -155,7 +155,7 @@ class LearningController extends Controller
         $message = [
             'link.required' => 'The link is required',
             'title.required' => 'the title is required and must be a pdf file',
-            'description.required' => 'The description is required and must be a pdf file',
+            'description.required' => 'The description is required',
         ];
 
         $validator = Validator::make($request->all(), $rules, $message);
