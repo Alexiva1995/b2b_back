@@ -253,8 +253,8 @@ class BonusService
     public function generateBonusDirect($amount, $user, $level, $order)
     {
         WalletComission::create([
-            'user_id' => $user->id,
-            'buyer_id' => $user->buyer_id,
+            'user_id' => $user->buyer_id,
+            'buyer_id' => $user->id,
             'order_id' => $order->id,
             'level' => $level,
             'description' => 'Bonus Direct',
