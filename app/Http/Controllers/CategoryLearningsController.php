@@ -17,13 +17,13 @@ class CategoryLearningsController extends Controller
     {
         switch ($type) {
             case 'video':
-                return CategoryLearning::where([['status', 1], ['type', CategoryLearning::VIDEO]])->get();
+                return CategoryLearning::where([['status', 1], ['type', CategoryLearning::VIDEO]])->orderBy('id', 'DESC')->get();
                 break;
             case 'link':
-                return CategoryLearning::where([['status', 1], ['type', CategoryLearning::LINK]])->get();
+                return CategoryLearning::where([['status', 1], ['type', CategoryLearning::LINK]])->orderBy('id', 'DESC')->get();
                 break;
             case 'document':
-                return CategoryLearning::where([['status', 1], ['type', CategoryLearning::DOCUMENT]])->get();
+                return CategoryLearning::where([['status', 1], ['type', CategoryLearning::DOCUMENT]])->orderBy('id', 'DESC')->get();
                 break;
         }
     }
