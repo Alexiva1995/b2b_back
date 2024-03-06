@@ -84,6 +84,7 @@ Route::middleware('jwt')->group(function () {
             Route::delete('amazon/lot/product/{id}', 'deleteProduct');
             Route::post('amazon/category/{category}/update', 'updateCategory');
             Route::post('amazon/lot/{id}/update', 'updateLot');
+            Route::post('/createInvestment', 'createInvestment');
 
         });
 

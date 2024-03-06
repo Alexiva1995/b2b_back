@@ -16,6 +16,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 
@@ -396,6 +397,51 @@ class AmazonController extends Controller
             DB::rollBack();
             Log::error($th);
             return response()->json(['message' => $th->getMessage()], 400);
+        }
+    }
+
+    public function createInvestment(Request $request)
+    {   DB::beginTransaction();
+        try {
+            $validator = Validator::make($request->all(),[
+                'email' => 'required',
+                'amount' => 'required',
+                'category' => 'required',
+            ]);
+
+            if ($validator->fails()) return response()->json($validator->errors()->toJson(), 400);
+            if(!User::where('email', $request->email)->exists()) return response()->json('User not found', 400);
+
+            $user = User::where('email', $request->email)->first();
+
+            $order = Order::create([
+                'user_id' => $user->id,
+                'amount' => $request->amount,
+                'type' => 'inicio',
+                'status' => 1,
+                'type_purchsed' => 0,
+                'is_manual' => 1,
+                'amazon_category_id' =>  $request->category,
+            ]);
+
+            $investment = new AmazonInvestment();
+
+            $investment->order_id = $order->id;
+            $investment->amazon_category_id = $request->category;
+            $investment->user_id = $user->id;
+            $investment->invested = $request->amount;
+            $investment->status = 1;
+            $investment->gain = 0;
+            $investment->date_start = Carbon::now();
+
+            $investment->save();
+
+            DB::commit();
+            return response()->json('Investment created successfully');
+        } catch (\Throwable $th) {
+            Log::error($th);
+            DB::rollBack();
+            return response()->json('Error create investment', 400);
         }
     }
 }

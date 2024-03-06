@@ -23,6 +23,7 @@ class Order extends Model
         'type_purchsed',
         'is_manual',
         'package_id',
+        'amazon_category_id',
     ];
 
     public function user()

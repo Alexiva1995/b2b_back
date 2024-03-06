@@ -34,7 +34,7 @@ class CouponController extends Controller
                 $msj->subject('Coupon Create!');
                 $msj->to($user->email);
             });
-            
+
             DB::commit();
             return response()->json(['status' => 'success', 'message' => 'Coupon Created!'], 200);
         } catch (\Throwable $th) {
@@ -75,13 +75,13 @@ class CouponController extends Controller
         return response()->json(['status' => 'success', 'data' => ['percentage' => $coupon->percentage, 'message' => 'Coupon Used!']], 200);
     }
 
-    public function checkUserCouponActive(Request $request) 
+    public function checkUserCouponActive(Request $request)
     {
         $user = JWTAuth::parseToken()->authenticate();
         $userCoupon = UserCoupon::with('coupon')->where('user_id', $user->id)->whereHas('coupon', function ($q){
 			$q->where('expiration','>' ,date("Y-m-d"));
 		})->first();
-        
+
         if ($userCoupon != null) {
             return response()->json(['status' => 'warning', 'data' => ['percentage' => $userCoupon->coupon->percentage, 'message' => 'You already have an active coupon']], 400);
         } else {
