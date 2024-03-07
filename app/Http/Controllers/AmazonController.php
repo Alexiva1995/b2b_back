@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\ImportProductAmazon;
 use App\Models\AmazonCategories;
 use App\Models\AmazonInvestment;
 use App\Models\AmazonLots;
@@ -18,7 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
-
+use Maatwebsite\Excel\Facades\Excel;
 
 class AmazonController extends Controller
 {
@@ -109,7 +110,7 @@ class AmazonController extends Controller
     public function storeLot(Request $request)
     {
         DB::beginTransaction();
-
+        // return $request->all();
         try {
             $lot = new AmazonLots();
             $lot->name = $request->name;
@@ -124,9 +125,10 @@ class AmazonController extends Controller
             $lot->price = $request->price;
             $lot->amazon_category_id = AmazonCategories::where('name', $request->category)->first()->id;
             $lot->save();
+            if(!is_null($request->excel)) Excel::import(new ImportProductAmazon($lot->id), $request->file('excel'));
 
-            if (is_null(json_decode($request->products))) throw new Exception("Error create Lot, must add at least one product");
-            if (count(json_decode($request->products)) > 0) $this->addProductsToLot($lot, json_decode($request->products));
+            if (is_null(json_decode($request->products)) && is_null($request->excel)) throw new Exception("Error create Lot, must add at least one product");
+            if (count(json_decode($request->products)) > 0 && is_null($request->excel)) $this->addProductsToLot($lot, json_decode($request->products));
 
             if ($lot->save()) {
                 DB::commit();
