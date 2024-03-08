@@ -1453,6 +1453,7 @@ public function getReferrals(User $user, $cyborg = null ,$matrix_type = null, $l
 
                 if(!is_null($buyer)){
                     $bonusService = new BonusService;
+                    $bonusService->generateBonusDirect($amount = 50, $user, $level = 1, $order);
                     $bonusService->generateFirstComission(20,$user, $order, $buyer = $user, $level = 2, $user->id);
                 }
 
